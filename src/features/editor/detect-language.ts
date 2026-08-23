@@ -1,9 +1,17 @@
 import { type LanguageId, LANGUAGES } from "@/features/editor/language";
 import type { LanguageFn } from "highlight.js";
 
-/** CUDA is C++ plus these, and highlight.js has no grammar that knows them. */
-const CUDA_MARKERS =
-  /__global__|__device__|__shared__|__constant__|<<<[^<>]*>>>|threadIdx|blockIdx/;
+/**
+ * Spellings that belong to CUDA and to nothing else Pico supports.
+ *
+ * These are checked before highlight.js rather than after. highlight.js has no
+ * CUDA grammar, so a kernel gets scored by grammars that were never going to
+ * fit it, and which one comes out on top is close to arbitrary — a short kernel
+ * can land on LLVM IR. When one of these appears there is nothing left to guess.
+ */
+const CUDA_QUALIFIERS = /__global__|__device__|__shared__|__constant__|__syncthreads\b/;
+const CUDA_BUILTINS = /\b(?:threadIdx|blockIdx|blockDim|gridDim|warpSize)\b/;
+const CUDA_LAUNCH = /<<<[^<>]*>>>\s*\(/;
 
 /**
  * Spellings that exist in C++ but not C.
@@ -73,10 +81,12 @@ function getEngine() {
 /**
  * Guesses which of Pico's languages a snippet is.
  *
- * highlight.js does the coarse work; two distinctions it cannot make are
- * settled afterwards. It has no CUDA grammar, and it does not separate TSX
- * from TypeScript or JSX from JavaScript, because in both cases the second is
- * the first plus syntax it already accepts.
+ * CUDA is settled first, from spellings no other supported language has.
+ * highlight.js then does the coarse work, and the distinctions it cannot make
+ * are settled after: it does not separate TSX from TypeScript or JSX from
+ * JavaScript, because in both cases the second is the first plus syntax it
+ * already accepts, and it reports plain C as C++ because C is very nearly a
+ * subset of it.
  *
  * @returns `undefined` when nothing scores well enough to be worth acting on.
  * Guessing wrong is worse than leaving the language alone.
@@ -84,14 +94,15 @@ function getEngine() {
 export async function detectLanguage(code: string): Promise<LanguageId | undefined> {
   if (code.trim().length < MIN_LENGTH) return undefined;
 
+  if (CUDA_QUALIFIERS.test(code) || CUDA_BUILTINS.test(code) || CUDA_LAUNCH.test(code)) {
+    return "cuda";
+  }
+
   const detect = await getEngine();
   const detected = detect(code) as HljsLang | undefined;
   if (!detected) return undefined;
 
-  if (detected === "c" || detected === "cpp") {
-    if (CUDA_MARKERS.test(code)) return "cuda";
-    return CPP_MARKERS.test(code) ? "cpp" : "c";
-  }
+  if (detected === "c" || detected === "cpp") return CPP_MARKERS.test(code) ? "cpp" : "c";
   if (detected === "typescript") return JSX_MARKERS.test(code) ? "tsx" : "ts";
   if (detected === "javascript") return JSX_MARKERS.test(code) ? "jsx" : "js";
   return UNAMBIGUOUS[detected];

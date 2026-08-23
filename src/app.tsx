@@ -93,16 +93,21 @@ export function App() {
 
   return (
     <div className="relative flex h-full flex-col">
-      <div className="flex flex-1 items-center justify-center overflow-auto p-10 pb-32">
-        <CodeFrame colors={colors} settings={settings}>
-          <CodeEditor
-            highlight={highlight}
-            onChange={setCode}
-            placeholderText={PLACEHOLDER}
-            showLineNumbers={settings.lineNumbers}
-            value={code}
-          />
-        </CodeFrame>
+      {/* The frame grows to fit long lines and this scrolls, rather than the
+          frame being squeezed — the editor has to show the picture's real
+          width or it is not a preview. */}
+      <div className="flex-1 overflow-auto">
+        <div className="flex min-h-full w-full min-w-max items-center justify-center p-10 pb-32">
+          <CodeFrame colors={colors} settings={settings}>
+            <CodeEditor
+              highlight={highlight}
+              onChange={setCode}
+              placeholderText={PLACEHOLDER}
+              showLineNumbers={settings.lineNumbers}
+              value={code}
+            />
+          </CodeFrame>
+        </div>
       </div>
 
       <div className="-translate-x-1/2 fixed bottom-6 left-1/2 z-20">

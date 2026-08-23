@@ -13,6 +13,26 @@ export const DEFAULT_FORMAT: ExportFormat = "png";
 /** Retina by default, so a pasted image is not soft on the display most people have. */
 export const DEFAULT_SCALE: ExportScale = 2;
 
+/**
+ * How long to wait for the capture before giving up.
+ *
+ * The capture finishes by decoding an image, and a browser does not decode
+ * images in a hidden tab. Without this, switching away mid-export leaves the
+ * promise unsettled and the dock disabled forever.
+ */
+const RENDER_TIMEOUT_MS = 20_000;
+
+function withTimeout<T>(work: Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () =>
+        reject(new Error("The capture did not finish. Switching tabs during an export stops it.")),
+      RENDER_TIMEOUT_MS,
+    );
+    work.then(resolve, reject).finally(() => clearTimeout(timer));
+  });
+}
+
 export type RenderRequest = {
   node: HTMLElement;
   settings: Settings;
@@ -36,11 +56,11 @@ export async function renderImage({ node, settings, format, scale }: RenderReque
   await document.fonts.ready;
 
   if (format === "svg") {
-    const dataUrl = await toSvg(node, options);
+    const dataUrl = await withTimeout(toSvg(node, options));
     return await (await fetch(dataUrl)).blob();
   }
 
-  const blob = await toBlob(node, options);
+  const blob = await withTimeout(toBlob(node, options));
   if (!blob) throw new Error("The browser produced an empty image");
   return blob;
 }

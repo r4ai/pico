@@ -107,6 +107,24 @@ describe("detectLanguage", () => {
   });
 
   it.each([
+    [
+      "a bare kernel, which highlight.js scores as LLVM IR",
+      `__global__ void saxpy(int n, float a, const float *x, float *y) {
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < n) y[i] = a * x[i] + y[i];
+}`,
+    ],
+    [
+      "a launch with no qualifier in sight",
+      `void run(int n, float *d_x, float *d_y) {
+  saxpy<<<(n + 255) / 256, 256>>>(n, 2.0f, d_x, d_y);
+}`,
+    ],
+  ])("recognises CUDA from %s", async (_name, code) => {
+    expect(await detectLanguage(code)).toBe("cuda");
+  });
+
+  it.each([
     ["empty", ""],
     ["whitespace", "   \n\n  "],
     ["a single short word", "hello"],

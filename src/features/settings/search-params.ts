@@ -79,7 +79,12 @@ export function hasBrokenCodeParam(search: string): boolean {
   }
 }
 
-const serializeShareUrl = createSerializer({ ...settingsParsers, [CODE_PARAM]: codeParser });
+// withDefault matters here: without it an empty document still writes a bare
+// `?c=` onto every link.
+const serializeShareUrl = createSerializer({
+  ...settingsParsers,
+  [CODE_PARAM]: codeParser.withDefault(""),
+});
 
 /** Whether the reader arrived with a language already chosen for them. */
 export function hasExplicitLanguage(search: string): boolean {
