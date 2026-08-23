@@ -68,7 +68,7 @@ export const PREVIEW_GEOMETRY_DURATION_MS = 260;
  */
 export const PREVIEW_GEOMETRY_GRACE_MS = 120;
 
-export const DEFAULT_PADDING: PaddingId = "lg";
+export const DEFAULT_PADDING: PaddingId = "md";
 export const DEFAULT_RADIUS: RadiusId = "md";
 export const DEFAULT_SHADOW: ShadowId = "md";
 export const DEFAULT_FONT_SIZE: FontSizeId = "md";
