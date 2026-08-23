@@ -35,7 +35,7 @@ export function BottomDock({
   return (
     <GlassPanel className="flex items-center gap-1 p-1.5">
       <LanguagePicker onChange={onLangChange} value={lang} />
-      <Separator className="mx-1 !h-5" orientation="vertical" />
+      <DockDivider />
       <Button isDisabled={busy} onPress={onCopy} size="sm" variant="ghost">
         <CopyIcon data-icon="inline-start" />
         Copy
@@ -46,10 +46,21 @@ export function BottomDock({
         onScaleChange={onScaleChange}
         scale={scale}
       />
+      <DockDivider />
       <Button onPress={onCopyLink} size="sm" variant="ghost">
         <Link2Icon data-icon="inline-start" />
         Link
       </Button>
     </GlassPanel>
   );
+}
+
+/**
+ * A hairline between two groups of controls.
+ *
+ * Short and centred rather than the full height of the dock: it is there to
+ * group, and a rule running edge to edge would read as a wall.
+ */
+function DockDivider() {
+  return <Separator className="mx-1 h-5 self-center!" orientation="vertical" />;
 }

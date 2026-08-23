@@ -57,7 +57,7 @@ export function PresetToggle<T extends string>({
         {options.map((option) => (
           <ToggleGroupItem
             aria-label={ariaLabelOf?.(option)}
-            className="min-w-9 px-2 text-xs data-selected:bg-foreground/12 data-selected:font-medium data-selected:text-foreground"
+            className="pico-preset-item min-w-9 px-2 text-xs"
             id={option}
             key={option}
           >
