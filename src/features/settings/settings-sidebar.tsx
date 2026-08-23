@@ -32,10 +32,12 @@ export type SettingsSidebarProps = {
  * Everything you might want to adjust, and nothing you would not.
  *
  * It stays mounted while closed so opening it is a transform rather than a
- * mount, and is marked `inert` so nothing inside can be tabbed to meanwhile.
- * Because both it and the button that opens it spend half their life inert,
- * the keyboard has to be handed between them deliberately; see
- * {@link usePanelFocus}.
+ * mount, and nothing inside it can be tabbed to meanwhile. Twice over: `inert`
+ * says so to React, and `visibility: hidden` says so to the browser, because
+ * React Aria strips the first one off on its way out of an open popover and
+ * does not put it back. Because both this and the button that opens it spend
+ * half their life out of reach, the keyboard has to be handed between them
+ * deliberately; see {@link usePanelFocus}.
  *
  * Where the window is wide enough the panel takes a column of its own and the
  * canvas shifts over to make room; where it is not, it slides over the canvas

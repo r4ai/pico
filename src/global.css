@@ -439,16 +439,33 @@
   width: var(--pico-sidebar-width);
   flex-direction: column;
   overflow: hidden;
+  /* Out of the tab order while closed, and by `visibility` rather than by the
+     `inert` React also writes here. React Aria hides everything outside an
+     open popover and puts back what it found on close — and what it puts back
+     is not what React last rendered, so the first time the language picker
+     closed, `inert` came off a panel that was still shut and Tab walked into
+     it: a close button, a theme field and every preset, all off the left edge
+     of the window. The same reason the dock and the toggle go this way.
+
+     Delayed by the length of the slide when closing, and not at all when
+     opening, so the panel is still there to be seen leaving. */
+  visibility: hidden;
   transform: translateX(calc(-100% - 1.5rem));
   opacity: 0;
   transition:
     transform 380ms var(--ease-glass),
-    opacity 220ms var(--ease-glass);
+    opacity 220ms var(--ease-glass),
+    visibility 0s 380ms;
 }
 
 .pico-sidebar[data-open="true"] {
+  visibility: visible;
   transform: translateX(0);
   opacity: 1;
+  transition:
+    transform 380ms var(--ease-glass),
+    opacity 220ms var(--ease-glass),
+    visibility 0s;
 }
 
 /* Only ever seen in drawer mode: where the sidebar has its own column there is
@@ -627,6 +644,10 @@
   .pico-sidebar-scrim,
   .pico-sidebar-toggle {
     transition-duration: 1ms;
+    /* The delays exist to hold something on screen for the length of a fade
+       there no longer is. Left in place they would keep the dock and the panel
+       visible for another third of a second after they had gone. */
+    transition-delay: 0s;
   }
 
   .pico-split-chevron {

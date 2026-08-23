@@ -119,6 +119,30 @@ it("gives the keyboard back to the button that opened the settings", async () =>
   expect(document.activeElement?.getAttribute("aria-label")).toBe("Open settings");
 });
 
+it("keeps the closed settings out of the tab order once a popover has been open", async () => {
+  await renderApp();
+
+  // React Aria hides everything outside an open popover and puts back what it
+  // found on close — and what it puts back is not what React last rendered, so
+  // the `inert` on a panel that is still shut comes off here. The panel is
+  // taken out of the tab order by `visibility` for exactly this reason.
+  await page.getByRole("combobox", { name: "Language" }).click();
+  await expect.poll(() => document.querySelector('[data-slot="combobox-content"]')).toBeTruthy();
+  await userEvent.keyboard("{Escape}");
+  await expect.poll(() => document.querySelector('[data-slot="combobox-content"]')).toBeNull();
+
+  const panel = document.querySelector(".pico-sidebar");
+  if (!(panel instanceof HTMLElement)) throw new Error("the settings panel is missing");
+  expect(getComputedStyle(panel).visibility).toBe("hidden");
+
+  for (let step = 0; step < 12; step++) {
+    await userEvent.keyboard("{Tab}");
+    // A close button, a theme field and every preset, all off the left edge of
+    // the window.
+    expect(document.activeElement?.closest(".pico-sidebar")).toBeNull();
+  }
+});
+
 it("moves the settings between their two arrangements at one width", () => {
   const widths = new Set<string>();
   for (const sheet of document.styleSheets) {
