@@ -122,7 +122,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: versions upload --preview-alias pr-${{ github.event.pull_request.number }}
+          command: deploy --config wrangler.bootstrap.jsonc
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: pnpm
           wranglerVersion: 4.125.0
