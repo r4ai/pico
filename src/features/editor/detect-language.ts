@@ -108,6 +108,30 @@ const DIRECT_LANGUAGES: Partial<Record<HljsLang, LanguageId>> = {
   lua: "lua",
 };
 
+function detectSignatureLanguage(code: string): LanguageId | undefined {
+  if (CUDA_QUALIFIERS.test(code) || CUDA_BUILTINS.test(code) || CUDA_LAUNCH.test(code)) {
+    return "cuda";
+  }
+  return SIGNATURE_LANGUAGES.find((language) => language.markers.test(code))?.id;
+}
+
+function resolveMarkupLanguage(code: string): LanguageId {
+  if (XML_MARKERS.test(code)) return "xml";
+  return HTML_MARKERS.test(code) ? "html" : "xml";
+}
+
+const SHARED_LANGUAGE_RESOLVERS: Partial<Record<HljsLang, (code: string) => LanguageId>> = {
+  c: (code) => (CPP_MARKERS.test(code) ? "cpp" : "c"),
+  cpp: (code) => (CPP_MARKERS.test(code) ? "cpp" : "c"),
+  typescript: (code) => (JSX_MARKERS.test(code) ? "tsx" : "ts"),
+  javascript: (code) => (JSX_MARKERS.test(code) ? "jsx" : "js"),
+  xml: resolveMarkupLanguage,
+};
+
+function resolveDetectedLanguage(detected: HljsLang, code: string): LanguageId | undefined {
+  return SHARED_LANGUAGE_RESOLVERS[detected]?.(code) ?? DIRECT_LANGUAGES[detected];
+}
+
 let engine: Promise<(code: string) => string | undefined> | undefined;
 
 /** Loads highlight.js with only Pico's grammars, and only on first use. */
@@ -143,24 +167,12 @@ function getEngine() {
 export async function detectLanguage(code: string): Promise<LanguageId | undefined> {
   if (code.trim().length < MIN_LENGTH) return undefined;
 
-  if (CUDA_QUALIFIERS.test(code) || CUDA_BUILTINS.test(code) || CUDA_LAUNCH.test(code)) {
-    return "cuda";
-  }
-
-  for (const language of SIGNATURE_LANGUAGES) {
-    if (language.markers.test(code)) return language.id;
-  }
+  const signatureLanguage = detectSignatureLanguage(code);
+  if (signatureLanguage) return signatureLanguage;
 
   const detect = await getEngine();
   const detected = detect(code) as HljsLang | undefined;
   if (!detected) return undefined;
 
-  if (detected === "c" || detected === "cpp") return CPP_MARKERS.test(code) ? "cpp" : "c";
-  if (detected === "typescript") return JSX_MARKERS.test(code) ? "tsx" : "ts";
-  if (detected === "javascript") return JSX_MARKERS.test(code) ? "jsx" : "js";
-  if (detected === "xml") {
-    if (XML_MARKERS.test(code)) return "xml";
-    return HTML_MARKERS.test(code) ? "html" : "xml";
-  }
-  return DIRECT_LANGUAGES[detected];
+  return resolveDetectedLanguage(detected, code);
 }
