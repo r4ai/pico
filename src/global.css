@@ -23,7 +23,10 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Darker than the preset's 0.708. The ring is drawn at half opacity over
+     glass that is nearly white, and at the stock value keyboard focus on the
+     dock was a suggestion rather than an indication. */
+  --ring: oklch(0.45 0 0);
 }
 
 .dark {
@@ -44,7 +47,8 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 18%);
-  --ring: oklch(0.556 0 0);
+  /* Lighter than the preset's 0.556, for the same reason. */
+  --ring: oklch(0.85 0 0);
 }
 
 @theme inline {
@@ -229,15 +233,15 @@
   min-height: 1lh;
 }
 
-/* What an empty frame says before there is anything in it. The editor draws
-   its own placeholder at `${foreground}66` once it is here; this is the same
-   wash of the frame's foreground, so the swap is invisible.
+/* What an empty frame says before there is anything in it. The same wash of
+   the frame's foreground the editor's own placeholder uses, so the swap from
+   one to the other is invisible; see createEditorTheme for why it is 70%.
 
    `pointer-events: none` for the same reason CodeMirror's has it: the words
    are an invitation, not something to select. */
 
 .pico-placeholder {
-  color: color-mix(in srgb, var(--pico-fg) 40%, transparent);
+  color: color-mix(in srgb, var(--pico-fg) 70%, transparent);
   pointer-events: none;
   user-select: none;
 }

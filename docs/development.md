@@ -117,7 +117,10 @@ Preview geometry has eight invariants:
   fading up from zero as a contentful paint until the fade finishes, so first
   contentful paint reads about a transition longer than the frame is actually
   on screen. The alternative it replaced was a first paint in the system's
-  monospace followed by a reflow.
+  monospace followed by a reflow. Whether the font is already here is asked
+  while the first render is being built rather than from an effect, so a
+  second visit skips the fade entirely rather than blanking a frame it could
+  have painted.
 - The narrowest a frame is drawn is one custom property,
   `--pico-frame-min-width`, read by the live frame and the export node alike.
   It is 28rem, or the width the canvas has if that is less — on a phone 28rem

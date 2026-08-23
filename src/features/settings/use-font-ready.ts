@@ -18,6 +18,31 @@ export type FontPhase =
   /** On screen in the font it is supposed to be in. */
   | "ready";
 
+/** The face the layout is made of, as `document.fonts` wants it spelled. */
+function layoutFaceQuery(font: Font): string {
+  const family = familyNameOf(font);
+  // A theme emboldens and italicises a few tokens, but only once the
+  // highlighter has loaded, which is later than anything this hook is timing.
+  const regular = font.faces.find((face) => face.weight === 400 && face.style === "normal");
+  return regular ? `${regular.style} ${regular.weight} 1em "${family}"` : `1em "${family}"`;
+}
+
+/**
+ * Whether the font is here already, answered without waiting a render.
+ *
+ * Asked while the first render is being built, not from an effect. The frame is
+ * held at `opacity: 0` until this says otherwise, and an effect runs after the
+ * browser has had its chance to paint — so a font that was already in the cache
+ * still got a frame painted at nothing and a 260ms fade up from it, and the
+ * first contentful paint is not counted until a fade like that has finished.
+ * A browser with no way of being asked paints at once, which is what it did
+ * before any of this existed.
+ */
+function alreadyHere(font: Font): boolean {
+  const fonts = document.fonts as FontFaceSet | undefined;
+  return fonts ? fonts.check(layoutFaceQuery(font)) : true;
+}
+
 /**
  * Whether the code can be painted in the font it is meant to be painted in.
  *
@@ -37,16 +62,13 @@ export type FontPhase =
  */
 export function useFontReady(font: Font, holdMs: number = FONT_HOLD_MS): FontPhase {
   const shown = useRef(false);
-  const [phase, setPhase] = useState<FontPhase>("held");
+  const [phase, setPhase] = useState<FontPhase>(() => (alreadyHere(font) ? "ready" : "held"));
 
   useEffect(() => {
     const family = familyNameOf(font);
     const shorthand = (face: FontFace) => `${face.style} ${face.weight} 1em "${family}"`;
-    // The one the layout is made of. A theme emboldens and italicises a few
-    // tokens, but only once the highlighter has loaded, which is later than
-    // anything this hook is timing.
     const regular = font.faces.find((face) => face.weight === 400 && face.style === "normal");
-    const query = regular ? shorthand(regular) : `1em "${family}"`;
+    const query = layoutFaceQuery(font);
     const fonts = document.fonts as FontFaceSet | undefined;
 
     let cancelled = false;

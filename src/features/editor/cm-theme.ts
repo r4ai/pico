@@ -51,7 +51,13 @@ export function createEditorTheme(theme: ThemeRegistrationResolved): Extension {
         color: "var(--pico-line-number)",
       },
       ".cm-activeLineGutter": { backgroundColor: "transparent" },
-      ".cm-placeholder": { color: `${foreground}66` },
+      // 70% of the foreground rather than CodeMirror's 40%. At 40% the
+      // invitation to paste something was between 1.9:1 and 3.2:1 against the
+      // ten backgrounds Pico ships, which is not text anybody should have to
+      // squint at; at 70% it clears 4.5:1 on seven of them and stays visibly a
+      // hint rather than something already typed. The static rendering that
+      // stands in before this theme exists uses the same value.
+      ".cm-placeholder": { color: `${foreground}b3` },
     },
     { dark: theme.type === "dark" },
   );
