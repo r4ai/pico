@@ -16,11 +16,11 @@ import {
   useCode,
   useSettings,
 } from "@/features/settings/search-params";
-import { sidebarOpenAtom } from "@/features/settings/sidebar-state";
 import { FONTS } from "@/features/settings/fonts";
 import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
 import { useFontReady } from "@/features/settings/use-font-ready";
 import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
+import { useSidebarOpen } from "@/features/settings/use-sidebar-open";
 import {
   PREVIEW_GEOMETRY_DURATION_MS,
   PREVIEW_GEOMETRY_GRACE_MS,
@@ -28,7 +28,6 @@ import {
 import type { Settings } from "@/features/settings/settings";
 import { crossFade } from "@/lib/cross-fade";
 import { isThemeLoaded } from "@/lib/shiki";
-import { useAtom } from "jotai";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@/components/toast";
 
@@ -47,7 +46,7 @@ export function App() {
   const [code, setCode] = useCode();
   const [scale, setScale] = useState<ExportScale>(DEFAULT_SCALE);
   const [frameWidth, setFrameWidth] = useState<number>();
-  const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom);
+  const [sidebarOpen, setSidebarOpen] = useSidebarOpen();
   // As a drawer the settings lie on top of the canvas behind a scrim, so the
   // canvas has to be out of the keyboard's reach for as long as they do.
   // Inset, the two sit side by side and the picture stays editable.

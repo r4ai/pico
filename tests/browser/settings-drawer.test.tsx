@@ -1,7 +1,6 @@
 import { App } from "@/app";
 import "@/global.css";
 import { SIDEBAR_INSET_QUERY } from "@/features/settings/use-sidebar-mode";
-import { createStore, Provider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, beforeEach, expect, it } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";
@@ -18,14 +17,13 @@ let unmount: (() => Promise<void>) | undefined;
 beforeEach(async () => {
   expect(window.matchMedia(SIDEBAR_INSET_QUERY).matches).toBe(false);
   window.history.replaceState(null, "", window.location.pathname);
-  // A store per test: the sidebar's open state is a module-level atom, and
-  // left shared it arrives at the next test already open.
+  // The sidebar remembers whether it was open, and these tests share a page:
+  // left behind, the panel arrives at the next test already open.
+  window.localStorage.clear();
   const rendered = await render(
-    <Provider store={createStore()}>
-      <NuqsAdapter>
-        <App />
-      </NuqsAdapter>
-    </Provider>,
+    <NuqsAdapter>
+      <App />
+    </NuqsAdapter>,
   );
   unmount = rendered.unmount;
   await expect.element(page.getByRole("combobox", { name: "Language" })).toBeInTheDocument();
@@ -95,6 +93,25 @@ it("keeps Tab out of everything it covers", async () => {
   // And that it does come down somewhere: a run that focused nothing would
   // pass the check above without proving anything.
   expect(visited.length).toBeGreaterThan(0);
+});
+
+it("does not restore itself over the picture", async () => {
+  // Somebody who left the settings open on a wider screen, or in this window
+  // before it was resized. Beside the picture that is a layout to put back; on
+  // top of it, it is being shown the settings instead of what the link was for.
+  await unmount?.();
+  await cleanup();
+  window.localStorage.setItem("pico:sidebar-open", "true");
+  const rendered = await render(
+    <NuqsAdapter>
+      <App />
+    </NuqsAdapter>,
+  );
+  unmount = rendered.unmount;
+  await expect.element(page.getByRole("button", { name: "Open settings" })).toBeInTheDocument();
+
+  expect(document.querySelector('.pico-sidebar[data-open="true"]')).toBeNull();
+  expect(canvas().hasAttribute("inert")).toBe(false);
 });
 
 it("offers the scrim to the pointer only", async () => {

@@ -13,6 +13,9 @@ function inEditor(): boolean {
 
 beforeEach(async () => {
   window.history.replaceState(null, "", window.location.pathname);
+  // The sidebar remembers whether it was open, and these tests share a page:
+  // left behind, the panel arrives at the next test already open.
+  window.localStorage.clear();
   const rendered = await render(
     <NuqsAdapter>
       <App />

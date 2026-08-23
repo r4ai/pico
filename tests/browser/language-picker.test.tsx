@@ -1,6 +1,5 @@
 import { App } from "@/app";
 import "@/global.css";
-import { createStore, Provider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, beforeEach, expect, it } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";
@@ -10,12 +9,13 @@ let unmount: (() => Promise<void>) | undefined;
 
 beforeEach(async () => {
   window.history.replaceState(null, "", window.location.pathname);
+  // The sidebar remembers whether it was open, and these tests share a page:
+  // left behind, the panel arrives at the next test already open.
+  window.localStorage.clear();
   const rendered = await render(
-    <Provider store={createStore()}>
-      <NuqsAdapter>
-        <App />
-      </NuqsAdapter>
-    </Provider>,
+    <NuqsAdapter>
+      <App />
+    </NuqsAdapter>,
   );
   unmount = rendered.unmount;
   await expect.element(page.getByRole("combobox", { name: "Language" })).toBeInTheDocument();

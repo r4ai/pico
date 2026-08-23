@@ -50,6 +50,20 @@ async function finishAnimations(element: HTMLElement): Promise<void> {
   await nextFrame();
 }
 
+/**
+ * Opens the settings, and waits for them to have finished arriving.
+ *
+ * The panel slides in from off the left edge, and a control on a panel that is
+ * still on its way is a control outside the window — which is what Playwright
+ * refuses to click, however forced.
+ */
+async function openSettings(): Promise<void> {
+  if (!document.querySelector('.pico-sidebar[data-open="true"]')) {
+    await page.getByRole("button", { name: "Open settings" }).click();
+  }
+  await expect.poll(() => frame(".pico-sidebar").getBoundingClientRect().left).toBeGreaterThan(0);
+}
+
 async function pauseAtMidpoint(element: HTMLElement): Promise<void> {
   await nextFrame();
   const animations = element.getAnimations({ subtree: true });
@@ -63,6 +77,9 @@ async function pauseAtMidpoint(element: HTMLElement): Promise<void> {
 
 beforeEach(async () => {
   window.history.replaceState(null, "", window.location.pathname);
+  // The sidebar remembers whether it was open, and these tests share a page:
+  // left behind, the panel arrives at the next test already open.
+  window.localStorage.clear();
   const fonts = document.createElement("style");
   fonts.dataset.testFonts = "";
   fonts.textContent = fontFaceCss();
@@ -74,9 +91,7 @@ beforeEach(async () => {
     </NuqsAdapter>,
   );
   unmount = rendered.unmount;
-  if (!document.querySelector('.pico-sidebar[data-open="true"]')) {
-    await page.getByRole("button", { name: "Open settings" }).click();
-  }
+  await openSettings();
 });
 
 afterEach(async () => {

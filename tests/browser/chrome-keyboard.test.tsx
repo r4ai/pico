@@ -3,7 +3,6 @@ import "@/global.css";
 import { SIDEBAR_INSET_QUERY } from "@/features/settings/use-sidebar-mode";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
 import type { ExportTask } from "@/features/export/use-export";
-import { createStore, Provider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, expect, it } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";
@@ -37,14 +36,13 @@ async function renderDock(running: ExportTask | undefined): Promise<void> {
 
 async function renderApp(): Promise<void> {
   window.history.replaceState(null, "", window.location.pathname);
-  // A store per test: the sidebar's open state is a module-level atom, and
-  // left shared it arrives at the next test already open.
+  // The sidebar remembers whether it was open, and these tests share a page:
+  // left behind, the panel arrives at the next test already open.
+  window.localStorage.clear();
   const rendered = await render(
-    <Provider store={createStore()}>
-      <NuqsAdapter>
-        <App />
-      </NuqsAdapter>
-    </Provider>,
+    <NuqsAdapter>
+      <App />
+    </NuqsAdapter>,
   );
   unmount = rendered.unmount;
   // The chrome is loaded on its own; there is nothing to reach until it lands.
