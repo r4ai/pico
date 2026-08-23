@@ -14,6 +14,7 @@ export type ExportNodeProps = {
   /** `null` until the first grammar and theme have loaded. */
   highlight: ShikiHighlight | null;
   onFrameWidthChange: (width: number) => void;
+  lineNumberDigits: number;
 };
 
 /**
@@ -41,6 +42,7 @@ export function ExportNode({
   colors,
   highlight,
   onFrameWidthChange,
+  lineNumberDigits,
 }: ExportNodeProps) {
   const style = { "--pico-shadow-room": SHADOW_ROOM[settings.shadow] } as CSSProperties;
 
@@ -52,14 +54,22 @@ export function ExportNode({
     reportWidth();
 
     const observer = new ResizeObserver(reportWidth);
-    observer.observe(frame);
+    observer.observe(frame, { box: "border-box" });
     return () => observer.disconnect();
-  }, [onFrameWidthChange, ref]);
+  }, [
+    lineNumberDigits,
+    onFrameWidthChange,
+    ref,
+    settings.font,
+    settings.fontSize,
+    settings.lineNumbers,
+    settings.padding,
+  ]);
 
   return (
     <div aria-hidden className="pico-export-stage">
       <div className="pico-export-host" ref={ref} style={style}>
-        <CodeFrame colors={colors} settings={settings}>
+        <CodeFrame colors={colors} lineNumberDigits={lineNumberDigits} settings={settings}>
           <ShikiCode code={code} highlight={highlight} showLineNumbers={settings.lineNumbers} />
         </CodeFrame>
       </div>

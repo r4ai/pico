@@ -3,6 +3,7 @@ import {
   FONT_SIZES,
   LINE_HEIGHT,
   PADDINGS,
+  PREVIEW_GEOMETRY_DURATION_MS,
   RADII,
   SHADOW_ROOM,
   SHADOWS,
@@ -18,6 +19,8 @@ export type CodeFrameProps = {
   children: ReactNode;
   className?: string;
   width?: number;
+  animateGeometry?: boolean;
+  lineNumberDigits?: number;
 };
 
 /**
@@ -27,7 +30,15 @@ export type CodeFrameProps = {
  * and all their geometry is read from the custom properties set here. That is
  * what keeps what you see and what you save the same shape.
  */
-export function CodeFrame({ settings, colors, children, className, width }: CodeFrameProps) {
+export function CodeFrame({
+  settings,
+  colors,
+  children,
+  className,
+  width,
+  animateGeometry = false,
+  lineNumberDigits = 1,
+}: CodeFrameProps) {
   const style = {
     "--pico-font-family": FONTS[settings.font].stack,
     "--pico-font-size": FONT_SIZES[settings.fontSize],
@@ -41,11 +52,17 @@ export function CodeFrame({ settings, colors, children, className, width }: Code
     "--pico-line-number": colors.lineNumber,
     "--pico-gutter-gap": "1.5ch",
     "--pico-gutter-min-width": "2ch",
+    "--pico-line-number-digits": lineNumberDigits,
+    "--pico-geometry-duration": `${PREVIEW_GEOMETRY_DURATION_MS}ms`,
     width,
   } as CSSProperties;
 
   return (
-    <div className={cn("pico-frame", className)} style={style}>
+    <div
+      className={cn("pico-frame", className)}
+      data-animate-geometry={animateGeometry}
+      style={style}
+    >
       {children}
     </div>
   );

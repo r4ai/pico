@@ -54,6 +54,9 @@ export const FONT_SIZES: Record<FontSizeId, string> = {
 /** Loose enough that highlighted code breathes, tight enough to stay compact. */
 export const LINE_HEIGHT = "1.6";
 
+/** One motion language for every geometry change in the live preview. */
+export const PREVIEW_GEOMETRY_DURATION_MS = 260;
+
 export const DEFAULT_PADDING: PaddingId = "lg";
 export const DEFAULT_RADIUS: RadiusId = "md";
 export const DEFAULT_SHADOW: ShadowId = "md";

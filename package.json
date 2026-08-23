@@ -12,9 +12,10 @@
     "fmt": "vp fmt",
     "lint": "vp lint",
     "security:audit": "pnpm audit --audit-level moderate",
-    "test": "vp test --run",
-    "test:coverage": "vp test --run --coverage",
-    "test:watch": "vp test",
+    "test": "vp test --run --config vite.unit.config.ts",
+    "test:browser": "vp test --run --config vite.browser.config.ts",
+    "test:coverage": "vp test --run --coverage --config vite.unit.config.ts",
+    "test:watch": "vp test --config vite.unit.config.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -53,8 +54,10 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "@vitejs/plugin-react": "6.1.0",
+    "@vitest/browser-playwright": "4.1.10",
     "@vitest/coverage-v8": "4.1.10",
     "oxc-transform-react": "0.145.0",
+    "playwright": "1.62.1",
     "react-doctor": "0.9.12",
     "storybook": "10.5.10",
     "tailwindcss": "4.3.3",
@@ -62,6 +65,7 @@
     "typescript": "7.0.2",
     "vite": "catalog:",
     "vite-plus": "catalog:",
+    "vitest-browser-react": "2.2.0",
     "wrangler": "4.125.0"
   },
   "devEngines": {

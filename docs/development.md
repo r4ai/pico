@@ -23,6 +23,7 @@ Open the URL printed by `pnpm dev`.
 | `pnpm check`           | Check formatting, lint rules, and types          |
 | `pnpm run doctor`      | Scan the React codebase                          |
 | `pnpm test`            | Run the unit tests once                          |
+| `pnpm test:browser`    | Run geometry regressions in Chromium             |
 | `pnpm test:coverage`   | Run the unit tests with coverage                 |
 | `pnpm build`           | Build the production assets                      |
 | `pnpm preview`         | Serve the production build                       |
@@ -34,8 +35,11 @@ Run at least these checks before submitting a change:
 
 ```sh
 pnpm check
-pnpm test
+pnpm test:coverage
+pnpm test:browser
 pnpm build
+pnpm build-storybook
+pnpm security:audit
 ```
 
 ## Performance
@@ -56,6 +60,27 @@ are easy to undo:
   Shiki has loaded and metrics arriving that late relayout every line.
 - The export node renders before the highlighter does, uncoloured, because the
   visible frame takes its width from it.
+
+Preview geometry has three invariants:
+
+- Padding, font size, frame width, and the line-number gutter use the same
+  `260ms / --ease-glass` transition, and only a settings action may enable it.
+- The off-screen export node is always at the final settings. Its frame is
+  synchronously measured as a border box before paint; `ResizeObserver` follows
+  later font or content changes.
+- The CodeMirror gutter stays mounted. Its width is shared with the export
+  gutter and derives from the document's line-number digit count, including the
+  9/10 and 99/100 boundaries.
+
+`pnpm test:browser` covers intermediate frames, rapid retargeting, export/live
+agreement, and a separate Chromium context with reduced motion enabled.
+
+For a performance comparison, use the same 40-line snippet and the same
+settings sequence on production builds before and after the change. Record a
+Chrome Performance trace while changing padding, font, size, and line numbers;
+check that the interaction contains no task longer than 50ms. Repeat a normal
+typing trace to catch input regressions, and compare the gzip sizes printed by
+`pnpm build` to keep initial JavaScript growth within 2KiB.
 
 The React Compiler is enabled, so components do not need `useMemo` or `memo`
 to survive the re-render every keystroke causes.
