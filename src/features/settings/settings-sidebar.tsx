@@ -47,7 +47,12 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
   useEffect(() => {
     if (!open) return;
     const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      // Escape inside the editor is how the keyboard gets out of it, and
+      // closing the settings from under someone doing that would be a
+      // surprise. See CodeEditor.
+      if (event.target instanceof Element && event.target.closest(".pico-editor")) return;
+      onClose();
     };
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
