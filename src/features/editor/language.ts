@@ -1,45 +1,73 @@
-export const LANGUAGE_IDS = ["tsx", "ts", "jsx", "js", "c", "cpp", "cuda", "rust", "llvm"] as const;
+import { cudaGrammars } from "@/features/editor/cuda-grammar";
+import type { LanguageRegistration } from "shiki/core";
 
-export type LanguageId = (typeof LANGUAGE_IDS)[number];
-
-export type Language = {
-  readonly id: LanguageId;
+type LanguageDefinition = {
   /** Shown in the language picker. */
   readonly label: string;
-  /** Grammar to highlight with. Not always equal to `id`. */
+  /** Grammar name passed to Shiki. Not always equal to the Pico id. */
   readonly shikiLang: string;
-  /**
-   * Grammar highlight.js auto-detection may report for this language. Several
-   * ids share one — the detector disambiguates them afterwards.
-   */
-  readonly hljsLang: string;
-  /** Used for the downloaded file name. */
-  readonly extension: string;
+  /** Loads every registration the grammar depends on. */
+  readonly load: () => Promise<LanguageRegistration[]>;
 };
 
+/**
+ * Pico's supported languages and their lazy Shiki loaders.
+ *
+ * Keeping the loader beside the user-facing metadata makes this the only
+ * registry that changes when a language is added. Static import paths let the
+ * bundler keep every grammar in its own chunk.
+ */
 export const LANGUAGES = {
-  tsx: { id: "tsx", label: "TSX", shikiLang: "tsx", hljsLang: "typescript", extension: "tsx" },
+  tsx: {
+    label: "TSX",
+    shikiLang: "tsx",
+    load: async () => (await import("@shikijs/langs/tsx")).default,
+  },
   ts: {
-    id: "ts",
     label: "TypeScript",
     shikiLang: "typescript",
-    hljsLang: "typescript",
-    extension: "ts",
+    load: async () => (await import("@shikijs/langs/typescript")).default,
   },
-  jsx: { id: "jsx", label: "JSX", shikiLang: "jsx", hljsLang: "javascript", extension: "jsx" },
+  jsx: {
+    label: "JSX",
+    shikiLang: "jsx",
+    load: async () => (await import("@shikijs/langs/jsx")).default,
+  },
   js: {
-    id: "js",
     label: "JavaScript",
     shikiLang: "javascript",
-    hljsLang: "javascript",
-    extension: "js",
+    load: async () => (await import("@shikijs/langs/javascript")).default,
   },
-  c: { id: "c", label: "C", shikiLang: "c", hljsLang: "c", extension: "c" },
-  cpp: { id: "cpp", label: "C++", shikiLang: "cpp", hljsLang: "cpp", extension: "cpp" },
-  cuda: { id: "cuda", label: "CUDA", shikiLang: "cuda", hljsLang: "cpp", extension: "cu" },
-  rust: { id: "rust", label: "Rust", shikiLang: "rust", hljsLang: "rust", extension: "rs" },
-  llvm: { id: "llvm", label: "LLVM IR", shikiLang: "llvm", hljsLang: "llvm", extension: "ll" },
-} as const satisfies Record<LanguageId, Language>;
+  c: {
+    label: "C",
+    shikiLang: "c",
+    load: async () => (await import("@shikijs/langs/c")).default,
+  },
+  cpp: {
+    label: "C++",
+    shikiLang: "cpp",
+    load: async () => (await import("@shikijs/langs/cpp")).default,
+  },
+  cuda: {
+    label: "CUDA",
+    shikiLang: "cuda",
+    load: async () => [...(await import("@shikijs/langs/cpp")).default, ...cudaGrammars],
+  },
+  rust: {
+    label: "Rust",
+    shikiLang: "rust",
+    load: async () => (await import("@shikijs/langs/rust")).default,
+  },
+  llvm: {
+    label: "LLVM IR",
+    shikiLang: "llvm",
+    load: async () => (await import("@shikijs/langs/llvm")).default,
+  },
+} as const satisfies Record<string, LanguageDefinition>;
+
+export type LanguageId = keyof typeof LANGUAGES;
+
+export const LANGUAGE_IDS = Object.keys(LANGUAGES) as LanguageId[];
 
 export const DEFAULT_LANGUAGE: LanguageId = "tsx";
 

@@ -1,4 +1,4 @@
-import { type LanguageId, LANGUAGES } from "@/features/editor/language";
+import type { LanguageId } from "@/features/editor/language";
 import type { LanguageFn } from "highlight.js";
 
 /**
@@ -31,20 +31,19 @@ const MIN_RELEVANCE = 6;
 /** Too short to carry evidence either way. */
 const MIN_LENGTH = 12;
 
-/** Derived from the registry's literals, not from `Language`, so it stays a union. */
-type HljsLang = (typeof LANGUAGES)[LanguageId]["hljsLang"];
-
 /** Static so the bundler can split each grammar out; typed so none can be forgotten. */
-const GRAMMARS: Record<HljsLang, () => Promise<{ default: LanguageFn }>> = {
+const GRAMMARS = {
   typescript: () => import("highlight.js/lib/languages/typescript"),
   javascript: () => import("highlight.js/lib/languages/javascript"),
   c: () => import("highlight.js/lib/languages/c"),
   cpp: () => import("highlight.js/lib/languages/cpp"),
   rust: () => import("highlight.js/lib/languages/rust"),
   llvm: () => import("highlight.js/lib/languages/llvm"),
-};
+} as const satisfies Record<string, () => Promise<{ default: LanguageFn }>>;
 
-const SUBSET = [...new Set(Object.values(LANGUAGES).map((language) => language.hljsLang))];
+type HljsLang = keyof typeof GRAMMARS;
+
+const SUBSET = Object.keys(GRAMMARS) as HljsLang[];
 
 /**
  * highlight.js grammars that name exactly one of Pico's languages.
