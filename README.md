@@ -26,7 +26,19 @@ want it.
 
 ## Supported languages
 
-TSX, TypeScript, JSX, JavaScript, C, C++, CUDA, Rust, LLVM IR.
+Pico has an explicitly curated catalog of 243 languages: every standalone language bundled with
+Shiki 4.4.3, plus Pico's CUDA grammar. The picker lists each language once in alphabetical order;
+you can search by its full name, id, or a familiar alias such as `py`, `bash`, or `cs`.
+
+Language selection and syntax highlighting are available for the entire catalog. Conservative
+automatic detection covers these 30 languages:
+
+TSX, TypeScript, JSX, JavaScript, C, C++, CUDA, Rust, LLVM IR, Python, Java, Go, C#, Kotlin, Swift,
+Dart, Scala, Ruby, PHP, Shell, PowerShell, SQL, JSON, YAML, HTML, XML, CSS, Lua, R, and Elixir.
+
+The catalog is maintained by Pico rather than automatically synchronized with Shiki. Dependency
+updates therefore cannot silently add or remove options, and custom grammars can use the same
+registry as bundled ones.
 
 ## Development
 
