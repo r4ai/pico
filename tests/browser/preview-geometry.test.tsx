@@ -223,6 +223,50 @@ describe("preview geometry", () => {
     );
   });
 
+  it("shrinks the frame's height in step with its font size", async () => {
+    await setCode(codeWithLineCount(40));
+    const fontSize = page.getByRole("radiogroup", { name: "Size" });
+
+    await fontSize.getByRole("radio", { name: "18" }).click();
+    await finishAnimations(liveFrame());
+    const tallest = liveFrame().getBoundingClientRect().height;
+
+    await fontSize.getByRole("radio", { name: "12" }).click();
+    await pauseAtMidpoint(liveFrame());
+    // CodeMirror measures on the frame after the one that asked it to.
+    await nextFrame();
+
+    // The regression this guards: the editor's cached line heights held the
+    // frame at its old height for the first third of the transition and then
+    // collapsed the rest of the way in a single frame.
+    const midpointHeight = liveFrame().getBoundingClientRect().height;
+    expect(midpointHeight).toBeLessThan(tallest);
+
+    await finishAnimations(liveFrame());
+    const shortest = liveFrame().getBoundingClientRect().height;
+    expect(midpointHeight).toBeGreaterThan(shortest);
+    expect(liveFrame().getBoundingClientRect().width).toBeCloseTo(
+      exportFrame().getBoundingClientRect().width,
+      1,
+    );
+  });
+
+  it("paints the frame only once its font can be", async () => {
+    // The face is already in the document's font set by the time this runs, so
+    // the frame is never actually held; what is asserted is that it is
+    // revealed, that the reveal is a fade, and that holding hides it.
+    const shell = frame(".pico-shell");
+    expect(shell.dataset.fontPhase).toBe("ready");
+    expect(getComputedStyle(liveFrame()).transitionProperty).toContain("opacity");
+
+    await finishAnimations(liveFrame());
+    expect(Number.parseFloat(getComputedStyle(liveFrame()).opacity)).toBe(1);
+
+    shell.dataset.fontPhase = "held";
+    await finishAnimations(liveFrame());
+    expect(Number.parseFloat(getComputedStyle(liveFrame()).opacity)).toBe(0);
+  });
+
   it("retargets rapid geometry changes from the in-flight value", async () => {
     const padding = page.getByRole("radiogroup", { name: "Padding" });
     await padding.getByRole("radio", { name: "S" }).click();

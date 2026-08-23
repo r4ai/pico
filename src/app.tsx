@@ -17,7 +17,9 @@ import {
   useSettings,
 } from "@/features/settings/search-params";
 import { sidebarOpenAtom } from "@/features/settings/sidebar-state";
+import { FONTS } from "@/features/settings/fonts";
 import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
+import { useFontReady } from "@/features/settings/use-font-ready";
 import { PREVIEW_GEOMETRY_DURATION_MS } from "@/features/settings/appearance";
 import type { Settings } from "@/features/settings/settings";
 import { useAtom } from "jotai";
@@ -66,6 +68,16 @@ export function App() {
     lower: stopPreviewGeometry,
   } = useBriefFlag(PREVIEW_GEOMETRY_DURATION_MS);
   const lineNumberDigits = String(code.split("\n").length).length;
+
+  const fontPhase = useFontReady(FONTS[settings.font]);
+  const shownPhase = useRef(fontPhase);
+  useEffect(() => {
+    // The frame was on screen in a stand-in font and is about to be remeasured
+    // in the real one. Everything about its size is about to change, so it
+    // changes the way a settings action does rather than in one frame.
+    if (shownPhase.current === "fallback" && fontPhase === "ready") animatePreviewGeometry();
+    shownPhase.current = fontPhase;
+  }, [animatePreviewGeometry, fontPhase]);
 
   const changeSettings = useCallback(
     (patch: Partial<Settings>) => {
@@ -133,7 +145,11 @@ export function App() {
   }, [code, linkCopied, settings]);
 
   return (
-    <div className="pico-shell relative flex h-full flex-col" data-sidebar-open={sidebarOpen}>
+    <div
+      className="pico-shell relative flex h-full flex-col"
+      data-font-phase={fontPhase}
+      data-sidebar-open={sidebarOpen}
+    >
       {/* The only heading on a page whose entire content is one editor. It is
           what a screen reader announces on arrival, and what the document
           outline would otherwise be missing. */}
