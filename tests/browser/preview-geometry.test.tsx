@@ -202,8 +202,13 @@ describe("preview geometry", () => {
     await fontSize.getByRole("radio", { name: "18" }).click();
     await pauseAtMidpoint(liveFrame());
     const midpointSize = Number.parseFloat(getComputedStyle(liveFrame()).fontSize);
+    const midpointEditorSize = Number.parseFloat(
+      getComputedStyle(frame(".pico-editor .cm-editor")).fontSize,
+    );
     expect(midpointSize).toBeGreaterThan(12);
     expect(midpointSize).toBeLessThan(18);
+    expect(midpointEditorSize).toBeGreaterThan(12);
+    expect(midpointEditorSize).toBeLessThan(18);
     await finishAnimations(liveFrame());
 
     await setCode(`const message = "${"m".repeat(120)}";`);

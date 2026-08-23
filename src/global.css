@@ -193,7 +193,7 @@
   width: max-content;
   min-width: 100%;
   font-family: var(--pico-font-family);
-  font-size: var(--pico-font-size);
+  font-size: inherit;
 }
 
 .pico-editor .cm-editor .cm-scroller {
