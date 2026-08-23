@@ -21,7 +21,7 @@ import { SidebarToggle } from "@/features/settings/sidebar-toggle";
 import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
 import { useAtom } from "jotai";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const PLACEHOLDER = "Paste your code here";
@@ -56,6 +56,13 @@ export function App() {
     : frameColorsOfTheme(settings.theme, settings.mode);
 
   const { busy, copy, save } = useExport({ node: exportNode, settings, scale });
+
+  // Nobody looks at the export node, so it can lag the editor by a frame.
+  // Rendering it at low priority takes the second tokenization of the document
+  // and a rebuilt span per token off the path a keystroke has to travel before
+  // the character appears. React catches it up as soon as the editor is idle,
+  // which is long before a pointer can reach the dock.
+  const deferredCode = useDeferredValue(code);
 
   useLanguageDetection({
     code,
@@ -135,7 +142,7 @@ export function App() {
       />
 
       <ExportNode
-        code={code}
+        code={deferredCode}
         colors={colors}
         highlight={highlight}
         onFrameWidthChange={setFrameWidth}

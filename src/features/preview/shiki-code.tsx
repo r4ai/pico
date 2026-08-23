@@ -1,6 +1,6 @@
 import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
 import { tokenStyle } from "@/features/editor/token-style";
-import type { ThemedToken } from "shiki/core";
+import { tokenize } from "@/features/editor/tokenize";
 
 export type ShikiCodeProps = {
   code: string;
@@ -8,22 +8,6 @@ export type ShikiCodeProps = {
   highlight: ShikiHighlight | null;
   showLineNumbers: boolean;
 };
-
-/**
- * One uncolored token per line, for the moment before the highlighter arrives.
- *
- * Shiki splits a document into exactly as many lines as `split("\n")` does, so
- * this renders at the same size the highlighted version will — which is what
- * lets the frame be measured before any grammar has loaded.
- */
-function plainTokens(code: string): ThemedToken[][] {
-  let offset = 0;
-  return code.split("\n").map((line) => {
-    const token: ThemedToken = { content: line, offset };
-    offset += line.length + 1;
-    return [token];
-  });
-}
 
 /**
  * A static, non-editable rendering of the code — the thing that actually gets
@@ -35,12 +19,7 @@ function plainTokens(code: string): ThemedToken[][] {
  * tokens into plain markup makes the capture deterministic.
  */
 export function ShikiCode({ code, highlight, showLineNumbers }: ShikiCodeProps) {
-  const tokens = highlight
-    ? highlight.highlighter.codeToTokens(code, {
-        lang: highlight.lang,
-        theme: highlight.theme,
-      }).tokens
-    : plainTokens(code);
+  const tokens = tokenize(code, highlight);
 
   return (
     <div className="pico-code">
