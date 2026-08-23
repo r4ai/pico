@@ -16,16 +16,20 @@ import {
   useCode,
   useSettings,
 } from "@/features/settings/search-params";
-import { SettingsSidebar } from "@/features/settings/settings-sidebar";
 import { sidebarOpenAtom } from "@/features/settings/sidebar-state";
-import { SidebarToggle } from "@/features/settings/sidebar-toggle";
+import { FONTS } from "@/features/settings/fonts";
 import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
-import { PREVIEW_GEOMETRY_DURATION_MS } from "@/features/settings/appearance";
+import { useFontReady } from "@/features/settings/use-font-ready";
+import {
+  PREVIEW_GEOMETRY_DURATION_MS,
+  PREVIEW_GEOMETRY_GRACE_MS,
+} from "@/features/settings/appearance";
 import type { Settings } from "@/features/settings/settings";
-import { BottomDock } from "@/features/toolbar/bottom-dock";
 import { useAtom } from "jotai";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+
+const Chrome = lazy(() => import("@/features/chrome"));
 
 const PLACEHOLDER = "Paste your code here";
 const GEOMETRY_SETTINGS = new Set<keyof Settings>(["padding", "font", "fontSize", "lineNumbers"]);
@@ -65,8 +69,18 @@ export function App() {
     on: animateGeometry,
     raise: animatePreviewGeometry,
     lower: stopPreviewGeometry,
-  } = useBriefFlag(PREVIEW_GEOMETRY_DURATION_MS);
+  } = useBriefFlag(PREVIEW_GEOMETRY_DURATION_MS + PREVIEW_GEOMETRY_GRACE_MS);
   const lineNumberDigits = String(code.split("\n").length).length;
+
+  const fontPhase = useFontReady(FONTS[settings.font]);
+  const shownPhase = useRef(fontPhase);
+  useEffect(() => {
+    // The frame was on screen in a stand-in font and is about to be remeasured
+    // in the real one. Everything about its size is about to change, so it
+    // changes the way a settings action does rather than in one frame.
+    if (shownPhase.current === "fallback" && fontPhase === "ready") animatePreviewGeometry();
+    shownPhase.current = fontPhase;
+  }, [animatePreviewGeometry, fontPhase]);
 
   const changeSettings = useCallback(
     (patch: Partial<Settings>) => {
@@ -134,15 +148,23 @@ export function App() {
   }, [code, linkCopied, settings]);
 
   return (
-    <div className="pico-shell relative flex h-full flex-col" data-sidebar-open={sidebarOpen}>
-      {/* The only heading on a page whose entire content is one editor. It is
-          what a screen reader announces on arrival, and what the document
-          outline would otherwise be missing. */}
-      <h1 className="sr-only">Pico — turn code into a picture</h1>
-
+    <div
+      className="pico-shell relative flex h-full flex-col"
+      data-font-phase={fontPhase}
+      data-sidebar-open={sidebarOpen}
+    >
       {/* The hidden export frame lays out every line, so its measured width is
-          stable even while CodeMirror virtualises lines during scrolling. */}
-      <main className="pico-shell-canvas flex-1 overflow-auto">
+          stable even while CodeMirror virtualises lines during scrolling.
+
+          tabIndex, because the canvas scrolls: a scrollable box that cannot be
+          focused cannot be scrolled from the keyboard, and a picture wider than
+          the window would be unreachable without a pointer. */}
+      <main className="pico-shell-canvas flex-1 overflow-auto" tabIndex={0}>
+        {/* The only heading on a page whose entire content is one editor. It
+            is what a screen reader announces on arrival, and what the document
+            outline would otherwise be missing. */}
+        <h1 className="sr-only">Pico — turn code into a picture</h1>
+
         <div className="flex min-h-full w-full min-w-max items-center justify-center p-10 pb-32">
           <CodeFrame
             animateGeometry={animateGeometry}
@@ -152,6 +174,7 @@ export function App() {
             width={frameWidth}
           >
             <CodeEditor
+              animatingGeometry={animateGeometry}
               highlight={highlight}
               label="Code"
               onChange={changeCode}
@@ -163,28 +186,25 @@ export function App() {
         </div>
       </main>
 
-      <div className="pico-shell-dock">
-        <BottomDock
+      {/* No fallback: the chrome has no placeholder worth drawing, and the
+          editor underneath is already usable without it. */}
+      <Suspense fallback={null}>
+        <Chrome
           copied={copied}
-          lang={settings.lang}
           linkCopied={linkCopied.on}
           onCopy={copy}
           onCopyLink={copyLink}
           onLangChange={chooseLanguage}
           onSave={save}
           onScaleChange={setScale}
+          onSettingsChange={changeSettings}
+          onSidebarOpenChange={setSidebarOpen}
           running={running}
           scale={scale}
+          settings={settings}
+          sidebarOpen={sidebarOpen}
         />
-      </div>
-
-      <SidebarToggle hidden={sidebarOpen} onOpen={() => setSidebarOpen(true)} />
-      <SettingsSidebar
-        onChange={changeSettings}
-        onClose={() => setSidebarOpen(false)}
-        open={sidebarOpen}
-        settings={settings}
-      />
+      </Suspense>
 
       <ExportNode
         code={code}

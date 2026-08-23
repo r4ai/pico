@@ -51,10 +51,13 @@ export function BottomDock({
   const busy = running !== undefined;
 
   return (
+    /* A named region rather than a group: the dock holds every action the
+       page has, and a landmark is how someone navigating by landmarks finds
+       it. Everything else on the page is already inside one. */
     <GlassPanel
       aria-label="Language and export"
       className="flex items-center gap-1 p-1.5"
-      role="group"
+      role="region"
     >
       <LanguagePicker onChange={onLangChange} value={lang} />
       <DockDivider />

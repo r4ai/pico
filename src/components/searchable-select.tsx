@@ -11,9 +11,25 @@ import { searchTextOf, type SearchableOption } from "@/components/searchable-opt
 import { cn } from "@/lib/utils";
 import { useElasticWidth } from "@/components/use-elastic-width";
 import { type ComponentProps, type ReactNode, useContext, useMemo, useState } from "react";
-import { ComboBoxStateContext, useFilter } from "react-aria-components";
+import { ComboBoxStateContext, ListLayout, useFilter, Virtualizer } from "react-aria-components";
 
 export type { SearchableOption } from "@/components/searchable-option";
+
+/**
+ * Above this many options the list is virtualized.
+ *
+ * Every option is a real element in the popover, and the languages number in
+ * the hundreds: opening the picker cost a dropped frame that opening the theme
+ * or font list — five and three options — never did. Short lists keep the plain
+ * rendering, which needs nothing to be told about how tall a row is.
+ */
+const VIRTUALIZE_FROM = 40;
+
+/** Matches the option's own `py-1 text-sm`; asserted by a browser test. */
+const OPTION_HEIGHT = 28;
+
+/** Matches {@link ComboboxList}'s `p-1`, which the virtualizer has to lay out itself. */
+const LIST_PADDING = 4;
 
 export type SearchableSelectProps<T extends string> = {
   ariaLabel: string;
@@ -81,6 +97,16 @@ export function SearchableSelect<T extends string>({
       </ComboboxInput>
     );
 
+  const list = (
+    <ComboboxList renderEmptyState={() => <ComboboxEmpty>Nothing matches.</ComboboxEmpty>}>
+      {options.map((option) => (
+        <ComboboxItem id={option.value} key={option.value} textValue={option.label}>
+          {option.render}
+        </ComboboxItem>
+      ))}
+    </ComboboxList>
+  );
+
   return (
     <Combobox
       allowsEmptyCollection
@@ -94,13 +120,16 @@ export function SearchableSelect<T extends string>({
     >
       {field}
       <ComboboxContent className="w-auto min-w-(--trigger-width)" placement={placement}>
-        <ComboboxList renderEmptyState={() => <ComboboxEmpty>Nothing matches.</ComboboxEmpty>}>
-          {options.map((option) => (
-            <ComboboxItem id={option.value} key={option.value} textValue={option.label}>
-              {option.render}
-            </ComboboxItem>
-          ))}
-        </ComboboxList>
+        {options.length > VIRTUALIZE_FROM ? (
+          <Virtualizer
+            layout={ListLayout}
+            layoutOptions={{ rowSize: OPTION_HEIGHT, padding: LIST_PADDING }}
+          >
+            {list}
+          </Virtualizer>
+        ) : (
+          list
+        )}
       </ComboboxContent>
     </Combobox>
   );

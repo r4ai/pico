@@ -33,8 +33,11 @@ export function ShikiCode({ code, highlight, showLineNumbers }: ShikiCodeProps) 
       <div className="pico-lines">
         {tokens.map((line, lineIndex) => (
           <div className="pico-line" key={`line-${lineIndex + 1}`}>
+            {/* Keyed by position rather than by offset: a token's offset moves
+                with every character typed before it, which would remount every
+                span after the caret on every keystroke. */}
             {line.map((token, tokenIndex) => (
-              <span key={`${lineIndex}-${tokenIndex}-${token.offset}`} style={tokenStyle(token)}>
+              <span key={`${lineIndex}-${tokenIndex}`} style={tokenStyle(token)}>
                 {token.content}
               </span>
             ))}

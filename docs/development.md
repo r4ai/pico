@@ -52,35 +52,64 @@ pnpm build
 pnpm preview
 ```
 
-`.claude/launch.json` has an entry for that server. Two things in particular
-are easy to undo:
+`.claude/launch.json` has an entry for that server. Several things are easy to
+undo:
 
 - The editor's font, size, and line height are stylesheet rules rather than
   part of the CodeMirror theme, because the theme cannot be applied until
   Shiki has loaded and metrics arriving that late relayout every line.
 - The export node renders before the highlighter does, uncoloured, because the
   visible frame takes its width from it.
+- The dock and the settings sidebar load as their own chunk. They are all of
+  Pico's use of React Aria, which is the largest thing in the bundle after
+  CodeMirror and React, and none of it is needed to paint the picture. Anything
+  that pulls React Aria — or `cn`, which brings tailwind-merge — back onto the
+  first-paint path undoes that.
+- The build preloads the default font face from the HTML. Nothing fetches a
+  webfont until something renders in it, so without the tag the request went
+  out after the entry chunk had already rendered.
 
-Preview geometry has three invariants:
+Preview geometry has five invariants:
 
 - Padding, font size, frame width, and the line-number gutter use the same
-  `260ms / --ease-glass` transition, and only a settings action may enable it.
+  `260ms / --ease-glass` transition, and only a settings action or a font
+  arriving late may enable it.
 - The off-screen export node is always at the final settings. Its frame is
   synchronously measured as a border box before paint; `ResizeObserver` follows
   later font or content changes.
 - The CodeMirror gutter stays mounted. Its width is shared with the export
   gutter and derives from the document's line-number digit count, including the
   9/10 and 99/100 boundaries.
+- CodeMirror is asked to remeasure on every frame of that transition. It caches
+  the document's height and writes it onto the gutter as a `min-height`, and a
+  CSS transition changes every line without a DOM mutation, so nothing else
+  tells it. Left stale, the frame holds its old height and then collapses in a
+  single frame — visible only when shrinking.
+- The frame is not painted until the code can be painted in its own font, and
+  fades in when it can; see `useFontReady`. Chrome does not count an element
+  fading up from zero as a contentful paint until the fade finishes, so first
+  contentful paint reads about a transition longer than the frame is actually
+  on screen. The alternative it replaced was a first paint in the system's
+  monospace followed by a reflow.
 
 `pnpm test:browser` covers intermediate frames, rapid retargeting, export/live
-agreement, and a separate Chromium context with reduced motion enabled.
+agreement, height tracking while shrinking, the keyboard's way out of the
+editor, and a separate Chromium context with reduced motion enabled.
 
 For a performance comparison, use the same 40-line snippet and the same
 settings sequence on production builds before and after the change. Record a
 Chrome Performance trace while changing padding, font, size, and line numbers;
 check that the interaction contains no task longer than 50ms. Repeat a normal
 typing trace to catch input regressions, and compare the gzip sizes printed by
-`pnpm build` to keep initial JavaScript growth within 2KiB.
+`pnpm build` to keep the entry chunk's growth within 2KiB.
+
+Throttle to check the parts that only show up on a slow connection: a Chrome
+Performance trace with the CPU at 4x and the network at 1.6Mbps covers the
+first paint, the font, and the order the chunks arrive in. What a keystroke
+costs is dominated by Shiki retokenizing the whole document, which is within
+budget at the sizes Pico is for; the language picker's list is virtualized
+above forty options, without which opening it and typing in it each dropped a
+frame.
 
 The React Compiler is enabled, so components do not need `useMemo` or `memo`
 to survive the re-render every keystroke causes.

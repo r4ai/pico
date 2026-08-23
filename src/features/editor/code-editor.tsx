@@ -4,10 +4,14 @@ import {
   type ShikiHighlight,
   shikiHighlighting,
 } from "@/features/editor/shiki-highlight";
+import { useLiveMetrics } from "@/features/editor/use-live-metrics";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { Compartment, EditorState } from "@codemirror/state";
 import { drawSelection, EditorView, keymap, lineNumbers, placeholder } from "@codemirror/view";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
+
+/** Long enough to reach for Tab after Escape, short enough not to linger. */
+const TAB_FOCUS_GRACE_MS = 4000;
 
 export type CodeEditorProps = {
   value: string;
@@ -18,6 +22,8 @@ export type CodeEditorProps = {
   highlight: ShikiHighlight | null;
   showLineNumbers: boolean;
   placeholderText: string;
+  /** True while the frame's geometry is easing between two settings. */
+  animatingGeometry: boolean;
 };
 
 /**
@@ -33,7 +39,9 @@ export function CodeEditor({
   highlight,
   showLineNumbers,
   placeholderText,
+  animatingGeometry,
 }: CodeEditorProps) {
+  const hintId = useId();
   const container = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const latestOnChange = useRef(onChange);
@@ -43,9 +51,10 @@ export function CodeEditor({
   });
   // The initial document; later values are synced by their own effect.
   const initialValue = useRef(value);
-  // Announced once, when focus first lands in the editor. It never changes, so
-  // it does not need a compartment of its own.
+  // Announced once, when focus first lands in the editor. Neither changes, so
+  // they do not need a compartment of their own.
   const initialLabel = useRef(label);
+  const initialHintId = useRef(hintId);
 
   useEffect(() => {
     latestOnChange.current = onChange;
@@ -65,12 +74,28 @@ export function CodeEditor({
           drawSelection(),
           EditorView.contentAttributes.of({
             "aria-label": initialLabel.current,
+            "aria-describedby": initialHintId.current,
             // Code is not prose: red underlines under every identifier are
             // noise, and a phone correcting one into a word is worse.
             spellcheck: "false",
             autocorrect: "off",
             autocapitalize: "off",
           }),
+          // Tab indents, which without a way out is a keyboard trap: the
+          // editor is the first thing the page puts focus in and there would
+          // be no reaching the dock from it. Escape hands Tab back to the
+          // browser for long enough to leave, and CodeMirror cancels the mode
+          // again on the next ordinary keypress. Ordered before the default
+          // keymap, whose own Escape only simplifies the selection.
+          keymap.of([
+            {
+              key: "Escape",
+              run: (target) => {
+                target.setTabFocusMode(TAB_FOCUS_GRACE_MS);
+                return true;
+              },
+            },
+          ]),
           keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
           shikiHighlighting(),
           theme.of([]),
@@ -88,6 +113,9 @@ export function CodeEditor({
       view.current = null;
     };
   }, []);
+
+  // Below the effect above, which is what puts a view in the ref to measure.
+  useLiveMetrics(view, animatingGeometry);
 
   useEffect(() => {
     const editor = view.current;
@@ -120,5 +148,12 @@ export function CodeEditor({
       ?.setAttribute("aria-hidden", String(!showLineNumbers));
   }, [showLineNumbers]);
 
-  return <div ref={container} className="pico-editor" data-line-numbers={showLineNumbers} />;
+  return (
+    <>
+      <div ref={container} className="pico-editor" data-line-numbers={showLineNumbers} />
+      <p className="sr-only" id={hintId}>
+        Tab indents. Press Escape and then Tab to move on.
+      </p>
+    </>
+  );
 }

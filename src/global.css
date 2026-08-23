@@ -124,6 +124,7 @@
 
 .pico-shell-canvas .pico-frame {
   transition:
+    opacity 260ms var(--ease-glass),
     border-radius 260ms var(--ease-glass),
     box-shadow 260ms var(--ease-glass);
 }
@@ -131,11 +132,23 @@
 .pico-shell-canvas .pico-frame[data-animate-geometry="true"] {
   overflow: clip;
   transition:
+    opacity 260ms var(--ease-glass),
     width var(--pico-geometry-duration) var(--ease-glass),
     padding var(--pico-geometry-duration) var(--ease-glass),
     font-size var(--pico-geometry-duration) var(--ease-glass),
     border-radius var(--pico-geometry-duration) var(--ease-glass),
     box-shadow var(--pico-geometry-duration) var(--ease-glass);
+}
+
+/* Held back until the code can be painted in its own font. A frame that comes
+   up in the system's monospace and then reflows into Geist Mono moves the box,
+   the code and the shadow all at once, under someone who has just arrived;
+   waiting a tenth of a second and fading in costs nothing anyone can perceive.
+   If the font misses the deadline the frame appears in the fallback anyway and
+   eases into the real metrics when they land. See useFontReady. */
+
+.pico-shell[data-font-phase="held"] .pico-shell-canvas .pico-frame {
+  opacity: 0;
 }
 
 /* The static rendering used for export. */
@@ -282,6 +295,11 @@
    the width the panel occupies, so opening the settings narrows the picture
    instead of covering it. Narrow enough, and there is no room to give up, so
    the panel goes back to being a drawer over a scrim.
+
+   56rem is what "wide enough" costs: the 20rem the inset panel takes, the
+   28rem the narrowest frame is, and the canvas padding either side of it.
+   Below that the column left the frame hanging off the right edge of the
+   window, which is the thing the drawer exists to avoid.
    --------------------------------------------------------------------------- */
 
 :root {
@@ -289,7 +307,7 @@
   --pico-sidebar-inset: 0px;
 }
 
-@media (width >= 48rem) {
+@media (width >= 56rem) {
   .pico-shell[data-sidebar-open="true"] {
     --pico-sidebar-inset: calc(var(--pico-sidebar-width) + 2rem);
   }
@@ -326,7 +344,7 @@
    Hiding it settles both: visibility, not just opacity, is what takes it out
    of the tab order. */
 
-@media (width < 48rem) {
+@media (width < 56rem) {
   .pico-shell[data-sidebar-open="true"] .pico-shell-dock {
     visibility: hidden;
     translate: 0 0.75rem;
@@ -378,7 +396,7 @@
   pointer-events: auto;
 }
 
-@media (width >= 48rem) {
+@media (width >= 56rem) {
   .pico-sidebar-scrim {
     display: none;
   }
@@ -388,7 +406,7 @@
    a snippet reading through a column of settings is not glass, it is a mess.
    It gives up most of its translucency for the widths where it overlaps. */
 
-@media (width < 48rem) {
+@media (width < 56rem) {
   .pico-sidebar {
     --pico-glass-tint: light-dark(oklch(1 0 0 / 94%), oklch(0.26 0 0 / 94%));
   }

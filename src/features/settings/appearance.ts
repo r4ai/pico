@@ -57,6 +57,17 @@ export const LINE_HEIGHT = "1.6";
 /** One motion language for every geometry change in the live preview. */
 export const PREVIEW_GEOMETRY_DURATION_MS = 260;
 
+/**
+ * How long the preview keeps its transitions after the animation should be over.
+ *
+ * The countdown starts when the control is pressed, but the transition only
+ * starts once React has re-rendered and the browser has recalculated the
+ * frame's styles. Ending the two at the same moment therefore cuts the last
+ * frames off — invisibly on a fast render, and as a jump on a slow one, which
+ * is exactly when nothing should be jumping.
+ */
+export const PREVIEW_GEOMETRY_GRACE_MS = 120;
+
 export const DEFAULT_PADDING: PaddingId = "lg";
 export const DEFAULT_RADIUS: RadiusId = "md";
 export const DEFAULT_SHADOW: ShadowId = "md";
