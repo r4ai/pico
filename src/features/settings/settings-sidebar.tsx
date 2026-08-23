@@ -1,4 +1,5 @@
 import { GlassPanel } from "@/components/glass-panel";
+import { SearchableSelect } from "@/components/searchable-select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -11,7 +12,6 @@ import {
   SHADOW_IDS,
 } from "@/features/settings/appearance";
 import { FONT_IDS, FONTS } from "@/features/settings/fonts";
-import { SearchableSelect } from "@/features/settings/searchable-select";
 import { PresetToggle, SettingRow } from "@/features/settings/setting-row";
 import type { Settings } from "@/features/settings/settings";
 import { COLOR_MODES, THEME_IDS, THEMES } from "@/features/settings/theme";
