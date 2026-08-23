@@ -55,13 +55,45 @@ function exportBackground(): string {
   return getComputedStyle(node).backgroundColor;
 }
 
-it("dissolves a change that is nothing but colour", async () => {
-  await page
-    .getByRole("radiogroup", { name: "Appearance" })
-    .getByRole("radio", { name: "Light" })
-    .click();
-  await expect.poll(() => started).toBe(1);
-  await expect.poll(() => document.documentElement.classList.contains("dark")).toBe(false);
+/** Waits for the colours to arrive, which is later than the setting. */
+async function settle(before: string): Promise<void> {
+  await expect.poll(exportBackground).not.toBe(before);
+}
+
+async function setAppearance(name: "Light" | "Dark"): Promise<void> {
+  const before = exportBackground();
+  await page.getByRole("radiogroup", { name: "Appearance" }).getByRole("radio", { name }).click();
+  await settle(before);
+}
+
+/**
+ * Themes are fetched once per page and the tests here share one, so a theme is
+ * only ever cold for whichever test asks for it first. This one is nobody
+ * else's, which is what makes the test below deterministic whatever the order.
+ */
+const NEVER_LOADED_THEME = "Rosé Pine";
+
+it("waits for a theme it does not have yet rather than dissolving into the old one", async () => {
+  const before = exportBackground();
+  await page.getByRole("combobox", { name: "Theme" }).click();
+  await page.getByRole("option", { name: NEVER_LOADED_THEME }).click();
+  await settle(before);
+
+  // The frame's colours come from the theme the highlighter has loaded, not the
+  // one that was asked for. On a first switch they arrive partway through a
+  // dissolve — or, on a slow link, just as it ends, which is a snap at the end
+  // of a fade and worse than no fade at all.
+  expect(started).toBe(0);
+});
+
+it("dissolves once the colours can move with it", async () => {
+  // Dark is the theme the page started on, so its colours are already here.
+  await setAppearance("Light");
+  started = 0;
+  await setAppearance("Dark");
+
+  expect(started).toBe(1);
+  expect(document.documentElement.classList.contains("dark")).toBe(true);
 });
 
 it("leaves a change that moves something to its own easing", async () => {
@@ -75,15 +107,15 @@ it("leaves a change that moves something to its own easing", async () => {
   expect(started).toBe(0);
 });
 
-it("puts the export node at its new colours before the dissolve starts", async () => {
-  const before = exportBackground();
-  await page
-    .getByRole("radiogroup", { name: "Appearance" })
-    .getByRole("radio", { name: "Light" })
-    .click();
+it("puts the export node at its new colours, never between two", async () => {
+  await setAppearance("Light");
+  expect(exportBackground()).toBe("rgb(255, 255, 255)");
 
-  // Never a blend of the two: a capture taken mid-dissolve has to be the
-  // picture that was asked for.
-  await expect.poll(exportBackground).not.toBe(before);
-  await expect.poll(exportBackground).toBe("rgb(255, 255, 255)");
+  // A capture taken while the page is dissolving has to be the picture that was
+  // asked for. The dissolve is a pair of snapshots laid over the top; what the
+  // exporter reads is already at its final value.
+  started = 0;
+  await setAppearance("Dark");
+  expect(started).toBe(1);
+  expect(exportBackground()).toBe("rgb(18, 18, 18)");
 });

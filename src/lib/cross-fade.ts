@@ -19,6 +19,13 @@ import { flushSync } from "react-dom";
  * `flushSync` because the browser captures the second snapshot the moment this
  * callback settles, and React would otherwise still be holding the change.
  *
+ * Which is also why the caller has to know the colors are already here before
+ * reaching for this. The frame takes its colors from the theme the highlighter
+ * has loaded, not the one that was asked for, so a theme being fetched for the
+ * first time arrives partway through the dissolve — or, on a slow link, just as
+ * it ends, which is a snap at the end of a fade and worse than either alone.
+ * See `isThemeLoaded`.
+ *
  * Nothing here is load-bearing. Where view transitions are unsupported, or
  * where someone has asked for less motion, the change lands the way it always
  * did, in one frame. Nor does it delay anything: the DOM is at its final state

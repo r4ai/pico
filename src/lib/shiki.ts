@@ -62,6 +62,18 @@ function getHighlighter(): Promise<HighlighterCore> {
 
 const pendingLangs = new Map<LanguageId, Promise<void>>();
 const pendingThemes = new Map<ShikiThemeName, Promise<void>>();
+const loadedThemes = new Set<ShikiThemeName>();
+
+/**
+ * Whether a theme is already registered, answered without waiting.
+ *
+ * For deciding, at the moment a setting is changed, whether the colors it asks
+ * for can be on screen in the same frame as the rest of the change — a
+ * question that is only worth asking synchronously. See `crossFade`.
+ */
+export function isThemeLoaded(theme: ShikiThemeName): boolean {
+  return loadedThemes.has(theme);
+}
 
 export type LoadedHighlighter = {
   readonly highlighter: HighlighterCore;
@@ -98,9 +110,10 @@ export async function ensureHighlighter(
   let themeLoad = pendingThemes.get(theme);
   if (!themeLoad) {
     const registration = THEME_LOADERS[theme]();
-    themeLoad = Promise.all([core, registration]).then(([loaded, module]) =>
-      loaded.loadTheme(module.default),
-    );
+    themeLoad = Promise.all([core, registration]).then(async ([loaded, module]) => {
+      await loaded.loadTheme(module.default);
+      loadedThemes.add(theme);
+    });
     pendingThemes.set(theme, themeLoad);
   }
 
