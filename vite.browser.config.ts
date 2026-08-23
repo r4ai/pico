@@ -30,6 +30,7 @@ export default mergeConfig(baseConfig, {
             "tests/browser/preview-geometry.test.tsx",
             "tests/browser/editor-keyboard.test.tsx",
             "tests/browser/chrome-keyboard.test.tsx",
+            "tests/browser/language-picker.test.tsx",
           ],
           name: "chromium",
         },

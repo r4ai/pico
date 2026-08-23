@@ -8,9 +8,10 @@ import {
 } from "@/components/ui/combobox";
 import { InputGroupAddon } from "@/components/ui/input-group";
 import { searchTextOf, type SearchableOption } from "@/components/searchable-option";
+import { ComboboxFocus } from "@/components/combobox-focus";
 import { cn } from "@/lib/utils";
 import { useElasticWidth } from "@/components/use-elastic-width";
-import { type ComponentProps, type ReactNode, useContext, useMemo, useState } from "react";
+import { type ComponentProps, type ReactNode, useContext, useMemo, useRef, useState } from "react";
 import { ComboBoxStateContext, ListLayout, useFilter, Virtualizer } from "react-aria-components";
 
 export type { SearchableOption } from "@/components/searchable-option";
@@ -30,6 +31,20 @@ const OPTION_HEIGHT = 28;
 
 /** Matches {@link ComboboxList}'s `p-1`, which the virtualizer has to lay out itself. */
 const LIST_PADDING = 4;
+
+/**
+ * How many options the list shows before it scrolls.
+ *
+ * React Aria measures the room between the field and the edge of the window
+ * and writes the result onto the popover as an inline `max-height`, which beats
+ * anything a class can say — so the language picker, being 243 names anchored
+ * to a dock at the bottom of the window, opened as a column of text the full
+ * height of the screen, over the picture it is there to label. Ten rows is a
+ * list; a screenful is a page.
+ */
+const MAX_VISIBLE_OPTIONS = 10;
+
+const POPOVER_MAX_HEIGHT = MAX_VISIBLE_OPTIONS * OPTION_HEIGHT + LIST_PADDING * 2;
 
 export type SearchableSelectProps<T extends string> = {
   ariaLabel: string;
@@ -68,6 +83,7 @@ export function SearchableSelect<T extends string>({
   placement,
   width = "fill",
 }: SearchableSelectProps<T>) {
+  const popover = useRef<HTMLDivElement>(null);
   const { contains } = useFilter({ sensitivity: "base" });
   const defaultFilter = useMemo(() => {
     const searchTextByLabel = new Map(
@@ -119,7 +135,13 @@ export function SearchableSelect<T extends string>({
       value={value}
     >
       {field}
-      <ComboboxContent className="w-auto min-w-(--trigger-width)" placement={placement}>
+      <ComboboxContent
+        className="w-auto min-w-(--trigger-width)"
+        maxHeight={POPOVER_MAX_HEIGHT}
+        placement={placement}
+        ref={popover}
+      >
+        <ComboboxFocus popover={popover} />
         {options.length > VIRTUALIZE_FROM ? (
           <Virtualizer
             layout={ListLayout}
