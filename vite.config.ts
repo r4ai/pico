@@ -4,7 +4,13 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    // The React Compiler memoizes renders for us. Pico re-renders its whole
+    // tree on every keystroke, and the alternative is hand-written useMemo and
+    // memo scattered across components that read better without them.
+    react({ compiler: true }),
+    tailwindcss(),
+  ],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

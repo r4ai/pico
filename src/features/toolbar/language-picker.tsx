@@ -24,7 +24,7 @@ export function LanguagePicker({ value, onChange }: LanguagePickerProps) {
   return (
     <SearchableSelect
       ariaLabel="Language"
-      className="h-7 border-transparent dark:bg-transparent"
+      className="h-7 min-w-0 shrink border-transparent dark:bg-transparent"
       onChange={onChange}
       options={LANGUAGE_OPTIONS}
       placeholder="Search languages"

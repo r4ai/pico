@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { LanguageId } from "@/features/editor/language";
 import type { ExportFormat, ExportScale } from "@/features/export/export-image";
+import type { ExportTask } from "@/features/export/use-export";
+import { DockIcon, DockLabel } from "@/features/toolbar/dock-icon";
 import { LanguagePicker } from "@/features/toolbar/language-picker";
 import { SaveSplitButton } from "@/features/toolbar/save-split-button";
 import { CopyIcon, Link2Icon } from "lucide-react";
@@ -15,12 +17,24 @@ export type BottomDockProps = {
   onCopy: () => void;
   onSave: (format: ExportFormat) => void;
   onCopyLink: () => void;
-  busy: boolean;
+  /** Which control started the capture that is in flight, if any. */
+  running: ExportTask | undefined;
+  /** True for a moment after the picture lands on the clipboard. */
+  copied: boolean;
+  /** True for a moment after the link lands on the clipboard. */
+  linkCopied: boolean;
 };
 
 /**
  * The only chrome on screen besides the sidebar toggle: what the code is, and
  * the three things you might want to do with it.
+ *
+ * Each button answers on itself: a spinner while its own capture runs, a tick
+ * once it lands. See {@link DockIcon}.
+ *
+ * On a phone the words drop away and the icons carry the buttons alone; the
+ * language is what survives, being the one thing no icon can stand in for.
+ * See {@link DockLabel}.
  */
 export function BottomDock({
   lang,
@@ -30,26 +44,39 @@ export function BottomDock({
   onCopy,
   onSave,
   onCopyLink,
-  busy,
+  running,
+  copied,
+  linkCopied,
 }: BottomDockProps) {
+  const busy = running !== undefined;
+
   return (
-    <GlassPanel className="flex items-center gap-1 p-1.5">
+    <GlassPanel
+      aria-label="Language and export"
+      className="flex items-center gap-1 p-1.5"
+      role="group"
+    >
       <LanguagePicker onChange={onLangChange} value={lang} />
       <DockDivider />
       <Button isDisabled={busy} onPress={onCopy} size="sm" variant="ghost">
-        <CopyIcon data-icon="inline-start" />
-        Copy
+        <DockIcon done={copied} pending={running === "copy"}>
+          <CopyIcon data-icon="inline-start" />
+        </DockIcon>
+        <DockLabel>Copy</DockLabel>
       </Button>
       <SaveSplitButton
         disabled={busy}
         onSave={onSave}
         onScaleChange={onScaleChange}
+        pending={running === "save"}
         scale={scale}
       />
       <DockDivider />
       <Button onPress={onCopyLink} size="sm" variant="ghost">
-        <Link2Icon data-icon="inline-start" />
-        Link
+        <DockIcon done={linkCopied}>
+          <Link2Icon data-icon="inline-start" />
+        </DockIcon>
+        <DockLabel>Link</DockLabel>
       </Button>
     </GlassPanel>
   );

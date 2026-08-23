@@ -1,6 +1,7 @@
 import { RangeSetBuilder, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
 import { tokenStyleCss } from "@/features/editor/token-style";
+import { tokenize } from "@/features/editor/tokenize";
 import type { HighlighterCore, ThemedToken } from "shiki/core";
 
 /**
@@ -44,10 +45,7 @@ function markFor(token: ThemedToken): Decoration | null {
 function buildDecorations(doc: string, config: ShikiHighlight | null): DecorationSet {
   if (!config) return Decoration.none;
 
-  const { tokens } = config.highlighter.codeToTokens(doc, {
-    lang: config.lang,
-    theme: config.theme,
-  });
+  const tokens = tokenize(doc, config);
 
   const builder = new RangeSetBuilder<Decoration>();
   let position = 0;
@@ -82,7 +80,9 @@ const shikiDecorations = StateField.define<DecorationSet>({
  * are painted from the same source and cannot drift apart.
  *
  * Retokenizes the whole document on every change, which is well within budget
- * for the snippet-sized inputs this app is built for.
+ * for the snippet-sized inputs this app is built for — and the result is
+ * shared with the export node, which needs the same tokens for the same
+ * document a moment later.
  */
 export function shikiHighlighting() {
   // Order matters: the decoration field reads the config field during creation.

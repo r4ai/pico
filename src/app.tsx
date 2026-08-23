@@ -1,3 +1,4 @@
+import { useBriefFlag } from "@/components/use-brief-flag";
 import { Toaster } from "@/components/ui/sonner";
 import { CodeEditor } from "@/features/editor/code-editor";
 import type { LanguageId } from "@/features/editor/language";
@@ -6,7 +7,7 @@ import { useShikiHighlight } from "@/features/editor/use-shiki-highlight";
 import { type ExportScale, DEFAULT_SCALE } from "@/features/export/export-image";
 import { useExport } from "@/features/export/use-export";
 import { CodeFrame } from "@/features/preview/code-frame";
-import { frameColorsOf, TRANSPARENT_FRAME } from "@/features/preview/frame-colors";
+import { frameColorsOf } from "@/features/preview/frame-colors";
 import { ExportNode } from "@/features/preview/export-node";
 import {
   buildShareUrl,
@@ -18,7 +19,7 @@ import {
 import { SettingsSidebar } from "@/features/settings/settings-sidebar";
 import { sidebarOpenAtom } from "@/features/settings/sidebar-state";
 import { SidebarToggle } from "@/features/settings/sidebar-toggle";
-import { shikiThemeOf } from "@/features/settings/theme";
+import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -49,12 +50,22 @@ export function App() {
   const highlight = useShikiHighlight(settings.lang, shikiThemeOf(settings.theme, settings.mode));
   // highlight.theme, not the requested one: while a new theme loads the
   // highlighter still only knows the previous one, and asking it for a theme it
-  // has not loaded throws.
+  // has not loaded throws. Until the very first one arrives the registry's own
+  // copy of the colors stands in, so the frame is never unpainted.
   const colors = highlight
     ? frameColorsOf(highlight.highlighter.getTheme(highlight.theme))
-    : TRANSPARENT_FRAME;
+    : frameColorsOfTheme(settings.theme, settings.mode);
 
-  const { busy, copy, save } = useExport({ node: exportNode, settings, scale });
+  const { running, copied, copy, save } = useExport({ node: exportNode, settings, scale });
+  const linkCopied = useBriefFlag();
+
+  // The export node is deliberately not deferred. Rendering it at a low
+  // priority would take a tokenization and a span per token off the path a
+  // keystroke travels, but nothing orders that background commit against a
+  // capture: once the exporter module and the fonts are warm, everything the
+  // capture awaits settles in microtasks, and the picture would come out
+  // missing the last keystrokes. The saving was single digit percentages of
+  // one keystroke; the failure is the wrong image, silently.
 
   useLanguageDetection({
     code,
@@ -82,6 +93,7 @@ export function App() {
     );
     try {
       await navigator.clipboard.writeText(url);
+      linkCopied.raise();
       if (tooLong) {
         toast.warning("Copied, but this link is very long.", {
           description: "Some apps and browsers cut off links this size.",
@@ -92,17 +104,23 @@ export function App() {
     } catch {
       toast.error("Could not copy the link.");
     }
-  }, [code, settings]);
+  }, [code, linkCopied, settings]);
 
   return (
     <div className="pico-shell relative flex h-full flex-col" data-sidebar-open={sidebarOpen}>
+      {/* The only heading on a page whose entire content is one editor. It is
+          what a screen reader announces on arrival, and what the document
+          outline would otherwise be missing. */}
+      <h1 className="sr-only">Pico — turn code into a picture</h1>
+
       {/* The hidden export frame lays out every line, so its measured width is
           stable even while CodeMirror virtualises lines during scrolling. */}
-      <div className="pico-shell-canvas flex-1 overflow-auto">
+      <main className="pico-shell-canvas flex-1 overflow-auto">
         <div className="flex min-h-full w-full min-w-max items-center justify-center p-10 pb-32">
           <CodeFrame colors={colors} settings={settings} width={frameWidth}>
             <CodeEditor
               highlight={highlight}
+              label="Code"
               onChange={setCode}
               placeholderText={PLACEHOLDER}
               showLineNumbers={settings.lineNumbers}
@@ -110,17 +128,19 @@ export function App() {
             />
           </CodeFrame>
         </div>
-      </div>
+      </main>
 
       <div className="pico-shell-dock">
         <BottomDock
-          busy={busy}
+          copied={copied}
           lang={settings.lang}
+          linkCopied={linkCopied.on}
           onCopy={copy}
           onCopyLink={copyLink}
           onLangChange={chooseLanguage}
           onSave={save}
           onScaleChange={setScale}
+          running={running}
           scale={scale}
         />
       </div>

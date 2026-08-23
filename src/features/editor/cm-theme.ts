@@ -9,10 +9,15 @@ function color(theme: ThemeRegistrationResolved, key: string, fallback: string):
 /**
  * Dresses CodeMirror in a Shiki theme.
  *
+ * Colors only. Everything that decides how much room a line takes — the font,
+ * its size, the line height, the padding CodeMirror would otherwise add —
+ * lives in the stylesheet instead, because this theme cannot be applied until
+ * the highlighter has loaded and metrics arriving that late relayout every
+ * line under the reader.
+ *
  * The editor itself stays transparent: the surrounding frame paints the
  * background, padding, radius and shadow, so the same frame can wrap the
- * export node and the two render identically. Typography comes from the
- * frame's CSS custom properties for the same reason.
+ * export node and the two render identically.
  *
  * There is deliberately no active-line highlight — the editor doubles as the
  * preview, so anything it shows that the image would not is a lie.
@@ -26,20 +31,11 @@ export function createEditorTheme(theme: ThemeRegistrationResolved): Extension {
       "&": {
         backgroundColor: "transparent",
         color: foreground,
-        fontFamily: "var(--pico-font-family)",
-        fontSize: "var(--pico-font-size)",
       },
       "&.cm-focused": { outline: "none" },
-      ".cm-scroller": {
-        overflow: "visible",
-        fontFamily: "inherit",
-        lineHeight: "var(--pico-line-height)",
-      },
       ".cm-content": {
-        padding: "0",
         caretColor: color(theme, "editorCursor.foreground", foreground),
       },
-      ".cm-line": { padding: "0" },
       ".cm-cursor, .cm-dropCursor": {
         borderLeftColor: color(theme, "editorCursor.foreground", foreground),
       },
@@ -50,10 +46,6 @@ export function createEditorTheme(theme: ThemeRegistrationResolved): Extension {
         backgroundColor: "transparent",
         border: "none",
         color: "var(--pico-line-number)",
-      },
-      ".cm-lineNumbers .cm-gutterElement": {
-        padding: "0 var(--pico-gutter-gap) 0 0",
-        minWidth: "var(--pico-gutter-min-width)",
       },
       ".cm-activeLineGutter": { backgroundColor: "transparent" },
       ".cm-placeholder": { color: `${foreground}66` },

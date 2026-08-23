@@ -1,3 +1,4 @@
+import { useBriefFlag } from "@/components/use-brief-flag";
 import {
   type ExportFormat,
   type ExportScale,
@@ -17,6 +18,9 @@ function download(blob: Blob, fileName: string) {
   URL.revokeObjectURL(url);
 }
 
+/** Which control is waiting on a capture, so only that one shows it. */
+export type ExportTask = "copy" | "save";
+
 export type UseExportOptions = {
   node: RefObject<HTMLDivElement | null>;
   settings: Settings;
@@ -26,17 +30,19 @@ export type UseExportOptions = {
 /**
  * Copying and saving the picture.
  *
- * @returns `busy` while a capture is in flight, so the dock can show progress
- * and refuse to queue a second one.
+ * @returns `running` while a capture is in flight, naming the control that
+ * started it so the dock can show progress in the right place and refuse to
+ * queue a second one; and `copied` for the moment after one lands.
  */
 export function useExport({ node, settings, scale }: UseExportOptions) {
-  const [busy, setBusy] = useState(false);
+  const [running, setRunning] = useState<ExportTask>();
+  const copied = useBriefFlag();
 
   const save = useCallback(
     async (format: ExportFormat) => {
       const target = node.current;
-      if (!target || busy) return;
-      setBusy(true);
+      if (!target || running) return;
+      setRunning("save");
       try {
         download(
           await renderImage({ node: target, settings, format, scale }),
@@ -45,16 +51,16 @@ export function useExport({ node, settings, scale }: UseExportOptions) {
       } catch (error) {
         toast.error("Could not save the image.", { description: describe(error) });
       } finally {
-        setBusy(false);
+        setRunning(undefined);
       }
     },
-    [busy, node, scale, settings],
+    [running, node, scale, settings],
   );
 
   const copy = useCallback(async () => {
     const target = node.current;
-    if (!target || busy) return;
-    setBusy(true);
+    if (!target || running) return;
+    setRunning("copy");
     try {
       if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
         throw new Error("This browser cannot put images on the clipboard");
@@ -63,17 +69,18 @@ export function useExport({ node, settings, scale }: UseExportOptions) {
       // triggered it, so the promise goes in unresolved rather than awaited.
       const image = renderImage({ node: target, settings, format: "png", scale });
       await navigator.clipboard.write([new ClipboardItem({ "image/png": image })]);
+      copied.raise();
       toast.success("Copied the image.");
     } catch (error) {
       toast.error("Could not copy the image.", {
         description: `${describe(error)} Saving it instead usually works.`,
       });
     } finally {
-      setBusy(false);
+      setRunning(undefined);
     }
-  }, [busy, node, scale, settings]);
+  }, [running, copied, node, scale, settings]);
 
-  return { busy, copy, save };
+  return { running, copied: copied.on, copy, save };
 }
 
 function describe(error: unknown): string {

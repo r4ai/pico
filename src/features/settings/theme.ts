@@ -1,3 +1,5 @@
+import type { FrameColors } from "@/features/preview/frame-colors";
+
 export const THEME_IDS = ["vitesse", "github", "catppuccin", "one", "rose-pine"] as const;
 
 export type ThemeId = (typeof THEME_IDS)[number];
@@ -12,12 +14,14 @@ export type ThemePair = {
   readonly light: string;
   readonly dark: string;
   /**
-   * Each variant's background, for the sidebar swatches.
+   * What the frame is painted with, for each variant.
    *
-   * Duplicated from the theme files so the sidebar can show what a theme looks
-   * like without downloading all five. A test asserts they still match.
+   * Duplicated from the theme files for two reasons: the sidebar can show what
+   * a theme looks like without downloading all five, and the frame can be
+   * painted in its real colours on the very first frame instead of jumping
+   * into them once the highlighter arrives. A test asserts they still match.
    */
-  readonly swatch: { readonly light: string; readonly dark: string };
+  readonly colors: { readonly light: FrameColors; readonly dark: FrameColors };
 };
 
 /**
@@ -31,35 +35,50 @@ export const THEMES = {
     label: "Vitesse",
     light: "vitesse-light",
     dark: "vitesse-dark",
-    swatch: { light: "#ffffff", dark: "#121212" },
+    colors: {
+      light: { background: "#ffffff", foreground: "#393a34", lineNumber: "#393a3450" },
+      dark: { background: "#121212", foreground: "#dbd7caee", lineNumber: "#dedcd550" },
+    },
   },
   github: {
     id: "github",
     label: "GitHub",
     light: "github-light",
     dark: "github-dark",
-    swatch: { light: "#fff", dark: "#24292e" },
+    colors: {
+      light: { background: "#fff", foreground: "#24292e", lineNumber: "#1b1f234d" },
+      dark: { background: "#24292e", foreground: "#e1e4e8", lineNumber: "#444d56" },
+    },
   },
   catppuccin: {
     id: "catppuccin",
     label: "Catppuccin",
     light: "catppuccin-latte",
     dark: "catppuccin-mocha",
-    swatch: { light: "#eff1f5", dark: "#1e1e2e" },
+    colors: {
+      light: { background: "#eff1f5", foreground: "#4c4f69", lineNumber: "#8c8fa1" },
+      dark: { background: "#1e1e2e", foreground: "#cdd6f4", lineNumber: "#7f849c" },
+    },
   },
   one: {
     id: "one",
     label: "One",
     light: "one-light",
     dark: "one-dark-pro",
-    swatch: { light: "#FAFAFA", dark: "#282c34" },
+    colors: {
+      light: { background: "#FAFAFA", foreground: "#383A42", lineNumber: "#9D9D9F" },
+      dark: { background: "#282c34", foreground: "#abb2bf", lineNumber: "#495162" },
+    },
   },
   "rose-pine": {
     id: "rose-pine",
     label: "Rosé Pine",
     light: "rose-pine-dawn",
     dark: "rose-pine",
-    swatch: { light: "#faf4ed", dark: "#191724" },
+    colors: {
+      light: { background: "#faf4ed", foreground: "#575279", lineNumber: "#797593" },
+      dark: { background: "#191724", foreground: "#e0def4", lineNumber: "#908caa" },
+    },
   },
 } as const satisfies Record<ThemeId, ThemePair>;
 
@@ -76,4 +95,16 @@ export function isThemeId(value: string): value is ThemeId {
 /** Resolves a theme pair and a mode to the Shiki theme name to highlight with. */
 export function shikiThemeOf(theme: ThemeId, mode: ColorMode): ShikiThemeName {
   return THEMES[theme][mode];
+}
+
+/**
+ * The frame's colors for a theme, without waiting for the highlighter.
+ *
+ * A frame that starts transparent and fills in later is a visible flash, and
+ * one that starts with no colors at all is a different size than the finished
+ * one. Both are avoided by painting from the registry's own copy immediately
+ * and letting the resolved theme take over once it arrives.
+ */
+export function frameColorsOfTheme(theme: ThemeId, mode: ColorMode): FrameColors {
+  return THEMES[theme].colors[mode];
 }

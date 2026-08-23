@@ -14,9 +14,3 @@ export function frameColorsOf(theme: ThemeRegistrationResolved): FrameColors {
     lineNumber: theme.colors?.["editorLineNumber.foreground"] ?? `${theme.fg}66`,
   };
 }
-
-export const TRANSPARENT_FRAME: FrameColors = {
-  background: "transparent",
-  foreground: "inherit",
-  lineNumber: "inherit",
-};

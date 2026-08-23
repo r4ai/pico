@@ -9,15 +9,8 @@ import {
 import { InputGroupAddon } from "@/components/ui/input-group";
 import { searchTextOf, type SearchableOption } from "@/components/searchable-option";
 import { cn } from "@/lib/utils";
-import {
-  type ComponentProps,
-  type ReactNode,
-  useContext,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useElasticWidth } from "@/components/use-elastic-width";
+import { type ComponentProps, type ReactNode, useContext, useMemo, useState } from "react";
 import { ComboBoxStateContext, useFilter } from "react-aria-components";
 
 export type { SearchableOption } from "@/components/searchable-option";
@@ -70,7 +63,12 @@ export function SearchableSelect<T extends string>({
 
   const field =
     width === "content" ? (
-      <ElasticField adornment={adornment} className={className} placeholder={placeholder} />
+      <ElasticField
+        adornment={adornment}
+        className={className}
+        placeholder={placeholder}
+        selectedLabel={options.find((option) => option.value === value)?.label ?? placeholder}
+      />
     ) : (
       /* Selecting the current value on focus keeps this a picker: the list is
          already open, and typing filters it instead of editing a name. */
@@ -112,46 +110,47 @@ type ElasticFieldProps = {
   adornment?: ReactNode;
   className?: string;
   placeholder: string;
+  /** What the current value is called, for the frames before the list has been built. */
+  selectedLabel: string;
 };
 
 /**
  * A field only as wide as the text it is showing.
  *
- * The dock cannot reserve room for the longest name in the list, so a hidden
- * copy of the current text is measured and the input animates to that width —
- * which means the field also grows and shrinks under the reader's typing.
+ * The dock cannot reserve room for the longest name in the list, so the field
+ * follows its own text — which means it grows and shrinks under the reader's
+ * typing.
+ *
+ * Focus decides two things here. What the field falls back to when it holds no
+ * text: the placeholder while someone is typing in it, and otherwise the name
+ * of the current value, which the combobox does not put in the input until it
+ * has built its list and would leave the dock jumping a frame after load. And
+ * whether the width is animated at all: sliding is what makes typing feel
+ * smooth, but a width that changes on its own — the first measurement, a
+ * language the editor detected by itself — drags every control beside the
+ * field along for a fifth of a second, and snapping to it is invisible.
  */
-function ElasticField({ adornment, className, placeholder }: ElasticFieldProps) {
+function ElasticField({ adornment, className, placeholder, selectedLabel }: ElasticFieldProps) {
   const state = useContext(ComboBoxStateContext);
-  const shown = state?.inputValue || placeholder;
-  const sizer = useRef<HTMLSpanElement>(null);
-  const field = useRef<HTMLInputElement>(null);
-  const [width, setWidth] = useState<number>();
-
-  useLayoutEffect(() => {
-    const text = sizer.current;
-    const input = field.current;
-    if (!text || !input) return;
-    // The span measures the glyphs; the width we set is a border box, so the
-    // input's own padding and border have to be added back or it clips.
-    const style = getComputedStyle(input);
-    const frame =
-      parseFloat(style.paddingInlineStart) +
-      parseFloat(style.paddingInlineEnd) +
-      parseFloat(style.borderInlineStartWidth) +
-      parseFloat(style.borderInlineEndWidth);
-    setWidth(Math.ceil(text.getBoundingClientRect().width + frame));
-  }, [shown]);
+  const [focused, setFocused] = useState(false);
+  const shown = state?.inputValue || (focused ? placeholder : selectedLabel);
+  const { sizerRef, fieldRef, width } = useElasticWidth(shown);
 
   return (
     <ComboboxInput
       className={cn(
-        "w-auto [&>input]:max-w-32 [&>input]:flex-none [&>input]:text-ellipsis [&>input]:transition-[width] [&>input]:duration-200 [&>input]:ease-glass motion-reduce:[&>input]:transition-none",
+        "w-auto [&>input]:max-w-32 [&>input]:flex-none [&>input]:text-ellipsis",
+        focused &&
+          "[&>input]:transition-[width] [&>input]:duration-200 [&>input]:ease-glass motion-reduce:[&>input]:transition-none",
         className,
       )}
-      onFocus={(event) => event.target.select()}
+      onBlur={() => setFocused(false)}
+      onFocus={(event) => {
+        setFocused(true);
+        event.target.select();
+      }}
       placeholder={placeholder}
-      ref={field}
+      ref={fieldRef}
       style={{ width }}
     >
       {/* Out of flow and invisible, so measuring it costs the layout nothing.
@@ -159,7 +158,7 @@ function ElasticField({ adornment, className, placeholder }: ElasticFieldProps) 
       <span
         aria-hidden
         className="invisible absolute whitespace-pre text-base md:text-sm"
-        ref={sizer}
+        ref={sizerRef}
       >
         {shown}
       </span>

@@ -1,9 +1,11 @@
 import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
 import { tokenStyle } from "@/features/editor/token-style";
+import { tokenize } from "@/features/editor/tokenize";
 
 export type ShikiCodeProps = {
   code: string;
-  highlight: ShikiHighlight;
+  /** `null` until the first grammar and theme have loaded. */
+  highlight: ShikiHighlight | null;
   showLineNumbers: boolean;
 };
 
@@ -17,10 +19,7 @@ export type ShikiCodeProps = {
  * tokens into plain markup makes the capture deterministic.
  */
 export function ShikiCode({ code, highlight, showLineNumbers }: ShikiCodeProps) {
-  const { tokens } = highlight.highlighter.codeToTokens(code, {
-    lang: highlight.lang,
-    theme: highlight.theme,
-  });
+  const tokens = tokenize(code, highlight);
 
   return (
     <div className="pico-code">

@@ -15,6 +15,7 @@ import { FONT_IDS, FONTS } from "@/features/settings/fonts";
 import { PresetToggle, SettingRow } from "@/features/settings/setting-row";
 import type { Settings } from "@/features/settings/settings";
 import { COLOR_MODES, THEME_IDS, THEMES } from "@/features/settings/theme";
+import { usePanelFocus } from "@/features/settings/use-panel-focus";
 import { MoonIcon, SunIcon, XIcon } from "lucide-react";
 import { useEffect } from "react";
 
@@ -32,12 +33,17 @@ export type SettingsSidebarProps = {
  *
  * It stays mounted while closed so opening it is a transform rather than a
  * mount, and is marked `inert` so nothing inside can be tabbed to meanwhile.
+ * Because both it and the button that opens it spend half their life inert,
+ * the keyboard has to be handed between them deliberately; see
+ * {@link usePanelFocus}.
  *
  * Where the window is wide enough the panel takes a column of its own and the
  * canvas shifts over to make room; where it is not, it slides over the canvas
  * as a drawer, and the scrim behind it dismisses it.
  */
 export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsSidebarProps) {
+  const panel = usePanelFocus(open);
+
   useEffect(() => {
     if (!open) return;
     const close = (event: KeyboardEvent) => {
@@ -59,20 +65,29 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
         tabIndex={-1}
         type="button"
       />
-      <GlassPanel aria-label="Settings" className="pico-sidebar" data-open={open} inert={!open}>
-        <header className="flex items-center justify-between px-4 pt-3.5 pb-2">
+      <GlassPanel
+        aria-label="Settings"
+        className="pico-sidebar"
+        data-open={open}
+        inert={!open}
+        ref={panel}
+        role="complementary"
+      >
+        {/* A div rather than a header: a bare <header> is a page-level banner
+            landmark wherever it sits, and there is only supposed to be one. */}
+        <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
           <h2 className="font-medium text-sm">Settings</h2>
           <Button aria-label="Close settings" onPress={onClose} size="icon" variant="ghost">
             <XIcon />
           </Button>
-        </header>
+        </div>
         <Separator />
 
         <div className="flex flex-col gap-5 overflow-y-auto px-4 py-4">
           <section className="flex flex-col gap-3">
             <SectionTitle>Theme</SectionTitle>
             <SearchableSelect
-              adornment={<Swatch color={THEMES[settings.theme].swatch[settings.mode]} />}
+              adornment={<Swatch color={THEMES[settings.theme].colors[settings.mode].background} />}
               ariaLabel="Theme"
               onChange={(theme) => onChange({ theme })}
               options={THEME_IDS.map((id) => ({
@@ -80,7 +95,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                 label: THEMES[id].label,
                 render: (
                   <span className="flex items-center gap-2">
-                    <Swatch color={THEMES[id].swatch[settings.mode]} />
+                    <Swatch color={THEMES[id].colors[settings.mode].background} />
                     {THEMES[id].label}
                   </span>
                 ),
@@ -90,7 +105,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
             />
 
             <PresetToggle
-              ariaLabelOf={(mode) => mode}
+              ariaLabelOf={(mode) => (mode === "light" ? "Light" : "Dark")}
               label="Appearance"
               labelOf={(mode) =>
                 mode === "light" ? (
