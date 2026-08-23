@@ -24,6 +24,7 @@ Open the URL printed by `pnpm dev`.
 | `pnpm test`            | Run the unit tests once                          |
 | `pnpm test:coverage`   | Run the unit tests with coverage                 |
 | `pnpm build`           | Build the production assets                      |
+| `pnpm preview`         | Serve the production build                       |
 | `pnpm storybook`       | Start Storybook                                  |
 | `pnpm build-storybook` | Build Storybook                                  |
 | `pnpm security:audit`  | Audit dependencies at moderate severity or above |
@@ -35,6 +36,28 @@ pnpm check
 pnpm test
 pnpm build
 ```
+
+## Performance
+
+Measure on the production build rather than the development server, which
+serves unbundled modules and renders through React's development build:
+
+```sh
+pnpm build
+pnpm preview
+```
+
+`.claude/launch.json` has an entry for that server. Two things in particular
+are easy to undo:
+
+- The editor's font, size, and line height are stylesheet rules rather than
+  part of the CodeMirror theme, because the theme cannot be applied until
+  Shiki has loaded and metrics arriving that late relayout every line.
+- The export node renders before the highlighter does, uncoloured, because the
+  visible frame takes its width from it.
+
+The React Compiler is enabled, so components do not need `useMemo` or `memo`
+to survive the re-render every keystroke causes.
 
 ## Architecture
 
