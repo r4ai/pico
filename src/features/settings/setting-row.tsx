@@ -32,6 +32,9 @@ export type PresetToggleProps<T extends string> = {
  * Presets rather than a slider throughout the sidebar: every stop is a value
  * somebody chose on purpose, and picking one is a single click instead of a
  * drag and a second-guess.
+ *
+ * The row's visible label names the group as well, or the choices would be
+ * announced as a bare "S, M, L" with nothing saying what they size.
  */
 export function PresetToggle<T extends string>({
   label,
@@ -44,6 +47,7 @@ export function PresetToggle<T extends string>({
   return (
     <SettingRow label={label}>
       <ToggleGroup
+        aria-label={label}
         disallowEmptySelection
         onSelectionChange={(keys) => {
           const next = keys.values().next().value;

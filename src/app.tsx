@@ -104,13 +104,19 @@ export function App() {
 
   return (
     <div className="pico-shell relative flex h-full flex-col" data-sidebar-open={sidebarOpen}>
+      {/* The only heading on a page whose entire content is one editor. It is
+          what a screen reader announces on arrival, and what the document
+          outline would otherwise be missing. */}
+      <h1 className="sr-only">Pico — turn code into a picture</h1>
+
       {/* The hidden export frame lays out every line, so its measured width is
           stable even while CodeMirror virtualises lines during scrolling. */}
-      <div className="pico-shell-canvas flex-1 overflow-auto">
+      <main className="pico-shell-canvas flex-1 overflow-auto">
         <div className="flex min-h-full w-full min-w-max items-center justify-center p-10 pb-32">
           <CodeFrame colors={colors} settings={settings} width={frameWidth}>
             <CodeEditor
               highlight={highlight}
+              label="Code"
               onChange={setCode}
               placeholderText={PLACEHOLDER}
               showLineNumbers={settings.lineNumbers}
@@ -118,7 +124,7 @@ export function App() {
             />
           </CodeFrame>
         </div>
-      </div>
+      </main>
 
       <div className="pico-shell-dock">
         <BottomDock

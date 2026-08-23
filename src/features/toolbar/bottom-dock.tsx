@@ -33,7 +33,11 @@ export function BottomDock({
   busy,
 }: BottomDockProps) {
   return (
-    <GlassPanel className="flex items-center gap-1 p-1.5">
+    <GlassPanel
+      aria-label="Language and export"
+      className="flex items-center gap-1 p-1.5"
+      role="group"
+    >
       <LanguagePicker onChange={onLangChange} value={lang} />
       <DockDivider />
       <Button isDisabled={busy} onPress={onCopy} size="sm" variant="ghost">

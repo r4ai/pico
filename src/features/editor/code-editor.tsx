@@ -11,6 +11,8 @@ import { useEffect, useRef } from "react";
 
 export type CodeEditorProps = {
   value: string;
+  /** What the editor is called, for anyone who cannot see the frame around it. */
+  label: string;
   onChange: (value: string) => void;
   /** `null` until the first grammar and theme have loaded. */
   highlight: ShikiHighlight | null;
@@ -26,6 +28,7 @@ export type CodeEditorProps = {
  */
 export function CodeEditor({
   value,
+  label,
   onChange,
   highlight,
   showLineNumbers,
@@ -41,6 +44,9 @@ export function CodeEditor({
   });
   // The initial document; later values are synced by their own effect.
   const initialValue = useRef(value);
+  // Announced once, when focus first lands in the editor. It never changes, so
+  // it does not need a compartment of its own.
+  const initialLabel = useRef(label);
 
   useEffect(() => {
     latestOnChange.current = onChange;
@@ -62,6 +68,14 @@ export function CodeEditor({
         extensions: [
           history(),
           drawSelection(),
+          EditorView.contentAttributes.of({
+            "aria-label": initialLabel.current,
+            // Code is not prose: red underlines under every identifier are
+            // noise, and a phone correcting one into a word is worse.
+            spellcheck: "false",
+            autocorrect: "off",
+            autocapitalize: "off",
+          }),
           keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
           shikiHighlighting(),
           theme.of([]),
