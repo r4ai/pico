@@ -7,81 +7,38 @@
 <h1 align="center">Pico</h1>
 
 <p align="center">
-  <strong>Code, framed.</strong><br />
-  Turn a snippet into a picture you can copy, save, or share.
+  <strong>コードを貼り付けるだけで、共有用の画像に変換できるブラウザアプリです。</strong>
 </p>
 
-**Pico = Picture + Code.** The editor and the exported image are the same surface: what you type is
-what you get.
+<p align="center">
+  <a href="https://pico.r4ai.dev"><strong>Picoを使う</strong></a>
+</p>
 
-Paste code in the middle of the screen. The dock at the bottom copies, saves, or hands you a link.
-Everything else lives behind one toggle in the top-left corner, and stays out of your way until you
-want it.
+![PicoでTypeScriptのコードを整え、画像として出力する画面](./assets/pico-overview.png)
 
-## Design principles
+## コードを画像にするまで
 
-- **No one should be lost on first use.** The initial screen is an editor and four buttons.
-- **Feel good immediately, rather than configure endlessly.** Fewer, better-chosen options.
-- **Show the minimum up front.** Details are one deliberate click away.
+| 1. 貼り付ける                    | 2. 見た目を整える                                    | 3. 出力する                                                  |
+| -------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| 画面中央にコードを貼り付けます。 | 左上の設定からテーマ、フォント、余白などを選びます。 | 下部のドックから画像のコピー、保存、リンク共有を実行します。 |
 
-## Supported languages
+## 主な機能
 
-Pico has an explicitly curated catalog of 243 languages: every standalone language bundled with
-Shiki 4.4.3, plus Pico's CUDA grammar. The picker lists each language once in alphabetical order;
-you can search by its full name, id, or a familiar alias such as `py`, `bash`, or `cs`.
+| 機能                   | できること                                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| シンタックスハイライト | 243言語から選択できます。よく使われる30言語は、貼り付けたコードから自動判定します。                          |
+| 見た目の調整           | 5種類のテーマ、ライトとダーク、3種類のフォント、文字サイズ、行番号、余白、角丸、影を変更できます。           |
+| 画像の出力             | PNG画像をクリップボードへコピーするか、PNGまたはSVGとして保存できます。保存倍率は1倍、2倍、3倍から選べます。 |
+| リンク共有             | コードと表示設定を一つのURLにまとめます。リンクを開くと同じコード画像を再現できます。                        |
 
-Language selection and syntax highlighting are available for the entire catalog. Conservative
-automatic detection covers these 30 languages:
+Picoはアカウントを必要とせず、編集と画像生成をブラウザ内で行います。
+共有リンクは圧縮したコードをURLに含むため、機密情報を含むコードには使用しないでください。
 
-TSX, TypeScript, JSX, JavaScript, C, C++, CUDA, Rust, LLVM IR, Python, Java, Go, C#, Kotlin, Swift,
-Dart, Scala, Ruby, PHP, Shell, PowerShell, SQL, JSON, YAML, HTML, XML, CSS, Lua, R, and Elixir.
+## 開発
 
-The catalog is maintained by Pico rather than automatically synchronized with Shiki. Dependency
-updates therefore cannot silently add or remove options, and custom grammars can use the same
-registry as bundled ones.
+ローカル環境の構築、テスト、構成、デプロイについては[開発ガイド](./docs/development.md)を参照してください。
 
-## Development
+## ライセンス
 
-```sh
-pnpm install
-pnpm dev
-```
-
-| Command      | What it does                 |
-| ------------ | ---------------------------- |
-| `pnpm dev`   | Start the dev server         |
-| `pnpm build` | Production build             |
-| `pnpm check` | Format, lint, and type-check |
-| `pnpm test`  | Run unit tests               |
-
-## Deployment
-
-Pico is deployed as static assets on Cloudflare Workers. There is no Worker script, server-side
-rendering, or runtime storage. Static asset requests and storage are free on both the Workers Free
-and Paid plans.
-
-- Pull requests from this repository publish a public version preview at
-  `pr-<number>-pico.<workers-subdomain>.workers.dev` after CI passes. Fork pull requests are never
-  given deployment credentials and do not publish previews.
-- Pushes to `main` publish production to <https://pico.r4ai.dev> after CI passes.
-
-The GitHub repository must define these Actions secrets:
-
-| Secret                  | Value                                                                       |
-| ----------------------- | --------------------------------------------------------------------------- |
-| `CLOUDFLARE_ACCOUNT_ID` | The Workers & Pages account ID, not a zone ID                               |
-| `CLOUDFLARE_API_TOKEN`  | A token scoped to Workers Scripts Write and `r4ai.dev` Workers Routes Write |
-
-The token does not need DNS, KV, or R2 permissions. Cloudflare creates the Custom Domain DNS
-record and certificate from [`wrangler.jsonc`](wrangler.jsonc).
-
-## Fonts
-
-Geist Mono, JetBrains Mono, and a subset of UDEV Gothic for Japanese. Only the
-one you pick is downloaded, and only that one is embedded in an exported image.
-See `public/fonts/README.md`.
-
-## License
-
-MIT for Pico itself. The bundled UDEV Gothic subset is under the SIL Open Font
-License 1.1 — see `public/fonts/UDEVGothic-LICENSE.txt`.
+Pico本体は[MIT License](./LICENSE)で提供します。
+同梱するUDEV Gothicのサブセットには[SIL Open Font License 1.1](./public/fonts/UDEVGothic-LICENSE.txt)が適用されます。
