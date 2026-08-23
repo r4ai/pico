@@ -330,8 +330,13 @@
     inset 0 1px 0 0 var(--pico-glass-sheen),
     0 1px 2px oklch(0 0 0 / 10%),
     0 12px 32px oklch(0 0 0 / 18%);
+  /* Unprefixed only. Written with `-webkit-backdrop-filter` after it, the
+     prefixed declaration won the cascade and the minifier collapsed the pair
+     onto it — and Chrome and Firefox do not implement that spelling, so the
+     glass had no blur in either of them and the code underneath the dock read
+     straight through the labels. The build adds whatever prefixes its targets
+     actually need. */
   backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 :root {
