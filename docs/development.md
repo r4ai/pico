@@ -70,7 +70,8 @@ undo:
   first-paint path undoes that.
 - The build preloads the default font face from the HTML. Nothing fetches a
   webfont until something renders in it, so without the tag the request went
-  out after the entry chunk had already rendered.
+  out after the entry chunk had already rendered. Font-picker labels use the
+  interface font: opening the list must not fetch every font it contains.
 - `language.ts` holds only the ids. What a language is called and how its
   grammar is fetched lives in `language-registry.ts`, which is imported on
   demand by the highlighter and by the picker; it is 243 lazy `import()`
@@ -206,8 +207,9 @@ TSX, TypeScript, JSX, JavaScript, C, C++, CUDA, Rust, LLVM IR, Python, Java, Go,
 
 ## Fonts
 
-Pico bundles Geist Mono, JetBrains Mono, and a subset of UDEV Gothic for Japanese text.
-It downloads and embeds only the selected font.
+Pico bundles eight coding fonts, including a subset of UDEV Gothic for Japanese text.
+Opening the font picker does not download its candidates; Pico downloads and embeds only the
+selected font.
 
 See [`public/fonts/README.md`](../public/fonts/README.md) for instructions on updating the UDEV Gothic subset.
 

@@ -8,5 +8,5 @@ image. Regenerate it with `scripts/build-udev-subset.sh`.
 UDEV Gothic is licensed under the SIL Open Font License 1.1; see
 `UDEVGothic-LICENSE.txt`.
 
-Geist Mono and JetBrains Mono are not vendored here — they come from the
+The Latin coding fonts are not vendored here — they come from the
 `@fontsource/*` packages, and their licenses ship with them.
