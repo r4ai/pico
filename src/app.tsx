@@ -26,6 +26,7 @@ import {
   PREVIEW_GEOMETRY_GRACE_MS,
 } from "@/features/settings/appearance";
 import type { Settings } from "@/features/settings/settings";
+import { crossFade } from "@/lib/cross-fade";
 import { useAtom } from "jotai";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@/components/toast";
@@ -33,7 +34,12 @@ import { toast } from "@/components/toast";
 const Chrome = lazy(() => import("@/features/chrome"));
 
 const PLACEHOLDER = "Paste your code here";
+
+/** Settings that change how much room the picture takes. */
 const GEOMETRY_SETTINGS = new Set<keyof Settings>(["padding", "font", "fontSize", "lineNumbers"]);
+
+/** Settings that change nothing but color, and so can simply be dissolved into. */
+const COLOR_SETTINGS = new Set<keyof Settings>(["theme", "mode"]);
 
 export function App() {
   const [settings, setSettings] = useSettings();
@@ -90,8 +96,15 @@ export function App() {
 
   const changeSettings = useCallback(
     (patch: Partial<Settings>) => {
-      if (Object.keys(patch).some((key) => GEOMETRY_SETTINGS.has(key as keyof Settings))) {
-        animatePreviewGeometry();
+      const keys = Object.keys(patch) as (keyof Settings)[];
+      if (keys.some((key) => GEOMETRY_SETTINGS.has(key))) animatePreviewGeometry();
+
+      // Only when the whole patch is color. A patch that also moves something
+      // has geometry of its own to ease, and a dissolve laid over that would
+      // be two answers to the same action.
+      if (keys.every((key) => COLOR_SETTINGS.has(key))) {
+        crossFade(() => void setSettings(patch));
+        return;
       }
       void setSettings(patch);
     },

@@ -76,6 +76,30 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ---------------------------------------------------------------------------
+   Changing the light. A theme or an appearance repaints nearly everything on
+   screen, and doing it in one frame was a jump cut in the middle of an app
+   whose every other change eases.
+
+   A cross-fade of the whole page rather than a transition per property. Shiki's
+   colors are inline styles on spans that CodeMirror throws away and rebuilds,
+   so a token has no value to ease from and changes in one frame whatever a
+   stylesheet says; easing the surfaces around it left dark text sitting on a
+   background that had not gone light yet, and easing the text as well sent it
+   through the exact grey it was crossing. A snapshot dissolving into the next
+   one has neither problem: everything moves together because nothing is being
+   interpolated. See crossFade.
+
+   Same duration and curve as the frame's geometry, so a settings action moves
+   the picture and the room around it as one thing.
+   --------------------------------------------------------------------------- */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+  animation-timing-function: var(--ease-glass);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
