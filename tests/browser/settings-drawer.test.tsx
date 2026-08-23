@@ -103,3 +103,11 @@ it("offers the scrim to the pointer only", async () => {
   expect(scrim?.getAttribute("aria-hidden")).toBe("true");
   expect(scrim?.getAttribute("tabindex")).toBe("-1");
 });
+
+it("does not render every font-picker label in its webfont", async () => {
+  await openSettings();
+  await page.getByRole("combobox", { name: "Font" }).click();
+  await expect.element(page.getByRole("option", { name: "Geist Mono" })).toBeInTheDocument();
+
+  expect(document.querySelectorAll('[role="option"] [style*="font-family"]').length).toBe(0);
+});
