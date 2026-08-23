@@ -12,8 +12,12 @@ import {
   useCode,
   useSettings,
 } from "@/features/settings/search-params";
+import { SettingsSidebar } from "@/features/settings/settings-sidebar";
+import { sidebarOpenAtom } from "@/features/settings/sidebar-state";
+import { SidebarToggle } from "@/features/settings/sidebar-toggle";
 import { shikiThemeOf } from "@/features/settings/theme";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
+import { useAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -23,6 +27,7 @@ export function App() {
   const [settings, setSettings] = useSettings();
   const [code, setCode] = useCode();
   const [scale, setScale] = useState<ExportScale>(DEFAULT_SCALE);
+  const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom);
   const exportNode = useRef<HTMLDivElement>(null);
 
   const themeName = shikiThemeOf(settings.theme, settings.mode);
@@ -91,6 +96,14 @@ export function App() {
           scale={scale}
         />
       </div>
+
+      <SidebarToggle hidden={sidebarOpen} onOpen={() => setSidebarOpen(true)} />
+      <SettingsSidebar
+        onChange={setSettings}
+        onClose={() => setSidebarOpen(false)}
+        open={sidebarOpen}
+        settings={settings}
+      />
 
       <ExportNode
         code={code}

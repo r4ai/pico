@@ -49,6 +49,14 @@ describe("shiki registry", () => {
     expect(names).toContain("keyword.operator.kernel-launch.cuda");
   });
 
+  it.each(THEME_IDS)("keeps %s's sidebar swatches in step with the theme files", async (id) => {
+    const pair = THEMES[id];
+    for (const mode of ["light", "dark"] as const) {
+      const highlighter = await ensureHighlighter("ts", pair[mode]);
+      expect(highlighter.getTheme(pair[mode]).bg).toBe(pair.swatch[mode]);
+    }
+  });
+
   it("keeps every language's Shiki grammar name resolvable", () => {
     for (const id of LANGUAGE_IDS) {
       expect(LANGUAGES[id].shikiLang).toBeTruthy();

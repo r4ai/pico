@@ -17,7 +17,7 @@
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --accent: oklch(0.895 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
@@ -199,4 +199,53 @@
 
 .dark {
   color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------------------
+   The settings sidebar. Stays mounted while closed so opening it is a
+   transform, and rides the same spring-like curve as the rest of the chrome.
+   --------------------------------------------------------------------------- */
+
+.pico-sidebar {
+  position: fixed;
+  top: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 30;
+  display: flex;
+  width: 18rem;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateX(calc(-100% - 1.5rem));
+  opacity: 0;
+  transition:
+    transform 380ms var(--ease-glass),
+    opacity 220ms var(--ease-glass);
+}
+
+.pico-sidebar[data-open="true"] {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.pico-sidebar-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 20;
+  transition:
+    transform 380ms var(--ease-glass),
+    opacity 220ms var(--ease-glass);
+}
+
+.pico-sidebar-toggle[data-hidden="true"] {
+  transform: translateX(-0.5rem);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pico-sidebar,
+  .pico-sidebar-toggle {
+    transition-duration: 1ms;
+  }
 }
