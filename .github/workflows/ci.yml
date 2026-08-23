@@ -101,6 +101,9 @@ jobs:
     permissions:
       contents: read
       deployments: write
+    environment:
+      name: preview/pr-${{ github.event.pull_request.number }}
+      url: ${{ steps.deploy.outputs.deployment-url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -145,6 +148,9 @@ jobs:
     permissions:
       contents: read
       deployments: write
+    environment:
+      name: production
+      url: https://pico.r4ai.dev
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
