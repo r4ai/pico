@@ -161,7 +161,12 @@ above forty options, without which opening it and typing in it each dropped a
 frame.
 
 The React Compiler is enabled, so components do not need `useMemo` or `memo`
-to survive the re-render every keystroke causes.
+to survive the re-render every keystroke causes. It skips whole components and
+hooks over syntax it cannot lower, silently as far as the app is concerned and
+loudly in the build log — a `throw` inside a `try`, a `finally`, or a ref read
+during a render each cost `useExport` and `CodeSurface` their memoization
+until they were written another way. `pnpm build` should print no
+`react-compiler` notes.
 
 ## React Doctor
 

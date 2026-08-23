@@ -1,7 +1,7 @@
 import type { CodeEditorProps } from "@/features/editor/code-editor";
 import { useCodeEditor } from "@/features/editor/use-code-editor";
 import { ShikiCode } from "@/features/preview/shiki-code";
-import { useRef } from "react";
+import { useState } from "react";
 
 export type CodeSurfaceProps = CodeEditorProps;
 
@@ -21,20 +21,17 @@ export type CodeSurfaceProps = CodeEditorProps;
  */
 export function CodeSurface(props: CodeSurfaceProps) {
   const Editor = useCodeEditor();
-  const wanted = useRef(false);
+  // State rather than a ref, because it is read while rendering: what the
+  // press means is which editor gets built, not something to check later.
+  const [pressed, setPressed] = useState(false);
 
-  if (Editor) return <Editor {...props} focusOnMount={wanted.current} />;
+  if (Editor) return <Editor {...props} focusOnMount={pressed} />;
 
   return (
     // Not a `textbox`, and deliberately not focusable: a text field that
     // silently drops what is typed into it is worse than one that is visibly
     // not ready yet.
-    <div
-      className="pico-code-standin"
-      onPointerDown={() => {
-        wanted.current = true;
-      }}
-    >
+    <div className="pico-code-standin" onPointerDown={() => setPressed(true)}>
       <ShikiCode
         code={props.value}
         highlight={props.highlight}
