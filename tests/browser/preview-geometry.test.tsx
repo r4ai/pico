@@ -275,13 +275,10 @@ describe("preview geometry", () => {
     expect(inFlightPadding).toBeLessThan(64);
 
     await padding.getByRole("radio", { name: "L", exact: true }).click();
-    await nextFrame();
-    const firstRetargetedPadding = Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft);
-    await nextFrame();
-    const secondRetargetedPadding = Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft);
-    expect(firstRetargetedPadding).toBeGreaterThan(44);
-    expect(secondRetargetedPadding).toBeLessThan(firstRetargetedPadding);
-    expect(secondRetargetedPadding).toBeGreaterThan(44);
+    await pauseAtMidpoint(liveFrame());
+    const retargetedPadding = Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft);
+    expect(retargetedPadding).toBeLessThan(inFlightPadding);
+    expect(retargetedPadding).toBeGreaterThan(44);
 
     await finishAnimations(liveFrame());
     expect(Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft)).toBeCloseTo(44, 1);
