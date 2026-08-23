@@ -38,6 +38,10 @@ manifest and lockfile change before committing it. If an update introduces an
 install script, pnpm fails until that exact package is deliberately approved or
 denied in `allowBuilds`.
 
+`@vitest/coverage-v8` is excluded from bulk updates because Vite+ requires its
+version to exactly match the Vitest version bundled by Vite+. Update the
+provider together with Vite+, then verify with `pnpm run test:coverage`.
+
 Update workflow action pins with:
 
 ```sh

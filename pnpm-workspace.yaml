@@ -20,3 +20,7 @@ trustPolicy: no-downgrade
 trustPolicyExclude:
   # Legacy transitive release without the trust evidence of an older release.
   - semver@6.3.1
+update:
+  # Must match the Vitest version bundled by vite-plus exactly.
+  ignoreDeps:
+    - "@vitest/coverage-v8"
