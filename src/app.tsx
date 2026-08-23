@@ -45,10 +45,12 @@ export function App() {
   );
   const exportNode = useRef<HTMLDivElement>(null);
 
-  const themeName = shikiThemeOf(settings.theme, settings.mode);
-  const highlight = useShikiHighlight(settings.lang, themeName);
+  const highlight = useShikiHighlight(settings.lang, shikiThemeOf(settings.theme, settings.mode));
+  // highlight.theme, not the requested one: while a new theme loads the
+  // highlighter still only knows the previous one, and asking it for a theme it
+  // has not loaded throws.
   const colors = highlight
-    ? frameColorsOf(highlight.highlighter.getTheme(themeName))
+    ? frameColorsOf(highlight.highlighter.getTheme(highlight.theme))
     : TRANSPARENT_FRAME;
 
   const { busy, copy, save } = useExport({ node: exportNode, settings, scale });
