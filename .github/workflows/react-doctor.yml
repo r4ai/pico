@@ -29,6 +29,9 @@ jobs:
           persist-credentials: false
 
       - uses: millionco/react-doctor@01820bb4fd4d0a4aebcd8df2b2a143a098649cb2 # v2.2.8
+        env:
+          # The action uses npm to resolve its pinned CLI even though Pico requires pnpm.
+          NPM_CONFIG_FORCE: "true"
         with:
           blocking: none
           scope: changed
