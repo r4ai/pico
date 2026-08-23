@@ -138,8 +138,8 @@ jobs:
             curl --fail --silent --show-error --retry 5 --retry-all-errors "${BASE_URL}${path}" \
               | grep --fixed-strings '<title>Pico — Picture + Code</title>'
           done
-          curl --fail --silent --show-error --retry 5 --retry-all-errors \
-            "${BASE_URL}/favicon.svg" | grep --fixed-strings '<svg'
+          curl --fail --silent --show-error --retry 5 --retry-all-errors --head \
+            "${BASE_URL}/favicon-32x32.png" | grep --ignore-case --fixed-strings 'content-type: image/png'
 
   production:
     name: Deploy production
@@ -183,5 +183,5 @@ jobs:
             curl --fail --silent --show-error --retry 5 --retry-all-errors "${BASE_URL}${path}" \
               | grep --fixed-strings '<title>Pico — Picture + Code</title>'
           done
-          curl --fail --silent --show-error --retry 5 --retry-all-errors \
-            "${BASE_URL}/favicon.svg" | grep --fixed-strings '<svg'
+          curl --fail --silent --show-error --retry 5 --retry-all-errors --head \
+            "${BASE_URL}/favicon-32x32.png" | grep --ignore-case --fixed-strings 'content-type: image/png'
