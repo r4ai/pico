@@ -1,5 +1,5 @@
 import { useBriefFlag } from "@/components/use-brief-flag";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/toaster";
 import { CodeEditor } from "@/features/editor/code-editor";
 import type { LanguageId } from "@/features/editor/language";
 import { useLanguageDetection } from "@/features/editor/use-language-detection";
@@ -20,19 +20,27 @@ import { sidebarOpenAtom } from "@/features/settings/sidebar-state";
 import { FONTS } from "@/features/settings/fonts";
 import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
 import { useFontReady } from "@/features/settings/use-font-ready";
+import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
 import {
   PREVIEW_GEOMETRY_DURATION_MS,
   PREVIEW_GEOMETRY_GRACE_MS,
 } from "@/features/settings/appearance";
 import type { Settings } from "@/features/settings/settings";
+import { crossFade } from "@/lib/cross-fade";
+import { isThemeLoaded } from "@/lib/shiki";
 import { useAtom } from "jotai";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/toast";
 
 const Chrome = lazy(() => import("@/features/chrome"));
 
 const PLACEHOLDER = "Paste your code here";
+
+/** Settings that change how much room the picture takes. */
 const GEOMETRY_SETTINGS = new Set<keyof Settings>(["padding", "font", "fontSize", "lineNumbers"]);
+
+/** Settings that change nothing but color, and so can simply be dissolved into. */
+const COLOR_SETTINGS = new Set<keyof Settings>(["theme", "mode"]);
 
 export function App() {
   const [settings, setSettings] = useSettings();
@@ -40,6 +48,11 @@ export function App() {
   const [scale, setScale] = useState<ExportScale>(DEFAULT_SCALE);
   const [frameWidth, setFrameWidth] = useState<number>();
   const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom);
+  // As a drawer the settings lie on top of the canvas behind a scrim, so the
+  // canvas has to be out of the keyboard's reach for as long as they do.
+  // Inset, the two sit side by side and the picture stays editable.
+  const sidebarMode = useSidebarMode();
+  const canvasBlocked = sidebarOpen && sidebarMode === "drawer";
   // Once someone picks a language themselves, guessing would only fight them.
   const [languageChosen, setLanguageChosen] = useState(() =>
     hasExplicitLanguage(window.location.search),
@@ -84,12 +97,33 @@ export function App() {
 
   const changeSettings = useCallback(
     (patch: Partial<Settings>) => {
-      if (Object.keys(patch).some((key) => GEOMETRY_SETTINGS.has(key as keyof Settings))) {
-        animatePreviewGeometry();
+      const keys = Object.keys(patch) as (keyof Settings)[];
+      if (keys.some((key) => GEOMETRY_SETTINGS.has(key))) animatePreviewGeometry();
+
+      // Only when the whole patch is color, and only when those colors can be
+      // on screen in the same frame as the rest of the change.
+      //
+      // A patch that also moves something has geometry of its own to ease, and
+      // a dissolve laid over that would be two answers to the same action. And
+      // the frame's colors come from the theme the highlighter has actually
+      // loaded, not the one that was asked for — so on the first switch to a
+      // theme the snapshot would be taken with the old picture still in it, and
+      // the new one would arrive partway through the dissolve or, on a slow
+      // link, just as it ended: a snap at the end of a fade, which is worse
+      // than either alone. Once the theme is warm — every switch after the
+      // first, which is when anyone is going back and forth — everything moves
+      // together.
+      const next = { ...settings, ...patch };
+      if (
+        keys.every((key) => COLOR_SETTINGS.has(key)) &&
+        isThemeLoaded(shikiThemeOf(next.theme, next.mode))
+      ) {
+        crossFade(() => void setSettings(patch));
+        return;
       }
       void setSettings(patch);
     },
-    [animatePreviewGeometry, setSettings],
+    [animatePreviewGeometry, setSettings, settings],
   );
 
   const changeCode = useCallback(
@@ -158,14 +192,24 @@ export function App() {
 
           tabIndex, because the canvas scrolls: a scrollable box that cannot be
           focused cannot be scrolled from the keyboard, and a picture wider than
-          the window would be unreachable without a pointer. */}
-      <main className="pico-shell-canvas flex-1 overflow-auto" tabIndex={0}>
+          the window would be unreachable without a pointer. It gives that up
+          while the settings are a drawer over it, when there is nothing worth
+          scrolling to. */}
+      <main className="pico-shell-canvas flex-1 overflow-auto" tabIndex={canvasBlocked ? -1 : 0}>
         {/* The only heading on a page whose entire content is one editor. It
             is what a screen reader announces on arrival, and what the document
             outline would otherwise be missing. */}
         <h1 className="sr-only">Pico — turn code into a picture</h1>
 
-        <div className="flex min-h-full w-full min-w-max items-center justify-center p-10 pb-32">
+        {/* inert lives here rather than on <main>, which React Aria writes to
+            itself: it marks everything outside an open popover inert and puts
+            it back on close, and "back" is whatever it found there — so the
+            first combobox in the settings would hand the canvas to the keyboard
+            again as it closed. It never walks this far down. */}
+        <div
+          className="pico-canvas-stage flex min-h-full w-full min-w-max items-center justify-center"
+          inert={canvasBlocked}
+        >
           <CodeFrame
             animateGeometry={animateGeometry}
             colors={colors}
@@ -215,7 +259,7 @@ export function App() {
         ref={exportNode}
         settings={settings}
       />
-      <Toaster position="top-center" theme={settings.mode} />
+      <Toaster theme={settings.mode} />
     </div>
   );
 }

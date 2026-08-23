@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: { scale: 2, disabled: false, pending: false, onSave: () => {}, onScaleChange: () => {} },
+  args: { scale: 2, busy: false, pending: false, onSave: () => {}, onScaleChange: () => {} },
   render: (args) => {
     const [scale, setScale] = useState<ExportScale>(args.scale);
     return <SaveSplitButton {...args} onScaleChange={setScale} scale={scale} />;
@@ -20,5 +20,5 @@ export const Default: Story = {
 };
 
 export const Saving: Story = {
-  args: { scale: 2, disabled: true, pending: true, onSave: () => {}, onScaleChange: () => {} },
+  args: { scale: 2, busy: true, pending: true, onSave: () => {}, onScaleChange: () => {} },
 };

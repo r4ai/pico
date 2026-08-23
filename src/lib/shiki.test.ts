@@ -1,8 +1,9 @@
-import { LANGUAGE_IDS, LANGUAGES } from "@/features/editor/language";
+import { LANGUAGE_IDS } from "@/features/editor/language";
+import { LANGUAGES } from "@/features/editor/language-registry";
 import { frameColorsOf } from "@/features/preview/frame-colors";
 import { THEME_IDS, THEMES } from "@/features/settings/theme";
 import type { ShikiThemeName } from "@/features/settings/theme";
-import { ensureHighlighter, shikiLangOf } from "@/lib/shiki";
+import { ensureHighlighter } from "@/lib/shiki";
 import { describe, expect, it } from "vite-plus/test";
 
 /** Representative snippets whose grammars should produce several token colors. */
@@ -22,9 +23,9 @@ const ALL_THEME_NAMES = THEME_IDS.flatMap((id) => [THEMES[id].light, THEMES[id].
 
 describe("shiki registry", () => {
   it.each(LANGUAGE_IDS)("loads and tokenizes %s", async (lang) => {
-    const highlighter = await ensureHighlighter(lang, "vitesse-dark");
+    const { highlighter, shikiLang } = await ensureHighlighter(lang, "vitesse-dark");
     const { tokens } = highlighter.codeToTokens("sample 123 {}", {
-      lang: shikiLangOf(lang),
+      lang: shikiLang,
       theme: "vitesse-dark",
     });
     expect(tokens.length).toBeGreaterThan(0);
@@ -32,9 +33,9 @@ describe("shiki registry", () => {
 
   it.each(Object.entries(SAMPLES))("highlights %s with more than one color", async (lang, code) => {
     const id = lang as (typeof LANGUAGE_IDS)[number];
-    const highlighter = await ensureHighlighter(id, "vitesse-dark");
+    const { highlighter, shikiLang } = await ensureHighlighter(id, "vitesse-dark");
     const { tokens } = highlighter.codeToTokens(code, {
-      lang: shikiLangOf(id),
+      lang: shikiLang,
       theme: "vitesse-dark",
     });
     const colors = new Set(tokens.flat().map((token) => token.color));
@@ -42,12 +43,12 @@ describe("shiki registry", () => {
   });
 
   it.each(ALL_THEME_NAMES)("loads theme %s", async (theme) => {
-    const highlighter = await ensureHighlighter("ts", theme as ShikiThemeName);
+    const { highlighter } = await ensureHighlighter("ts", theme as ShikiThemeName);
     expect(highlighter.getTheme(theme).bg).toBeTruthy();
   });
 
   it("gives CUDA-specific spellings their own scopes", async () => {
-    const highlighter = await ensureHighlighter("cuda", "vitesse-dark");
+    const { highlighter } = await ensureHighlighter("cuda", "vitesse-dark");
     const { tokens } = highlighter.codeToTokens(SAMPLES.cuda, {
       lang: "cuda",
       theme: "vitesse-dark",
@@ -63,14 +64,15 @@ describe("shiki registry", () => {
   it.each(THEME_IDS)("keeps %s's registry colors in step with the theme files", async (id) => {
     const pair = THEMES[id];
     for (const mode of ["light", "dark"] as const) {
-      const highlighter = await ensureHighlighter("ts", pair[mode]);
+      const { highlighter } = await ensureHighlighter("ts", pair[mode]);
       expect(frameColorsOf(highlighter.getTheme(pair[mode]))).toEqual(pair.colors[mode]);
     }
   });
 
-  it("keeps every language's Shiki grammar name resolvable", () => {
+  it("keeps every language's Shiki grammar name resolvable", async () => {
     for (const id of LANGUAGE_IDS) {
       expect(LANGUAGES[id].shikiLang).toBeTruthy();
+      expect((await ensureHighlighter(id, "vitesse-dark")).shikiLang).toBe(LANGUAGES[id].shikiLang);
     }
   });
 });

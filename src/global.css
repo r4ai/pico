@@ -76,6 +76,30 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ---------------------------------------------------------------------------
+   Changing the light. A theme or an appearance repaints nearly everything on
+   screen, and doing it in one frame was a jump cut in the middle of an app
+   whose every other change eases.
+
+   A cross-fade of the whole page rather than a transition per property. Shiki's
+   colors are inline styles on spans that CodeMirror throws away and rebuilds,
+   so a token has no value to ease from and changes in one frame whatever a
+   stylesheet says; easing the surfaces around it left dark text sitting on a
+   background that had not gone light yet, and easing the text as well sent it
+   through the exact grey it was crossing. A snapshot dissolving into the next
+   one has neither problem: everything moves together because nothing is being
+   interpolated. See crossFade.
+
+   Same duration and curve as the frame's geometry, so a settings action moves
+   the picture and the room around it as one thing.
+   --------------------------------------------------------------------------- */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+  animation-timing-function: var(--ease-glass);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -97,6 +121,37 @@
    render at exactly the same size; see CodeFrame.
    --------------------------------------------------------------------------- */
 
+/* The room the canvas keeps around the picture, and the narrowest a frame is
+   ever drawn — one pair of numbers, because the second is derived from the
+   first. A short snippet in a small frame looks cramped, so the frame is held
+   at 28rem; on a phone 28rem is wider than the window, and the picture that
+   came up was clipped at both edges with its corners and its shadow off the
+   screen. `min()` gives way at exactly the width where holding it would cost
+   more than it buys.
+
+   Read by the live frame and by the export node alike, so both are still the
+   same size to the pixel and what you see is what you save. A picture composed
+   on a phone comes out narrower than one composed on a desktop, which is the
+   honest answer: it is the frame that fits the screen it was made on. */
+
+:root {
+  --pico-canvas-pad: 2.5rem;
+  --pico-frame-min-width: min(28rem, calc(100vw - 2 * var(--pico-canvas-pad)));
+}
+
+@media (width < 30rem) {
+  :root {
+    --pico-canvas-pad: 1rem;
+  }
+}
+
+/* Room below for the dock, which floats over the canvas rather than in it. */
+
+.pico-canvas-stage {
+  padding: var(--pico-canvas-pad);
+  padding-bottom: 8rem;
+}
+
 .pico-frame {
   --pico-gutter-width: max(
     var(--pico-gutter-min-width),
@@ -104,7 +159,7 @@
   );
 
   width: max-content;
-  min-width: 28rem;
+  min-width: var(--pico-frame-min-width);
   padding: var(--pico-pad);
   border-radius: var(--pico-radius);
   background: var(--pico-bg);
@@ -275,8 +330,13 @@
     inset 0 1px 0 0 var(--pico-glass-sheen),
     0 1px 2px oklch(0 0 0 / 10%),
     0 12px 32px oklch(0 0 0 / 18%);
+  /* Unprefixed only. Written with `-webkit-backdrop-filter` after it, the
+     prefixed declaration won the cascade and the minifier collapsed the pair
+     onto it — and Chrome and Firefox do not implement that spelling, so the
+     glass had no blur in either of them and the code underneath the dock read
+     straight through the labels. The build adds whatever prefixes its targets
+     actually need. */
   backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 :root {
@@ -419,12 +479,27 @@
   z-index: 20;
   transition:
     transform 380ms var(--ease-glass),
-    opacity 220ms var(--ease-glass);
+    opacity 220ms var(--ease-glass),
+    visibility 0s;
 }
 
+/* Faded out and out of the tab order, the same way the dock goes: an invisible
+   button that Tab still lands on is a stop that leads nowhere, and pressing it
+   asks for settings that are already open.
+
+   visibility rather than `inert`, which React Aria writes to the top of the
+   page itself while a popover is open and restores on close — restoring
+   whatever it found, which is not what React last rendered. CSS is the one
+   mechanism nothing else here reaches for. */
+
 .pico-sidebar-toggle[data-hidden="true"] {
+  visibility: hidden;
   transform: translateX(-0.5rem);
   opacity: 0;
+  transition:
+    transform 380ms var(--ease-glass),
+    opacity 220ms var(--ease-glass),
+    visibility 0s 380ms;
 }
 
 /* The chrome rises into place on load. Only the chrome: the picture is what

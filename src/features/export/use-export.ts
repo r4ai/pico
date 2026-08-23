@@ -7,7 +7,7 @@ import {
 } from "@/features/export/export-image";
 import type { Settings } from "@/features/settings/settings";
 import { type RefObject, useCallback, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/toast";
 
 function download(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);

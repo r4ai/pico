@@ -68,8 +68,18 @@ undo:
 - The build preloads the default font face from the HTML. Nothing fetches a
   webfont until something renders in it, so without the tag the request went
   out after the entry chunk had already rendered.
+- `language.ts` holds only the ids. What a language is called and how its
+  grammar is fetched lives in `language-registry.ts`, which is imported on
+  demand by the highlighter and by the picker; it is 243 lazy `import()`
+  closures and 10KiB of gzip, and no part of the first screen reads it. The two
+  cannot drift, because the registry declares itself
+  `satisfies Record<LanguageId, …>`.
+- `toast` imports sonner on the first call rather than on load, and `<Toaster>`
+  mounts on the same call. Nothing on the first screen has anything to
+  announce. Importing `sonner` directly anywhere puts it back in the entry
+  chunk.
 
-Preview geometry has five invariants:
+Preview geometry has six invariants:
 
 - Padding, font size, frame width, and the line-number gutter use the same
   `260ms / --ease-glass` transition, and only a settings action or a font
@@ -91,10 +101,27 @@ Preview geometry has five invariants:
   contentful paint reads about a transition longer than the frame is actually
   on screen. The alternative it replaced was a first paint in the system's
   monospace followed by a reflow.
+- The narrowest a frame is drawn is one custom property,
+  `--pico-frame-min-width`, read by the live frame and the export node alike.
+  It is 28rem, or the width the canvas has if that is less — on a phone 28rem
+  is wider than the window, and the picture came up clipped at both edges.
+
+Changing the theme or the appearance is a view transition rather than a
+transition per colour; see `crossFade`. Shiki's token colours are inline styles
+on spans CodeMirror rebuilds, so they have no value to ease from and change in
+one frame whatever the stylesheet says: easing the surfaces alone left dark
+text on a background still going light, and easing the text as well sent it
+through the grey it was crossing. Only a patch that is nothing but colour goes
+through it — a setting that moves something is already easing to a new size.
+The export node is at its new colours before the dissolve starts, so a capture
+taken during one is the picture, not a blend.
 
 `pnpm test:browser` covers intermediate frames, rapid retargeting, export/live
 agreement, height tracking while shrinking, the keyboard's way out of the
-editor, and a separate Chromium context with reduced motion enabled.
+editor, the picker, the settings as a dialog, and the dissolve. It runs three
+Chromium instances: one at 1280px, where the settings sit beside the picture
+and both can be driven at once; one at 420px for the drawer and the frame that
+has to fit inside it; and one with reduced motion enabled.
 
 For a performance comparison, use the same 40-line snippet and the same
 settings sequence on production builds before and after the change. Record a
@@ -142,6 +169,28 @@ Shared links compress the code into the URL, so the application does not need se
 - Show only the editor and essential export actions on first load.
 - Prefer a small set of purposeful options over exhaustive configuration.
 - Keep detailed settings in the sidebar, separate from editing and export.
+
+## The chrome
+
+Everything on screen that is not the picture. Four things about it are easy to
+undo:
+
+- Dock buttons go `aria-disabled` while a capture runs, never `disabled`. A
+  button that disables itself under the press that started it hands focus back
+  to the document, and `useExport` already refuses a second capture.
+- Below 56rem the settings are a drawer over the picture behind a scrim, which
+  makes them modal: `dialog`, `aria-modal`, and the canvas `inert` underneath.
+  `useSidebarMode` is the single answer to which arrangement they are in, and a
+  test holds the width it names to the one the stylesheet uses.
+- That `inert` goes on the canvas div rather than on `<main>`, and the button
+  that opens the settings leaves the tab order through `visibility` rather than
+  `inert`. React Aria marks the top of the page inert while a popover is open
+  and restores what it found there on close, so anything React writes to
+  `inert` near the top of the tree is lost the first time a combobox closes.
+- `.pico-glass` asks for `backdrop-filter` and nothing else. Adding
+  `-webkit-backdrop-filter` after it wins the cascade, the minifier collapses
+  the pair onto the prefixed spelling, and Chrome and Firefox — which do not
+  implement it — lose the blur entirely.
 
 ## Language support
 

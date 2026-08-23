@@ -1,7 +1,6 @@
 import { GlassPanel } from "@/components/glass-panel";
 import { SearchableSelect } from "@/components/searchable-select";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -16,8 +15,9 @@ import { PresetToggle, SettingRow } from "@/features/settings/setting-row";
 import type { Settings } from "@/features/settings/settings";
 import { COLOR_MODES, THEME_IDS, THEMES } from "@/features/settings/theme";
 import { usePanelFocus } from "@/features/settings/use-panel-focus";
+import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
 import { MoonIcon, SunIcon, XIcon } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useId } from "react";
 
 const SIZE_LABELS = { none: "None", sm: "S", md: "M", lg: "L", xl: "XL" };
 
@@ -39,10 +39,15 @@ export type SettingsSidebarProps = {
  *
  * Where the window is wide enough the panel takes a column of its own and the
  * canvas shifts over to make room; where it is not, it slides over the canvas
- * as a drawer, and the scrim behind it dismisses it.
+ * as a drawer, and the scrim behind it dismisses it. Which of the two it is
+ * decides what it is, and not only how it looks: beside the picture it is a
+ * second region of the same page, and on top of it, behind a scrim that
+ * swallows every click, it is a dialog. See {@link useSidebarMode}.
  */
 export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsSidebarProps) {
   const panel = usePanelFocus(open);
+  const titleId = useId();
+  const drawer = useSidebarMode() === "drawer";
 
   useEffect(() => {
     if (!open) return;
@@ -60,10 +65,12 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
 
   return (
     <>
-      {/* Reachable by pointer only: Escape and the close button already cover
-          the keyboard, and a second stop for the same action would be noise. */}
+      {/* Reachable by pointer only, and hidden from anything that is not one:
+          Escape and the close button already cover the keyboard, and a second
+          control called "Close settings" — one of them the whole window — is a
+          choice nobody navigating by name should have to make. */}
       <button
-        aria-label="Close settings"
+        aria-hidden
         className="pico-sidebar-scrim"
         data-open={open}
         onClick={onClose}
@@ -71,17 +78,20 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
         type="button"
       />
       <GlassPanel
-        aria-label="Settings"
+        aria-labelledby={titleId}
+        aria-modal={drawer || undefined}
         className="pico-sidebar"
         data-open={open}
         inert={!open}
         ref={panel}
-        role="complementary"
+        role={drawer ? "dialog" : "complementary"}
       >
         {/* A div rather than a header: a bare <header> is a page-level banner
             landmark wherever it sits, and there is only supposed to be one. */}
         <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
-          <h2 className="font-medium text-sm">Settings</h2>
+          <h2 className="font-medium text-sm" id={titleId}>
+            Settings
+          </h2>
           <Button aria-label="Close settings" onPress={onClose} size="icon" variant="ghost">
             <XIcon />
           </Button>
@@ -157,16 +167,15 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
               value={settings.fontSize}
             />
 
+            {/* Named by aria-label alone, matching the row's own words. The
+                sr-only <label> this used to carry as well made two of them,
+                which is one more than a form field is allowed. */}
             <SettingRow label="Line numbers">
               <Switch
                 aria-label="Line numbers"
-                id="line-numbers"
                 isSelected={settings.lineNumbers}
                 onChange={(lineNumbers) => onChange({ lineNumbers })}
               />
-              <Label className="sr-only" htmlFor="line-numbers">
-                Line numbers
-              </Label>
             </SettingRow>
           </section>
 

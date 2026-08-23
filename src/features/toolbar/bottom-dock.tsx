@@ -1,9 +1,9 @@
 import { GlassPanel } from "@/components/glass-panel";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { LanguageId } from "@/features/editor/language";
 import type { ExportFormat, ExportScale } from "@/features/export/export-image";
 import type { ExportTask } from "@/features/export/use-export";
+import { DockButton } from "@/features/toolbar/dock-button";
 import { DockIcon, DockLabel } from "@/features/toolbar/dock-icon";
 import { LanguagePicker } from "@/features/toolbar/language-picker";
 import { SaveSplitButton } from "@/features/toolbar/save-split-button";
@@ -61,26 +61,33 @@ export function BottomDock({
     >
       <LanguagePicker onChange={onLangChange} value={lang} />
       <DockDivider />
-      <Button isDisabled={busy} onPress={onCopy} size="sm" variant="ghost">
+      <DockButton busy={busy} onPress={onCopy}>
         <DockIcon done={copied} pending={running === "copy"}>
           <CopyIcon data-icon="inline-start" />
         </DockIcon>
         <DockLabel>Copy</DockLabel>
-      </Button>
+      </DockButton>
       <SaveSplitButton
-        disabled={busy}
+        busy={busy}
         onSave={onSave}
         onScaleChange={onScaleChange}
         pending={running === "save"}
         scale={scale}
       />
       <DockDivider />
-      <Button onPress={onCopyLink} size="sm" variant="ghost">
+      <DockButton onPress={onCopyLink}>
         <DockIcon done={linkCopied}>
           <Link2Icon data-icon="inline-start" />
         </DockIcon>
         <DockLabel>Link</DockLabel>
-      </Button>
+      </DockButton>
+
+      {/* What the spinner says, for anyone not watching the button. The end of
+          the story is a toast, which sonner announces itself. */}
+      <span aria-live="polite" className="sr-only">
+        {running === "copy" ? "Copying the image." : ""}
+        {running === "save" ? "Saving the image." : ""}
+      </span>
     </GlassPanel>
   );
 }
