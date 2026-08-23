@@ -5,6 +5,7 @@ risk:
 
 - dependency versions must be at least 24 hours old, including transitive
   dependencies;
+- direct dependencies and tool versions are pinned exactly;
 - packages without registry publication timestamps are rejected;
 - releases whose publisher trust evidence regresses are rejected;
 - transitive dependencies cannot use arbitrary Git or tarball sources;
