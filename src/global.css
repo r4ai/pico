@@ -260,6 +260,8 @@
 .pico-editor .cm-editor {
   width: max-content;
   min-width: 100%;
+  background: transparent;
+  color: var(--pico-fg);
   font-family: var(--pico-font-family);
   font-size: inherit;
 }
@@ -275,11 +277,23 @@
   padding: 0;
 }
 
+.pico-editor .cm-editor .cm-content {
+  caret-color: var(--pico-fg);
+}
+
+.pico-editor .cm-editor .cm-cursor,
+.pico-editor .cm-editor .cm-dropCursor {
+  border-left-color: var(--pico-fg);
+}
+
 .pico-editor .cm-editor .cm-gutters {
   box-sizing: border-box;
   width: var(--pico-gutter-width);
   min-width: 0;
   padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pico-line-number);
   overflow: clip;
   opacity: 1;
   flex: none;

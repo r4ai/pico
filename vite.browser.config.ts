@@ -27,6 +27,7 @@ export default mergeConfig(baseConfig, {
         {
           browser: "chromium",
           include: [
+            "tests/browser/initial-render.test.tsx",
             "tests/browser/preview-geometry.test.tsx",
             "tests/browser/editor-keyboard.test.tsx",
             "tests/browser/chrome-keyboard.test.tsx",

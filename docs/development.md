@@ -57,7 +57,10 @@ undo:
 
 - The editor's font, size, and line height are stylesheet rules rather than
   part of the CodeMirror theme, because the theme cannot be applied until
-  Shiki has loaded and metrics arriving that late relayout every line.
+  Shiki has loaded and metrics arriving that late relayout every line. Its
+  frame, foreground, and gutter colors also have synchronous stylesheet
+  fallbacks, and CodeMirror is mounted in the layout phase, so neither its
+  appearance nor its geometry changes after the first paint.
 - The export node renders before the highlighter does, uncoloured, because the
   visible frame takes its width from it.
 - The dock and the settings sidebar load as their own chunk. They are all of
