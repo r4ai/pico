@@ -97,6 +97,37 @@
    render at exactly the same size; see CodeFrame.
    --------------------------------------------------------------------------- */
 
+/* The room the canvas keeps around the picture, and the narrowest a frame is
+   ever drawn — one pair of numbers, because the second is derived from the
+   first. A short snippet in a small frame looks cramped, so the frame is held
+   at 28rem; on a phone 28rem is wider than the window, and the picture that
+   came up was clipped at both edges with its corners and its shadow off the
+   screen. `min()` gives way at exactly the width where holding it would cost
+   more than it buys.
+
+   Read by the live frame and by the export node alike, so both are still the
+   same size to the pixel and what you see is what you save. A picture composed
+   on a phone comes out narrower than one composed on a desktop, which is the
+   honest answer: it is the frame that fits the screen it was made on. */
+
+:root {
+  --pico-canvas-pad: 2.5rem;
+  --pico-frame-min-width: min(28rem, calc(100vw - 2 * var(--pico-canvas-pad)));
+}
+
+@media (width < 30rem) {
+  :root {
+    --pico-canvas-pad: 1rem;
+  }
+}
+
+/* Room below for the dock, which floats over the canvas rather than in it. */
+
+.pico-canvas-stage {
+  padding: var(--pico-canvas-pad);
+  padding-bottom: 8rem;
+}
+
 .pico-frame {
   --pico-gutter-width: max(
     var(--pico-gutter-min-width),
@@ -104,7 +135,7 @@
   );
 
   width: max-content;
-  min-width: 28rem;
+  min-width: var(--pico-frame-min-width);
   padding: var(--pico-pad);
   border-radius: var(--pico-radius);
   background: var(--pico-bg);

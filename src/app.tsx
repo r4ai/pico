@@ -179,7 +179,7 @@ export function App() {
             first combobox in the settings would hand the canvas to the keyboard
             again as it closed. It never walks this far down. */}
         <div
-          className="flex min-h-full w-full min-w-max items-center justify-center p-10 pb-32"
+          className="pico-canvas-stage flex min-h-full w-full min-w-max items-center justify-center"
           inert={canvasBlocked}
         >
           <CodeFrame

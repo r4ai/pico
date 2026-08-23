@@ -42,7 +42,10 @@ export default mergeConfig(baseConfig, {
         },
         {
           browser: "chromium",
-          include: ["tests/browser/settings-drawer.test.tsx"],
+          include: [
+            "tests/browser/settings-drawer.test.tsx",
+            "tests/browser/narrow-frame.test.tsx",
+          ],
           name: "chromium-narrow",
           viewport: { width: 420, height: 900 },
         },
