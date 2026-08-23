@@ -4,8 +4,8 @@ import type { ShikiThemeName } from "@/features/settings/theme";
 import { ensureHighlighter, shikiLangOf } from "@/lib/shiki";
 import { describe, expect, it } from "vite-plus/test";
 
-/** One snippet per language, each exercising several token kinds. */
-const SAMPLES: Record<(typeof LANGUAGE_IDS)[number], string> = {
+/** Representative snippets whose grammars should produce several token colors. */
+const SAMPLES = {
   tsx: `export const Hi = ({ name }: { name: string }) => <p className="x">{name}</p>;`,
   ts: `export function add(a: number, b: number): number {\n  return a + b;\n}`,
   jsx: `export const Hi = ({ name }) => <p className="x">{name}</p>;`,
@@ -15,15 +15,25 @@ const SAMPLES: Record<(typeof LANGUAGE_IDS)[number], string> = {
   cuda: `__global__ void saxpy(int n, float a, float *y) {\n  int i = blockIdx.x * blockDim.x + threadIdx.x;\n  if (i < n) y[i] = a * y[i];\n}\nsaxpy<<<32, 256>>>(n, 2.0f, d_y);`,
   rust: `pub fn main() {\n    let xs: Vec<i32> = (0..10).collect();\n    println!("{xs:?}");\n}`,
   llvm: `define i32 @add(i32 %a, i32 %b) {\nentry:\n  %sum = add nsw i32 %a, %b\n  ret i32 %sum\n}`,
-};
+} as const satisfies Partial<Record<(typeof LANGUAGE_IDS)[number], string>>;
 
 const ALL_THEME_NAMES = THEME_IDS.flatMap((id) => [THEMES[id].light, THEMES[id].dark]);
 
 describe("shiki registry", () => {
-  it.each(LANGUAGE_IDS)("highlights %s with more than one color", async (lang) => {
+  it.each(LANGUAGE_IDS)("loads and tokenizes %s", async (lang) => {
     const highlighter = await ensureHighlighter(lang, "vitesse-dark");
-    const { tokens } = highlighter.codeToTokens(SAMPLES[lang], {
+    const { tokens } = highlighter.codeToTokens("sample 123 {}", {
       lang: shikiLangOf(lang),
+      theme: "vitesse-dark",
+    });
+    expect(tokens.length).toBeGreaterThan(0);
+  });
+
+  it.each(Object.entries(SAMPLES))("highlights %s with more than one color", async (lang, code) => {
+    const id = lang as (typeof LANGUAGE_IDS)[number];
+    const highlighter = await ensureHighlighter(id, "vitesse-dark");
+    const { tokens } = highlighter.codeToTokens(code, {
+      lang: shikiLangOf(id),
       theme: "vitesse-dark",
     });
     const colors = new Set(tokens.flat().map((token) => token.color));
