@@ -46,6 +46,21 @@ const MAX_VISIBLE_OPTIONS = 10;
 
 const POPOVER_MAX_HEIGHT = MAX_VISIBLE_OPTIONS * OPTION_HEIGHT + LIST_PADDING * 2;
 
+/**
+ * How wide a virtualized list is drawn.
+ *
+ * A definite width, because a virtualized list has none of its own: its rows
+ * are positioned absolutely, so they contribute nothing to the intrinsic width
+ * their container is asked for. Shrink-to-fit around that ratchets — the
+ * language picker measured 376px when it opened, 952px a moment later, and
+ * filled the window inside two seconds, which is what it had been doing all
+ * along.
+ *
+ * 16rem clears the longest name Pico lists, "WebAssembly Interface Types", by a
+ * few pixels; the cap keeps it inside a phone.
+ */
+const VIRTUALIZED_WIDTH = "w-64 max-w-[calc(100vw-1.5rem)]";
+
 export type SearchableSelectProps<T extends string> = {
   ariaLabel: string;
   placeholder: string;
@@ -84,6 +99,7 @@ export function SearchableSelect<T extends string>({
   width = "fill",
 }: SearchableSelectProps<T>) {
   const popover = useRef<HTMLDivElement>(null);
+  const virtualized = options.length > VIRTUALIZE_FROM;
   const { contains } = useFilter({ sensitivity: "base" });
   const defaultFilter = useMemo(() => {
     const searchTextByLabel = new Map(
@@ -136,13 +152,13 @@ export function SearchableSelect<T extends string>({
     >
       {field}
       <ComboboxContent
-        className="w-auto min-w-(--trigger-width)"
+        className={cn("min-w-(--trigger-width)", virtualized ? VIRTUALIZED_WIDTH : "w-auto")}
         maxHeight={POPOVER_MAX_HEIGHT}
         placement={placement}
         ref={popover}
       >
         <ComboboxFocus popover={popover} />
-        {options.length > VIRTUALIZE_FROM ? (
+        {virtualized ? (
           <Virtualizer
             layout={ListLayout}
             layoutOptions={{ rowSize: OPTION_HEIGHT, padding: LIST_PADDING }}

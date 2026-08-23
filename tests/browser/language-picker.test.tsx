@@ -68,6 +68,19 @@ it("opens as a list rather than a screenful", async () => {
   await expect.poll(() => Math.round(popover().getBoundingClientRect().height)).toBe(288);
 });
 
+it("stays the size it opened at", async () => {
+  await openPicker();
+  await expect.poll(() => Math.round(popover().getBoundingClientRect().width)).toBe(256);
+
+  // A virtualized list has no intrinsic width — its rows are positioned
+  // absolutely — so shrink-to-fit around one ratchets outwards. This picker
+  // opened at 376px, passed 950px a moment later, and filled the window.
+  const settled = Math.round(popover().getBoundingClientRect().width);
+  await new Promise((resolve) => setTimeout(resolve, 1200));
+  expect(Math.round(popover().getBoundingClientRect().width)).toBe(settled);
+  expect(Math.round(popover().getBoundingClientRect().height)).toBe(288);
+});
+
 it("opens at the language it is already showing", async () => {
   await openPicker();
 
