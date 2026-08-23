@@ -112,6 +112,22 @@
   tab-size: 2;
 }
 
+/* Corners and shadow ease between presets, so picking one along the row reads
+   as one surface changing rather than four separate pictures. Padding and type
+   are left alone: they decide how much room the code takes, and the frame's
+   width is measured, not transitioned, so easing them would leave the code
+   sitting outside its own box for a moment.
+
+   The live frame only. The export node is photographed from its computed
+   styles, and a capture taken a moment after a setting changed would come out
+   half way between the two. */
+
+.pico-shell-canvas .pico-frame {
+  transition:
+    border-radius 260ms var(--ease-glass),
+    box-shadow 260ms var(--ease-glass);
+}
+
 /* The static rendering used for export. */
 
 .pico-code {
@@ -198,7 +214,11 @@
    --------------------------------------------------------------------------- */
 
 .pico-glass {
-  --pico-glass-tint: light-dark(oklch(1 0 0 / 62%), oklch(0.32 0 0 / 55%));
+  /* Opaque enough to read against a picture. The dock floats over the code
+     itself, and at the tint this started on the snippet showed through the
+     labels and competed with them. Enough light still passes for the surface
+     to read as glass rather than as a card. */
+  --pico-glass-tint: light-dark(oklch(1 0 0 / 82%), oklch(0.3 0 0 / 80%));
   --pico-glass-edge: light-dark(oklch(0 0 0 / 8%), oklch(1 0 0 / 10%));
   --pico-glass-sheen: light-dark(oklch(1 0 0 / 70%), oklch(1 0 0 / 12%));
 
@@ -256,8 +276,34 @@
   bottom: 1.5rem;
   left: calc(50% + var(--pico-sidebar-inset) / 2);
   z-index: 20;
+  /* On a phone the dock is wider than the window, and being centred on it put
+     the language field off one edge and the link button off the other. Capped
+     here and allowed to squeeze the field, which is the one control that can
+     give ground: it already truncates, and what it says is also in the URL. */
+  max-width: calc(100vw - 1.5rem);
   transform: translateX(-50%);
-  transition: left 380ms var(--ease-glass);
+  transition:
+    left 380ms var(--ease-glass),
+    opacity 220ms var(--ease-glass),
+    translate 220ms var(--ease-glass),
+    visibility 0s;
+}
+
+/* As a drawer, the sidebar covers the dock and the scrim puts it out of reach,
+   but it still peeked out from behind the panel and was still a tab stop.
+   Hiding it settles both: visibility, not just opacity, is what takes it out
+   of the tab order. */
+
+@media (width < 48rem) {
+  .pico-shell[data-sidebar-open="true"] .pico-shell-dock {
+    visibility: hidden;
+    translate: 0 0.75rem;
+    opacity: 0;
+    transition:
+      opacity 220ms var(--ease-glass),
+      translate 220ms var(--ease-glass),
+      visibility 0s 220ms;
+  }
 }
 
 .pico-sidebar {
@@ -289,7 +335,7 @@
   position: fixed;
   inset: 0;
   z-index: 25;
-  background: oklch(0 0 0 / 40%);
+  background: oklch(0 0 0 / 52%);
   opacity: 0;
   pointer-events: none;
   transition: opacity 220ms var(--ease-glass);
@@ -306,6 +352,16 @@
   }
 }
 
+/* As a drawer the panel lies on top of the picture rather than beside it, and
+   a snippet reading through three columns of settings is not glass, it is a
+   mess. It gives up most of its translucency for the width where it overlaps. */
+
+@media (width < 48rem) {
+  .pico-sidebar {
+    --pico-glass-tint: light-dark(oklch(1 0 0 / 94%), oklch(0.26 0 0 / 94%));
+  }
+}
+
 .pico-sidebar-toggle {
   position: fixed;
   top: 1rem;
@@ -319,6 +375,43 @@
 .pico-sidebar-toggle[data-hidden="true"] {
   transform: translateX(-0.5rem);
   opacity: 0;
+}
+
+/* The chrome rises into place on load. Only the chrome: the picture is what
+   someone came for and is already the right size, so it is simply there.
+   @starting-style rather than a keyframe animation, so the same transition
+   carries both the arrival and every later move, and nothing is left holding
+   an animated value that would fight the sidebar's open and closed states. */
+
+@starting-style {
+  .pico-shell-dock {
+    translate: 0 0.75rem;
+    opacity: 0;
+  }
+
+  .pico-sidebar-toggle {
+    opacity: 0;
+  }
+}
+
+/* The tick a dock button wears for a moment after it did what it was asked. It
+   arrives rather than appearing: at sixteen pixels, a swap with no movement at
+   all reads as a rendering glitch. */
+
+@keyframes pico-icon-arrives {
+  from {
+    scale: 0.55;
+    opacity: 0;
+  }
+
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+.pico-icon-arrives {
+  animation: pico-icon-arrives 240ms var(--ease-glass) both;
 }
 
 /* ---------------------------------------------------------------------------
@@ -354,9 +447,14 @@
 @media (prefers-reduced-motion: reduce) {
   .pico-shell-canvas,
   .pico-shell-dock,
+  .pico-shell-canvas .pico-frame,
   .pico-sidebar,
   .pico-sidebar-scrim,
   .pico-sidebar-toggle {
     transition-duration: 1ms;
+  }
+
+  .pico-icon-arrives {
+    animation-duration: 1ms;
   }
 }

@@ -14,6 +14,7 @@ import {
   type ExportScale,
   isExportScale,
 } from "@/features/export/export-image";
+import { DockIcon, DockLabel } from "@/features/toolbar/dock-icon";
 import { ChevronUpIcon, DownloadIcon } from "lucide-react";
 
 export type SaveSplitButtonProps = {
@@ -21,6 +22,8 @@ export type SaveSplitButtonProps = {
   onScaleChange: (scale: ExportScale) => void;
   onSave: (format: ExportFormat) => void;
   disabled: boolean;
+  /** True while this button's own capture is running. */
+  pending: boolean;
 };
 
 /**
@@ -29,12 +32,20 @@ export type SaveSplitButtonProps = {
  * The button itself saves a PNG at the current scale, which is what almost
  * everyone wants; the menu is there for the times it is not.
  */
-export function SaveSplitButton({ scale, onScaleChange, onSave, disabled }: SaveSplitButtonProps) {
+export function SaveSplitButton({
+  scale,
+  onScaleChange,
+  onSave,
+  disabled,
+  pending,
+}: SaveSplitButtonProps) {
   return (
     <ButtonGroup>
       <Button isDisabled={disabled} onPress={() => onSave("png")} size="sm" variant="ghost">
-        <DownloadIcon data-icon="inline-start" />
-        Save
+        <DockIcon pending={pending}>
+          <DownloadIcon data-icon="inline-start" />
+        </DockIcon>
+        <DockLabel>Save</DockLabel>
       </Button>
       <DropdownMenuTrigger>
         <Button

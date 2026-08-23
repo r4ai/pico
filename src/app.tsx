@@ -1,3 +1,4 @@
+import { useBriefFlag } from "@/components/use-brief-flag";
 import { Toaster } from "@/components/ui/sonner";
 import { CodeEditor } from "@/features/editor/code-editor";
 import type { LanguageId } from "@/features/editor/language";
@@ -55,7 +56,8 @@ export function App() {
     ? frameColorsOf(highlight.highlighter.getTheme(highlight.theme))
     : frameColorsOfTheme(settings.theme, settings.mode);
 
-  const { busy, copy, save } = useExport({ node: exportNode, settings, scale });
+  const { running, copied, copy, save } = useExport({ node: exportNode, settings, scale });
+  const linkCopied = useBriefFlag();
 
   // Nobody looks at the export node, so it can lag the editor by a frame.
   // Rendering it at low priority takes the second tokenization of the document
@@ -90,6 +92,7 @@ export function App() {
     );
     try {
       await navigator.clipboard.writeText(url);
+      linkCopied.raise();
       if (tooLong) {
         toast.warning("Copied, but this link is very long.", {
           description: "Some apps and browsers cut off links this size.",
@@ -100,7 +103,7 @@ export function App() {
     } catch {
       toast.error("Could not copy the link.");
     }
-  }, [code, settings]);
+  }, [code, linkCopied, settings]);
 
   return (
     <div className="pico-shell relative flex h-full flex-col" data-sidebar-open={sidebarOpen}>
@@ -128,13 +131,15 @@ export function App() {
 
       <div className="pico-shell-dock">
         <BottomDock
-          busy={busy}
+          copied={copied}
           lang={settings.lang}
+          linkCopied={linkCopied.on}
           onCopy={copy}
           onCopyLink={copyLink}
           onLangChange={chooseLanguage}
           onSave={save}
           onScaleChange={setScale}
+          running={running}
           scale={scale}
         />
       </div>

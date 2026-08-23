@@ -18,7 +18,9 @@ export const Default: Story = {
   args: {
     lang: "tsx",
     scale: 2,
-    busy: false,
+    running: undefined,
+    copied: false,
+    linkCopied: false,
     onLangChange: noop,
     onScaleChange: noop,
     onCopy: noop,
@@ -40,6 +42,14 @@ export const Default: Story = {
   },
 };
 
-export const Exporting: Story = {
-  args: { ...Default.args, busy: true },
+export const Copying: Story = {
+  args: { ...Default.args, running: "copy" },
+};
+
+export const Saving: Story = {
+  args: { ...Default.args, running: "save" },
+};
+
+export const JustCopied: Story = {
+  args: { ...Default.args, copied: true, linkCopied: true },
 };
