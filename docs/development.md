@@ -21,6 +21,7 @@ Open the URL printed by `pnpm dev`.
 | ---------------------- | ------------------------------------------------ |
 | `pnpm dev`             | Start the development server                     |
 | `pnpm check`           | Check formatting, lint rules, and types          |
+| `pnpm run doctor`      | Scan the React codebase                          |
 | `pnpm test`            | Run the unit tests once                          |
 | `pnpm test:coverage`   | Run the unit tests with coverage                 |
 | `pnpm build`           | Build the production assets                      |
@@ -58,6 +59,14 @@ are easy to undo:
 
 The React Compiler is enabled, so components do not need `useMemo` or `memo`
 to survive the re-render every keystroke causes.
+
+## React Doctor
+
+React Doctor runs its full-project lint, dead-code, security, dependency, and health-score
+diagnostics through `pnpm run doctor`. To inspect only issues introduced by the current branch, run
+`pnpm run doctor --verbose --scope changed`. Pull requests receive advisory summaries and inline
+review comments, while pushes to `main` record the full-project health score; these reports do not
+block CI.
 
 ## Architecture
 

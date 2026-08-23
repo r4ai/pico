@@ -1,0 +1,41 @@
+# React Doctor reports security, performance, correctness, accessibility,
+# bundle-size, and architecture issues in React codebases.
+
+name: React Doctor
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  statuses: write
+
+concurrency:
+  group: react-doctor-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  react-doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: millionco/react-doctor@01820bb4fd4d0a4aebcd8df2b2a143a098649cb2 # v2.2.8
+        env:
+          # The action uses npm to resolve its pinned CLI even though Pico requires pnpm.
+          NPM_CONFIG_FORCE: "true"
+        with:
+          blocking: none
+          scope: ${{ github.event_name == 'push' && 'full' || 'changed' }}
+          comment: true
+          review-comments: true
+          commit-status: true
+          version: "0.9.12"
