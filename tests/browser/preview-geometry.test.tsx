@@ -27,10 +27,6 @@ async function nextFrame(): Promise<void> {
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-async function wait(milliseconds: number): Promise<void> {
-  await new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
-}
-
 async function setCode(code: string): Promise<void> {
   await page.getByRole("textbox", { name: "Code" }).fill(code);
   await nextFrame();
@@ -273,7 +269,7 @@ describe("preview geometry", () => {
     await finishAnimations(liveFrame());
 
     await padding.getByRole("radio", { name: "XL" }).click();
-    await wait(40);
+    await pauseAtMidpoint(liveFrame());
     const inFlightPadding = Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft);
     expect(inFlightPadding).toBeGreaterThan(16);
     expect(inFlightPadding).toBeLessThan(64);
