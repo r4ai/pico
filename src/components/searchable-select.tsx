@@ -13,10 +13,11 @@ import {
   type ReactNode,
   useContext,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
-import { ComboBoxStateContext } from "react-aria-components";
+import { ComboBoxStateContext, useFilter } from "react-aria-components";
 
 export type SearchableOption<T extends string> = {
   readonly value: T;
@@ -24,7 +25,13 @@ export type SearchableOption<T extends string> = {
   readonly label: string;
   /** How the option is drawn in the list. */
   readonly render: ReactNode;
+  /** Extra terms that filter to this option without changing its label. */
+  readonly searchTerms?: readonly string[];
 };
+
+export function searchTextOf<T extends string>(option: SearchableOption<T>): string {
+  return [option.label, ...(option.searchTerms ?? [])].join(" ");
+}
 
 export type SearchableSelectProps<T extends string> = {
   ariaLabel: string;
@@ -63,6 +70,15 @@ export function SearchableSelect<T extends string>({
   placement,
   width = "fill",
 }: SearchableSelectProps<T>) {
+  const { contains } = useFilter({ sensitivity: "base" });
+  const defaultFilter = useMemo(() => {
+    const searchTextByLabel = new Map(
+      options.map((option) => [option.label, searchTextOf(option)]),
+    );
+    return (textValue: string, inputValue: string) =>
+      contains(searchTextByLabel.get(textValue) ?? textValue, inputValue);
+  }, [contains, options]);
+
   const field =
     width === "content" ? (
       <ElasticField adornment={adornment} className={className} placeholder={placeholder} />
@@ -82,6 +98,7 @@ export function SearchableSelect<T extends string>({
     <Combobox
       allowsEmptyCollection
       aria-label={ariaLabel}
+      defaultFilter={defaultFilter}
       menuTrigger="focus"
       onChange={(next) => {
         if (typeof next === "string") onChange(next as T);
@@ -140,7 +157,7 @@ function ElasticField({ adornment, className, placeholder }: ElasticFieldProps) 
   return (
     <ComboboxInput
       className={cn(
-        "w-auto [&>input]:flex-none [&>input]:transition-[width] [&>input]:duration-200 [&>input]:ease-glass motion-reduce:[&>input]:transition-none",
+        "w-auto [&>input]:max-w-32 [&>input]:flex-none [&>input]:text-ellipsis [&>input]:transition-[width] [&>input]:duration-200 [&>input]:ease-glass motion-reduce:[&>input]:transition-none",
         className,
       )}
       onFocus={(event) => event.target.select()}

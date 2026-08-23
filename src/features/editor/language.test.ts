@@ -16,4 +16,10 @@ describe("language registry", () => {
     expect(isLanguageId("js")).toBe(true);
     expect(isLanguageId("python")).toBe(false);
   });
+
+  it("keeps aliases searchable without turning them into language ids", () => {
+    expect(LANGUAGES.ts.aliases).toContain("typescript");
+    expect(LANGUAGES.js.aliases).toContain("javascript");
+    expect(isLanguageId("typescript")).toBe(false);
+  });
 });
