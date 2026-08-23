@@ -62,8 +62,12 @@ export function App() {
   // Nobody looks at the export node, so it can lag the editor by a frame.
   // Rendering it at low priority takes the second tokenization of the document
   // and a rebuilt span per token off the path a keystroke has to travel before
-  // the character appears. React catches it up as soon as the editor is idle,
-  // which is long before a pointer can reach the dock.
+  // the character appears.
+  //
+  // It cannot lag into a capture. Exporting is asynchronous before it ever
+  // reads the node — the exporter is fetched and the fonts are awaited first —
+  // so a low-priority render scheduled by an earlier keystroke has always been
+  // committed by the time the node is photographed.
   const deferredCode = useDeferredValue(code);
 
   useLanguageDetection({

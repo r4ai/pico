@@ -353,8 +353,8 @@
 }
 
 /* As a drawer the panel lies on top of the picture rather than beside it, and
-   a snippet reading through three columns of settings is not glass, it is a
-   mess. It gives up most of its translucency for the width where it overlaps. */
+   a snippet reading through a column of settings is not glass, it is a mess.
+   It gives up most of its translucency for the widths where it overlaps. */
 
 @media (width < 48rem) {
   .pico-sidebar {

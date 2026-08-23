@@ -27,7 +27,9 @@ export function usePanelFocus(open: boolean): RefObject<HTMLDivElement | null> {
       panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
       return;
     }
-    opener.current?.focus();
+    // Only when the keyboard is still inside: someone who clicked back into the
+    // editor and then dismissed the panel should be left where they were.
+    if (panel.current?.contains(document.activeElement)) opener.current?.focus();
     opener.current = null;
   }, [open]);
 
