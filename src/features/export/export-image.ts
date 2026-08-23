@@ -1,7 +1,6 @@
 import { fontEmbedCss } from "@/features/export/font-embed";
 import { FONTS } from "@/features/settings/fonts";
 import type { Settings } from "@/features/settings/settings";
-import { toBlob, toSvg } from "html-to-image";
 
 export const EXPORT_FORMATS = ["png", "svg"] as const;
 export const EXPORT_SCALES = [1, 2, 3] as const;
@@ -47,13 +46,16 @@ export type RenderRequest = {
  * outside the rounded corners stays transparent.
  */
 export async function renderImage({ node, settings, format, scale }: RenderRequest): Promise<Blob> {
-  const options = {
-    fontEmbedCSS: await fontEmbedCss(FONTS[settings.font]),
-    pixelRatio: scale,
-    cacheBust: false,
-  };
-  // Webfonts the page has not finished loading would be captured as fallbacks.
-  await document.fonts.ready;
+  // Downloaded here rather than with the app: nothing can be exported before
+  // there is something to export, and the request goes out alongside the font
+  // and the fonts.ready wait that the capture needs anyway.
+  const [{ toBlob, toSvg }, fontEmbedCSS] = await Promise.all([
+    import("html-to-image"),
+    fontEmbedCss(FONTS[settings.font]),
+    // Webfonts the page has not finished loading would be captured as fallbacks.
+    document.fonts.ready,
+  ]);
+  const options = { fontEmbedCSS, pixelRatio: scale, cacheBust: false };
 
   if (format === "svg") {
     const dataUrl = await withTimeout(toSvg(node, options));
