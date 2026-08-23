@@ -120,9 +120,13 @@ function resolveMarkupLanguage(code: string): LanguageId {
   return HTML_MARKERS.test(code) ? "html" : "xml";
 }
 
+function resolveCLanguage(code: string): LanguageId {
+  return CPP_MARKERS.test(code) ? "cpp" : "c";
+}
+
 const SHARED_LANGUAGE_RESOLVERS: Partial<Record<HljsLang, (code: string) => LanguageId>> = {
-  c: (code) => (CPP_MARKERS.test(code) ? "cpp" : "c"),
-  cpp: (code) => (CPP_MARKERS.test(code) ? "cpp" : "c"),
+  c: resolveCLanguage,
+  cpp: resolveCLanguage,
   typescript: (code) => (JSX_MARKERS.test(code) ? "tsx" : "ts"),
   javascript: (code) => (JSX_MARKERS.test(code) ? "jsx" : "js"),
   xml: resolveMarkupLanguage,
