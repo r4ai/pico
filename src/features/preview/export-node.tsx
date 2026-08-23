@@ -4,7 +4,7 @@ import type { FrameColors } from "@/features/preview/frame-colors";
 import { ShikiCode } from "@/features/preview/shiki-code";
 import { SHADOW_ROOM } from "@/features/settings/appearance";
 import type { Settings } from "@/features/settings/settings";
-import type { CSSProperties, RefObject } from "react";
+import { type CSSProperties, type RefObject, useLayoutEffect } from "react";
 
 export type ExportNodeProps = {
   ref: RefObject<HTMLDivElement | null>;
@@ -13,6 +13,7 @@ export type ExportNodeProps = {
   colors: FrameColors;
   /** `null` until the first grammar and theme have loaded. */
   highlight: ShikiHighlight | null;
+  onFrameWidthChange: (width: number) => void;
 };
 
 /**
@@ -28,8 +29,27 @@ export type ExportNodeProps = {
  *
  * The host's padding is what keeps the drop shadow inside the picture.
  */
-export function ExportNode({ ref, code, settings, colors, highlight }: ExportNodeProps) {
+export function ExportNode({
+  ref,
+  code,
+  settings,
+  colors,
+  highlight,
+  onFrameWidthChange,
+}: ExportNodeProps) {
   const style = { "--pico-shadow-room": SHADOW_ROOM[settings.shadow] } as CSSProperties;
+
+  useLayoutEffect(() => {
+    const frame = ref.current?.firstElementChild;
+    if (!(frame instanceof HTMLElement)) return;
+
+    const reportWidth = () => onFrameWidthChange(frame.getBoundingClientRect().width);
+    reportWidth();
+
+    const observer = new ResizeObserver(reportWidth);
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, [highlight, onFrameWidthChange, ref]);
 
   return (
     <div aria-hidden className="pico-export-stage">

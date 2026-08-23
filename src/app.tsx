@@ -30,6 +30,7 @@ export function App() {
   const [settings, setSettings] = useSettings();
   const [code, setCode] = useCode();
   const [scale, setScale] = useState<ExportScale>(DEFAULT_SCALE);
+  const [frameWidth, setFrameWidth] = useState<number>();
   const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom);
   // Once someone picks a language themselves, guessing would only fight them.
   const [languageChosen, setLanguageChosen] = useState(() =>
@@ -95,12 +96,11 @@ export function App() {
 
   return (
     <div className="pico-shell relative flex h-full flex-col" data-sidebar-open={sidebarOpen}>
-      {/* The frame grows to fit long lines and this scrolls, rather than the
-          frame being squeezed — the editor has to show the picture's real
-          width or it is not a preview. */}
+      {/* The hidden export frame lays out every line, so its measured width is
+          stable even while CodeMirror virtualises lines during scrolling. */}
       <div className="pico-shell-canvas flex-1 overflow-auto">
         <div className="flex min-h-full w-full min-w-max items-center justify-center p-10 pb-32">
-          <CodeFrame colors={colors} settings={settings}>
+          <CodeFrame colors={colors} settings={settings} width={frameWidth}>
             <CodeEditor
               highlight={highlight}
               onChange={setCode}
@@ -137,6 +137,7 @@ export function App() {
         code={code}
         colors={colors}
         highlight={highlight}
+        onFrameWidthChange={setFrameWidth}
         ref={exportNode}
         settings={settings}
       />
