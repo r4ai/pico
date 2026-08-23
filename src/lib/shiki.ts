@@ -1,30 +1,8 @@
-import { cudaGrammars } from "@/features/editor/cuda-grammar";
 import type { LanguageId } from "@/features/editor/language";
 import { LANGUAGES } from "@/features/editor/language";
 import type { ShikiThemeName } from "@/features/settings/theme";
-import {
-  createHighlighterCore,
-  type HighlighterCore,
-  type LanguageRegistration,
-  type ThemeRegistration,
-} from "shiki/core";
+import { createHighlighterCore, type HighlighterCore, type ThemeRegistration } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-
-/**
- * Static so the bundler can split each grammar into its own chunk. A template
- * literal import would defeat that and pull all 300+ Shiki grammars in.
- */
-const LANG_LOADERS: Record<LanguageId, () => Promise<LanguageRegistration[]>> = {
-  tsx: async () => (await import("@shikijs/langs/tsx")).default,
-  ts: async () => (await import("@shikijs/langs/typescript")).default,
-  jsx: async () => (await import("@shikijs/langs/jsx")).default,
-  js: async () => (await import("@shikijs/langs/javascript")).default,
-  c: async () => (await import("@shikijs/langs/c")).default,
-  cpp: async () => (await import("@shikijs/langs/cpp")).default,
-  cuda: async () => [...(await import("@shikijs/langs/cpp")).default, ...cudaGrammars],
-  rust: async () => (await import("@shikijs/langs/rust")).default,
-  llvm: async () => (await import("@shikijs/langs/llvm")).default,
-};
 
 /** Typed by the registry, so a theme without a loader is a compile error. */
 const THEME_LOADERS: Record<ShikiThemeName, () => Promise<{ default: ThemeRegistration }>> = {
@@ -68,7 +46,7 @@ export async function ensureHighlighter(
 
   let langLoad = pendingLangs.get(lang);
   if (!langLoad) {
-    langLoad = LANG_LOADERS[lang]().then((registrations) => core.loadLanguage(registrations));
+    langLoad = LANGUAGES[lang].load().then((registrations) => core.loadLanguage(registrations));
     pendingLangs.set(lang, langLoad);
   }
 

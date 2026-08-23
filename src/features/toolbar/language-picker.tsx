@@ -1,6 +1,13 @@
 import { SearchableSelect } from "@/components/searchable-select";
 import { LANGUAGE_IDS, LANGUAGES, type LanguageId } from "@/features/editor/language";
 
+const LANGUAGE_OPTIONS = LANGUAGE_IDS.map((id) => ({
+  value: id,
+  label: LANGUAGES[id].label,
+  render: LANGUAGES[id].label,
+  searchTerms: [id, ...LANGUAGES[id].aliases],
+}));
+
 export type LanguagePickerProps = {
   value: LanguageId;
   onChange: (value: LanguageId) => void;
@@ -19,11 +26,7 @@ export function LanguagePicker({ value, onChange }: LanguagePickerProps) {
       ariaLabel="Language"
       className="h-7 border-transparent dark:bg-transparent"
       onChange={onChange}
-      options={LANGUAGE_IDS.map((id) => ({
-        value: id,
-        label: LANGUAGES[id].label,
-        render: LANGUAGES[id].label,
-      }))}
+      options={LANGUAGE_OPTIONS}
       placeholder="Search languages"
       placement="top start"
       value={value}
