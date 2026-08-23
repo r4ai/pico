@@ -1,8 +1,12 @@
 allowBuilds:
   esbuild: true
+blockExoticSubdeps: true
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.2.9
   vite-plus: 0.2.9
+minimumReleaseAge: 1440
+minimumReleaseAgeIgnoreMissingTime: false
+minimumReleaseAgeStrict: true
 overrides:
   vite: "catalog:"
 peerDependencyRules:
@@ -10,3 +14,9 @@ peerDependencyRules:
     - vite
   allowedVersions:
     vite: "*"
+saveExact: true
+strictDepBuilds: true
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Legacy transitive release without the trust evidence of an older release.
+  - semver@6.3.1

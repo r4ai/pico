@@ -10,6 +10,7 @@
     "check": "vp check",
     "fmt": "vp fmt",
     "lint": "vp lint",
+    "security:audit": "pnpm audit --audit-level moderate",
     "test": "vp test --run",
     "test:watch": "vp test",
     "storybook": "storybook dev -p 6006",
