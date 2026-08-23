@@ -30,6 +30,27 @@ pnpm dev
 | `pnpm check` | Format, lint, and type-check |
 | `pnpm test`  | Run unit tests               |
 
+## Deployment
+
+Pico is deployed as static assets on Cloudflare Workers. There is no Worker script, server-side
+rendering, or runtime storage. Static asset requests and storage are free on both the Workers Free
+and Paid plans.
+
+- Pull requests from this repository publish a public version preview at
+  `pr-<number>-pico.<workers-subdomain>.workers.dev` after CI passes. Fork pull requests are never
+  given deployment credentials and do not publish previews.
+- Pushes to `main` publish production to <https://pico.r4ai.dev> after CI passes.
+
+The GitHub repository must define these Actions secrets:
+
+| Secret                  | Value                                                                       |
+| ----------------------- | --------------------------------------------------------------------------- |
+| `CLOUDFLARE_ACCOUNT_ID` | The Workers & Pages account ID, not a zone ID                               |
+| `CLOUDFLARE_API_TOKEN`  | A token scoped to Workers Scripts Write and `r4ai.dev` Workers Routes Write |
+
+The token does not need DNS, KV, or R2 permissions. Cloudflare creates the Custom Domain DNS
+record and certificate from [`wrangler.jsonc`](wrangler.jsonc).
+
 ## Fonts
 
 Geist Mono, JetBrains Mono, and a subset of UDEV Gothic for Japanese. Only the
