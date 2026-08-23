@@ -7,6 +7,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { InputGroupAddon } from "@/components/ui/input-group";
+import { searchTextOf, type SearchableOption } from "@/components/searchable-option";
 import { cn } from "@/lib/utils";
 import {
   type ComponentProps,
@@ -19,19 +20,7 @@ import {
 } from "react";
 import { ComboBoxStateContext, useFilter } from "react-aria-components";
 
-export type SearchableOption<T extends string> = {
-  readonly value: T;
-  /** Matched against what the reader types, and shown once chosen. */
-  readonly label: string;
-  /** How the option is drawn in the list. */
-  readonly render: ReactNode;
-  /** Extra terms that filter to this option without changing its label. */
-  readonly searchTerms?: readonly string[];
-};
-
-export function searchTextOf<T extends string>(option: SearchableOption<T>): string {
-  return [option.label, ...(option.searchTerms ?? [])].join(" ");
-}
+export type { SearchableOption } from "@/components/searchable-option";
 
 export type SearchableSelectProps<T extends string> = {
   ariaLabel: string;

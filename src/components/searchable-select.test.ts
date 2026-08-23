@@ -1,4 +1,4 @@
-import { searchTextOf, type SearchableOption } from "@/components/searchable-select";
+import { searchTextOf, type SearchableOption } from "@/components/searchable-option";
 import { describe, expect, it } from "vite-plus/test";
 
 describe("searchable select", () => {
