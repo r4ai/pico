@@ -1,11 +1,11 @@
-# Pico開発ガイド
+# Development
 
-Picoは、ReactとViteで構築し、Cloudflare Workersから静的ファイルとして配信するシングルページアプリケーションです。
-サーバー側のスクリプト、レンダリング、ストレージは使用しません。
+Pico is a React and Vite single-page application deployed as static assets on Cloudflare Workers.
+It has no Worker script, server-side rendering, or runtime storage.
 
-## 開発環境
+## Setup
 
-[mise](https://mise.jdx.dev/)を使うと、リポジトリで指定しているNode.js、pnpm、pinactのバージョンをまとめて導入できます。
+[mise](https://mise.jdx.dev/) installs the versions of Node.js, pnpm, and pinact specified by the repository.
 
 ```sh
 mise install
@@ -13,22 +13,22 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-`pnpm dev` が表示するURLをブラウザで開いてください。
+Open the URL printed by `pnpm dev`.
 
-## コマンド
+## Commands
 
-| コマンド               | 用途                                   |
-| ---------------------- | -------------------------------------- |
-| `pnpm dev`             | 開発サーバーを起動する                 |
-| `pnpm check`           | フォーマット、Lint、型を検査する       |
-| `pnpm test`            | 単体テストを1回実行する                |
-| `pnpm test:coverage`   | カバレッジを計測する                   |
-| `pnpm build`           | 本番用の静的ファイルを生成する         |
-| `pnpm storybook`       | Storybookを起動する                    |
-| `pnpm build-storybook` | Storybookをビルドする                  |
-| `pnpm security:audit`  | moderate以上の依存関係脆弱性を検査する |
+| Command                | Purpose                                          |
+| ---------------------- | ------------------------------------------------ |
+| `pnpm dev`             | Start the development server                     |
+| `pnpm check`           | Check formatting, lint rules, and types          |
+| `pnpm test`            | Run the unit tests once                          |
+| `pnpm test:coverage`   | Run the unit tests with coverage                 |
+| `pnpm build`           | Build the production assets                      |
+| `pnpm storybook`       | Start Storybook                                  |
+| `pnpm build-storybook` | Build Storybook                                  |
+| `pnpm security:audit`  | Audit dependencies at moderate severity or above |
 
-変更を送る前に、最低限次の検査を実行します。
+Run at least these checks before submitting a change:
 
 ```sh
 pnpm check
@@ -36,59 +36,59 @@ pnpm test
 pnpm build
 ```
 
-## ディレクトリ構成
+## Architecture
 
-| パス                     | 責務                                         |
-| ------------------------ | -------------------------------------------- |
-| `src/features/editor/`   | コード編集、言語判定、シンタックスハイライト |
-| `src/features/preview/`  | 画面上のコードフレームと出力対象の描画       |
-| `src/features/settings/` | テーマ、フォント、フレーム設定とURLへの同期  |
-| `src/features/export/`   | PNGとSVGの生成、フォントの埋め込み           |
-| `src/features/toolbar/`  | 言語選択とコピー、保存、リンク共有の操作     |
-| `src/components/`        | 複数の機能から使うUIコンポーネント           |
-| `public/fonts/`          | 配信するUDEV Gothicのサブセットとライセンス  |
+| Path                     | Responsibility                                   |
+| ------------------------ | ------------------------------------------------ |
+| `src/features/editor/`   | Editing, language detection, and highlighting    |
+| `src/features/preview/`  | The visible code frame and export rendering      |
+| `src/features/settings/` | Appearance settings and URL synchronization      |
+| `src/features/export/`   | PNG/SVG generation and font embedding            |
+| `src/features/toolbar/`  | Language selection, copy, save, and link actions |
+| `src/components/`        | UI components shared across features             |
+| `public/fonts/`          | The UDEV Gothic subset and its license           |
 
-コードと表示設定はURLのクエリパラメーターへ同期します。
-共有時はコードを圧縮してURLへ格納するため、アプリケーション用のサーバー側ストレージは不要です。
+Pico synchronizes the code and appearance settings to URL query parameters.
+Shared links compress the code into the URL, so the application does not need server-side storage.
 
-## 設計方針
+## Design principles
 
-- 初回表示では、エディターと出力に必要な操作だけを見せる。
-- 設定項目を増やすより、用途が明確な選択肢を厳選する。
-- 詳細設定はサイドバーにまとめ、編集と出力の流れから分離する。
+- Show only the editor and essential export actions on first load.
+- Prefer a small set of purposeful options over exhaustive configuration.
+- Keep detailed settings in the sidebar, separate from editing and export.
 
-## 対応言語
+## Language support
 
-言語選択には、Shiki 4.4.3に含まれる単独利用可能な言語とPico独自のCUDA文法を登録しています。
-カタログはShikiと自動同期せず、依存関係の更新で選択肢が意図せず増減しないように管理します。
+The language picker uses a curated registry of standalone languages bundled with Shiki 4.4.3, plus Pico's custom CUDA grammar.
+The registry does not automatically track Shiki, so dependency updates cannot silently change the available options.
 
-次の30言語は自動判定にも対応しています。
+Automatic detection covers these 30 languages:
 
-TSX、TypeScript、JSX、JavaScript、C、C++、CUDA、Rust、LLVM IR、Python、Java、Go、C#、Kotlin、Swift、Dart、Scala、Ruby、PHP、Shell、PowerShell、SQL、JSON、YAML、HTML、XML、CSS、Lua、R、Elixir。
+TSX, TypeScript, JSX, JavaScript, C, C++, CUDA, Rust, LLVM IR, Python, Java, Go, C#, Kotlin, Swift, Dart, Scala, Ruby, PHP, Shell, PowerShell, SQL, JSON, YAML, HTML, XML, CSS, Lua, R, and Elixir.
 
-## フォント
+## Fonts
 
-Geist Mono、JetBrains Mono、日本語用のUDEV Gothicサブセットを同梱しています。
-画面では選択したフォントだけを読み込み、画像には選択したフォントだけを埋め込みます。
+Pico bundles Geist Mono, JetBrains Mono, and a subset of UDEV Gothic for Japanese text.
+It downloads and embeds only the selected font.
 
-UDEV Gothicのサブセットを更新する手順は[`public/fonts/README.md`](../public/fonts/README.md)を参照してください。
+See [`public/fonts/README.md`](../public/fonts/README.md) for instructions on updating the UDEV Gothic subset.
 
-## デプロイ
+## Deployment
 
-GitHub Actionsは、CIが成功した同一リポジトリ内のPull Requestを公開プレビューへデプロイします。
-ForkからのPull Requestにはデプロイ用の認証情報を渡さないため、プレビューを作成しません。
+GitHub Actions deploys a public preview after CI passes for pull requests from this repository.
+Pull requests from forks do not receive deployment credentials and therefore do not publish previews.
 
-`main`へのpushは、CIの成功後に本番環境の<https://pico.r4ai.dev>へデプロイします。
-どちらも[`wrangler.jsonc`](../wrangler.jsonc)の設定に従い、Cloudflare Workers Static Assetsを利用します。
+Pushes to `main` deploy to <https://pico.r4ai.dev> after CI passes.
+Both environments use Cloudflare Workers Static Assets configured in [`wrangler.jsonc`](../wrangler.jsonc).
 
-リポジトリには次のGitHub Actions secretsが必要です。
+The repository requires these GitHub Actions secrets:
 
-| Secret                  | 値                                                                        |
-| ----------------------- | ------------------------------------------------------------------------- |
-| `CLOUDFLARE_ACCOUNT_ID` | Workers & PagesのAccount ID。Zone IDではありません。                      |
-| `CLOUDFLARE_API_TOKEN`  | Workers Scripts Writeと`r4ai.dev`のWorkers Routes Writeを許可したトークン |
+| Secret                  | Value                                                                              |
+| ----------------------- | ---------------------------------------------------------------------------------- |
+| `CLOUDFLARE_ACCOUNT_ID` | The Workers & Pages account ID, not a zone ID                                      |
+| `CLOUDFLARE_API_TOKEN`  | A token with Workers Scripts Write and `r4ai.dev` Workers Routes Write permissions |
 
-トークンにDNS、KV、R2の権限は不要です。
-Custom DomainのDNSレコードと証明書はCloudflareが作成します。
+The token does not need DNS, KV, or R2 permissions.
+Cloudflare creates the Custom Domain DNS record and certificate.
 
-依存関係とGitHub Actionsの更新方針は[サプライチェーンガイド](./supply-chain.md)を参照してください。
+See [Supply chain](./supply-chain.md) for dependency and GitHub Actions update policies.

@@ -7,38 +7,32 @@
 <h1 align="center">Pico</h1>
 
 <p align="center">
-  <strong>コードを貼り付けるだけで、共有用の画像に変換できるブラウザアプリです。</strong>
+  <strong>Code, framed.</strong><br />
+  Turn a snippet into a picture.
 </p>
 
-<p align="center">
-  <a href="https://pico.r4ai.dev"><strong>Picoを使う</strong></a>
-</p>
+![Editing and exporting a TypeScript snippet in Pico](./assets/pico-overview.png)
 
-![PicoでTypeScriptのコードを整え、画像として出力する画面](./assets/pico-overview.png)
+## Quickstart
 
-## コードを画像にするまで
+1. Paste code into the editor.
+2. Choose a theme from the top-left Settings panel.
+3. Export the image from the bottom dock.
 
-| 1. 貼り付ける                    | 2. 見た目を整える                                    | 3. 出力する                                                  |
-| -------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
-| 画面中央にコードを貼り付けます。 | 左上の設定からテーマ、フォント、余白などを選びます。 | 下部のドックから画像のコピー、保存、リンク共有を実行します。 |
+## Features
 
-## 主な機能
+- Automatic detection for common languages, with highlighting for 243 languages.
+- Themes and fonts, including Japanese text support.
+- Clipboard copy, PNG/SVG downloads, and URL sharing.
+- No account required; editing and export run entirely in the browser.
 
-| 機能                   | できること                                                                                                   |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
-| シンタックスハイライト | 243言語から選択できます。よく使われる30言語は、貼り付けたコードから自動判定します。                          |
-| 見た目の調整           | 5種類のテーマ、ライトとダーク、3種類のフォント、文字サイズ、行番号、余白、角丸、影を変更できます。           |
-| 画像の出力             | PNG画像をクリップボードへコピーするか、PNGまたはSVGとして保存できます。保存倍率は1倍、2倍、3倍から選べます。 |
-| リンク共有             | コードと表示設定を一つのURLにまとめます。リンクを開くと同じコード画像を再現できます。                        |
+## Development
 
-Picoはアカウントを必要とせず、編集と画像生成をブラウザ内で行います。
-共有リンクは圧縮したコードをURLに含むため、機密情報を含むコードには使用しないでください。
+See [Development](./docs/development.md) for setup, architecture, testing, and deployment.
 
-## 開発
+## License
 
-ローカル環境の構築、テスト、構成、デプロイについては[開発ガイド](./docs/development.md)を参照してください。
+Pico is available under the [MIT License](./LICENSE).
 
-## ライセンス
-
-Pico本体は[MIT License](./LICENSE)で提供します。
-同梱するUDEV Gothicのサブセットには[SIL Open Font License 1.1](./public/fonts/UDEVGothic-LICENSE.txt)が適用されます。
+The bundled subset of UDEV Gothic is available under the
+[SIL Open Font License 1.1](./public/fonts/UDEVGothic-LICENSE.txt).
