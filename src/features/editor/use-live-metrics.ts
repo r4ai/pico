@@ -19,6 +19,11 @@ import { type RefObject, useEffect } from "react";
  * measures the lines in view, and asking for it is how the library expects
  * geometry it cannot observe to be reported. The final measure on cleanup is
  * what lands the editor exactly on the settled values.
+ *
+ * The ref is read inside the loop and again in the cleanup rather than
+ * captured once, which is the point: there is exactly one view per editor and
+ * it is whichever one is mounted that needs measuring. A destroyed one leaves
+ * `null` behind and the call is skipped.
  */
 export function useLiveMetrics(view: RefObject<EditorView | null>, animating: boolean) {
   useEffect(() => {
