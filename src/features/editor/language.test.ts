@@ -1,9 +1,13 @@
-import { isLanguageId, LANGUAGE_IDS, LANGUAGES } from "@/features/editor/language";
+import { isLanguageId, LANGUAGE_IDS } from "@/features/editor/language";
+import { LANGUAGES } from "@/features/editor/language-registry";
 import { bundledLanguagesInfo } from "shiki/langs";
 import { describe, expect, it } from "vite-plus/test";
 
 describe("language registry", () => {
-  it("derives every supported id from the registry", () => {
+  // The compiler already rejects a registry that is missing an id or has one
+  // too many. What it cannot see is the order, which is the order the picker
+  // draws, so that is what this checks.
+  it("keeps the id list and the registry in the same order", () => {
     expect(LANGUAGE_IDS).toEqual(Object.keys(LANGUAGES));
   });
 

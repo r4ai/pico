@@ -1,7 +1,7 @@
 import type { LanguageId } from "@/features/editor/language";
 import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
 import type { ShikiThemeName } from "@/features/settings/theme";
-import { ensureHighlighter, shikiLangOf } from "@/lib/shiki";
+import { ensureHighlighter } from "@/lib/shiki";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -20,8 +20,8 @@ export function useShikiHighlight(lang: LanguageId, theme: ShikiThemeName): Shik
   useEffect(() => {
     let cancelled = false;
     ensureHighlighter(lang, theme).then(
-      (highlighter) => {
-        if (!cancelled) setHighlight({ highlighter, lang: shikiLangOf(lang), theme });
+      ({ highlighter, shikiLang }) => {
+        if (!cancelled) setHighlight({ highlighter, lang: shikiLang, theme });
       },
       (error: unknown) => {
         const description = error instanceof Error ? error.message : String(error);

@@ -1,7 +1,10 @@
 import { SearchableSelect } from "@/components/searchable-select";
-import { LANGUAGE_IDS, LANGUAGES, type LanguageId } from "@/features/editor/language";
+import type { LanguageId } from "@/features/editor/language";
+import { LANGUAGES } from "@/features/editor/language-registry";
 
-const LANGUAGE_OPTIONS = LANGUAGE_IDS.map((id) => ({
+/* Ordered by the registry rather than by LANGUAGE_IDS: both are alphabetical by
+   label, but only one of them is the list this picker is drawing from. */
+const LANGUAGE_OPTIONS = (Object.keys(LANGUAGES) as LanguageId[]).map((id) => ({
   value: id,
   label: LANGUAGES[id].label,
   render: LANGUAGES[id].label,
