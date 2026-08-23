@@ -443,33 +443,31 @@
   width: var(--pico-sidebar-width);
   flex-direction: column;
   overflow: hidden;
-  /* Out of the tab order while closed, and by `visibility` rather than by the
-     `inert` React also writes here. React Aria hides everything outside an
-     open popover and puts back what it found on close — and what it puts back
-     is not what React last rendered, so the first time the language picker
-     closed, `inert` came off a panel that was still shut and Tab walked into
-     it: a close button, a theme field and every preset, all off the left edge
-     of the window. The same reason the dock and the toggle go this way.
-
-     Delayed by the length of the slide when closing, and not at all when
-     opening, so the panel is still there to be seen leaving. */
-  visibility: hidden;
   transform: translateX(calc(-100% - 1.5rem));
   opacity: 0;
   transition:
     transform 380ms var(--ease-glass),
-    opacity 220ms var(--ease-glass),
-    visibility 0s 380ms;
+    opacity 220ms var(--ease-glass);
 }
 
 .pico-sidebar[data-open="true"] {
-  visibility: visible;
   transform: translateX(0);
   opacity: 1;
-  transition:
-    transform 380ms var(--ease-glass),
-    opacity 220ms var(--ease-glass),
-    visibility 0s;
+}
+
+/* Everything the panel holds, in one box so that `inert` can go on it rather
+   than on the panel. React Aria hides everything outside an open popover and
+   puts back what it found on close — and what it puts back is not what React
+   last rendered, so an `inert` written to the panel came off the first time
+   the language picker closed and Tab walked into a panel that was still shut.
+   It never reaches this far down; the canvas keeps its own `inert` one level
+   in for the same reason. */
+
+.pico-sidebar-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
 }
 
 /* Only ever seen in drawer mode: where the sidebar has its own column there is

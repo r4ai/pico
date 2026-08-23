@@ -63,6 +63,22 @@ it("comes back open when that is how it was left", async () => {
   expect(open()).toBe(true);
 });
 
+it("does not take the keyboard on arrival", async () => {
+  await page.getByRole("button", { name: "Open settings" }).click();
+  await expect.poll(open).toBe(true);
+  // Opening them is an action, so the keyboard follows.
+  await expect
+    .poll(() => document.activeElement?.getAttribute("aria-label"))
+    .toBe("Close settings");
+
+  await comeBack();
+  // Arriving at them is not. A panel that is open because that is how it was
+  // left is a layout, and a close button is not what somebody following a link
+  // asked to land on.
+  expect(open()).toBe(true);
+  expect(document.activeElement?.closest(".pico-sidebar")).toBeNull();
+});
+
 it("comes back closed once it has been closed again", async () => {
   await page.getByRole("button", { name: "Open settings" }).click();
   await expect.poll(open).toBe(true);

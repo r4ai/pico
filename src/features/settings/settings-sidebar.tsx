@@ -32,10 +32,10 @@ export type SettingsSidebarProps = {
  * Everything you might want to adjust, and nothing you would not.
  *
  * It stays mounted while closed so opening it is a transform rather than a
- * mount, and nothing inside it can be tabbed to meanwhile. Twice over: `inert`
- * says so to React, and `visibility: hidden` says so to the browser, because
- * React Aria strips the first one off on its way out of an open popover and
- * does not put it back. Because both this and the button that opens it spend
+ * mount, and everything it holds is marked `inert` so nothing inside can be
+ * tabbed to meanwhile. That goes on the box inside the panel rather than on
+ * the panel, which React Aria rewrites on its way out of an open popover; see
+ * `.pico-sidebar-body`. Because both this and the button that opens it spend
  * half their life out of reach, the keyboard has to be handed between them
  * deliberately; see {@link usePanelFocus}.
  *
@@ -89,129 +89,133 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
         aria-modal={drawer || undefined}
         className="pico-sidebar"
         data-open={open}
-        inert={!open}
         ref={panel}
         role={drawer ? "dialog" : "complementary"}
       >
-        {/* A div rather than a header: a bare <header> is a page-level banner
-            landmark wherever it sits, and there is only supposed to be one. */}
-        <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
-          <h2 className="font-medium text-sm" id={titleId}>
-            Settings
-          </h2>
-          <Button aria-label="Close settings" onPress={onClose} size="icon" variant="ghost">
-            <XIcon />
-          </Button>
-        </div>
-        <Separator />
-
-        <div className="flex flex-col gap-5 overflow-y-auto px-4 py-4">
-          <section className="flex flex-col gap-3">
-            <SectionTitle>Theme</SectionTitle>
-            <SearchableSelect
-              adornment={<Swatch color={THEMES[settings.theme].colors[settings.mode].background} />}
-              ariaLabel="Theme"
-              onChange={(theme) => onChange({ theme })}
-              options={THEME_IDS.map((id) => ({
-                value: id,
-                label: THEMES[id].label,
-                render: (
-                  <span className="flex items-center gap-2">
-                    <Swatch color={THEMES[id].colors[settings.mode].background} />
-                    {THEMES[id].label}
-                  </span>
-                ),
-              }))}
-              placeholder="Search themes"
-              value={settings.theme}
-            />
-
-            <PresetToggle
-              ariaLabelOf={(mode) => (mode === "light" ? "Light" : "Dark")}
-              label="Appearance"
-              labelOf={(mode) =>
-                mode === "light" ? (
-                  <SunIcon className="size-3.5" />
-                ) : (
-                  <MoonIcon className="size-3.5" />
-                )
-              }
-              onChange={(mode) => onChange({ mode })}
-              options={COLOR_MODES}
-              value={settings.mode}
-            />
-          </section>
-
+        <div className="pico-sidebar-body" inert={!open}>
+          {/* A div rather than a header: a bare <header> is a page-level
+              banner landmark wherever it sits, and there is only supposed to
+              be one. */}
+          <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
+            <h2 className="font-medium text-sm" id={titleId}>
+              Settings
+            </h2>
+            <Button aria-label="Close settings" onPress={onClose} size="icon" variant="ghost">
+              <XIcon />
+            </Button>
+          </div>
           <Separator />
 
-          <section className="flex flex-col gap-3">
-            <SectionTitle>Type</SectionTitle>
-            <SearchableSelect
-              adornment={<span style={{ fontFamily: FONTS[settings.font].stack }}>Aa</span>}
-              ariaLabel="Font"
-              onChange={(font) => onChange({ font })}
-              options={FONT_IDS.map((id) => ({
-                value: id,
-                label: FONTS[id].label,
-                render: (
-                  <span className="flex items-center gap-2">
-                    <span style={{ fontFamily: FONTS[id].stack }}>{FONTS[id].label}</span>
-                    {FONTS[id].note && (
-                      <span className="text-muted-foreground text-xs">{FONTS[id].note}</span>
-                    )}
-                  </span>
-                ),
-              }))}
-              placeholder="Search fonts"
-              value={settings.font}
-            />
-
-            <PresetToggle
-              label="Size"
-              labelOf={(id) => FONT_SIZES[id].replace("px", "")}
-              onChange={(fontSize) => onChange({ fontSize })}
-              options={FONT_SIZE_IDS}
-              value={settings.fontSize}
-            />
-
-            {/* Named by aria-label alone, matching the row's own words. The
-                sr-only <label> this used to carry as well made two of them,
-                which is one more than a form field is allowed. */}
-            <SettingRow label="Line numbers">
-              <Switch
-                aria-label="Line numbers"
-                isSelected={settings.lineNumbers}
-                onChange={(lineNumbers) => onChange({ lineNumbers })}
+          <div className="flex flex-col gap-5 overflow-y-auto px-4 py-4">
+            <section className="flex flex-col gap-3">
+              <SectionTitle>Theme</SectionTitle>
+              <SearchableSelect
+                adornment={
+                  <Swatch color={THEMES[settings.theme].colors[settings.mode].background} />
+                }
+                ariaLabel="Theme"
+                onChange={(theme) => onChange({ theme })}
+                options={THEME_IDS.map((id) => ({
+                  value: id,
+                  label: THEMES[id].label,
+                  render: (
+                    <span className="flex items-center gap-2">
+                      <Swatch color={THEMES[id].colors[settings.mode].background} />
+                      {THEMES[id].label}
+                    </span>
+                  ),
+                }))}
+                placeholder="Search themes"
+                value={settings.theme}
               />
-            </SettingRow>
-          </section>
 
-          <Separator />
+              <PresetToggle
+                ariaLabelOf={(mode) => (mode === "light" ? "Light" : "Dark")}
+                label="Appearance"
+                labelOf={(mode) =>
+                  mode === "light" ? (
+                    <SunIcon className="size-3.5" />
+                  ) : (
+                    <MoonIcon className="size-3.5" />
+                  )
+                }
+                onChange={(mode) => onChange({ mode })}
+                options={COLOR_MODES}
+                value={settings.mode}
+              />
+            </section>
 
-          <section className="flex flex-col gap-3">
-            <SectionTitle>Frame</SectionTitle>
-            <PresetToggle
-              label="Padding"
-              labelOf={(id) => SIZE_LABELS[id]}
-              onChange={(padding) => onChange({ padding })}
-              options={PADDING_IDS}
-              value={settings.padding}
-            />
-            <PresetToggle
-              label="Corners"
-              labelOf={(id) => SIZE_LABELS[id]}
-              onChange={(radius) => onChange({ radius })}
-              options={RADIUS_IDS}
-              value={settings.radius}
-            />
-            <PresetToggle
-              label="Shadow"
-              labelOf={(id) => SIZE_LABELS[id]}
-              onChange={(shadow) => onChange({ shadow })}
-              options={SHADOW_IDS}
-              value={settings.shadow}
-            />
-          </section>
+            <Separator />
+
+            <section className="flex flex-col gap-3">
+              <SectionTitle>Type</SectionTitle>
+              <SearchableSelect
+                adornment={<span style={{ fontFamily: FONTS[settings.font].stack }}>Aa</span>}
+                ariaLabel="Font"
+                onChange={(font) => onChange({ font })}
+                options={FONT_IDS.map((id) => ({
+                  value: id,
+                  label: FONTS[id].label,
+                  render: (
+                    <span className="flex items-center gap-2">
+                      <span style={{ fontFamily: FONTS[id].stack }}>{FONTS[id].label}</span>
+                      {FONTS[id].note && (
+                        <span className="text-muted-foreground text-xs">{FONTS[id].note}</span>
+                      )}
+                    </span>
+                  ),
+                }))}
+                placeholder="Search fonts"
+                value={settings.font}
+              />
+
+              <PresetToggle
+                label="Size"
+                labelOf={(id) => FONT_SIZES[id].replace("px", "")}
+                onChange={(fontSize) => onChange({ fontSize })}
+                options={FONT_SIZE_IDS}
+                value={settings.fontSize}
+              />
+
+              {/* Named by aria-label alone, matching the row's own words.
+                  The sr-only <label> this used to carry as well made two of
+                  them, which is one more than a form field is allowed. */}
+              <SettingRow label="Line numbers">
+                <Switch
+                  aria-label="Line numbers"
+                  isSelected={settings.lineNumbers}
+                  onChange={(lineNumbers) => onChange({ lineNumbers })}
+                />
+              </SettingRow>
+            </section>
+
+            <Separator />
+
+            <section className="flex flex-col gap-3">
+              <SectionTitle>Frame</SectionTitle>
+              <PresetToggle
+                label="Padding"
+                labelOf={(id) => SIZE_LABELS[id]}
+                onChange={(padding) => onChange({ padding })}
+                options={PADDING_IDS}
+                value={settings.padding}
+              />
+              <PresetToggle
+                label="Corners"
+                labelOf={(id) => SIZE_LABELS[id]}
+                onChange={(radius) => onChange({ radius })}
+                options={RADIUS_IDS}
+                value={settings.radius}
+              />
+              <PresetToggle
+                label="Shadow"
+                labelOf={(id) => SIZE_LABELS[id]}
+                onChange={(shadow) => onChange({ shadow })}
+                options={SHADOW_IDS}
+                value={settings.shadow}
+              />
+            </section>
+          </div>
         </div>
       </GlassPanel>
     </>

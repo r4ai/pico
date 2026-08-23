@@ -14,13 +14,26 @@ const FOCUSABLE =
  * document. Tabbing after opening the settings would walk the page from the
  * beginning rather than through the settings themselves.
  *
+ * Only ever when the panel opens or closes, though — never for the state it
+ * mounts in. A panel that is open because that is how it was left last time is
+ * a layout, not an action somebody just took, and taking the keyboard into it
+ * on arrival puts a close button between the reader and the page they came
+ * for. See {@link useSidebarOpen}.
+ *
  * @returns the ref to attach to the panel.
  */
 export function usePanelFocus(open: boolean): RefObject<HTMLDivElement | null> {
   const panel = useRef<HTMLDivElement>(null);
   const opener = useRef<HTMLElement | null>(null);
+  // What the panel was doing last time this ran, seeded with the state it
+  // mounted in, so the first run has nothing to react to. Comparing values
+  // rather than counting runs, because StrictMode runs the first one twice.
+  const was = useRef(open);
 
   useEffect(() => {
+    if (open === was.current) return;
+    was.current = open;
+
     if (open) {
       opener.current =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
