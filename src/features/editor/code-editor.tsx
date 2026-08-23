@@ -56,8 +56,6 @@ export function CodeEditor({
   const initialLabel = useRef(label);
   const initialHintId = useRef(hintId);
 
-  useLiveMetrics(view, animatingGeometry);
-
   useEffect(() => {
     latestOnChange.current = onChange;
   }, [onChange]);
@@ -92,8 +90,8 @@ export function CodeEditor({
           keymap.of([
             {
               key: "Escape",
-              run: (editor) => {
-                editor.setTabFocusMode(TAB_FOCUS_GRACE_MS);
+              run: (target) => {
+                target.setTabFocusMode(TAB_FOCUS_GRACE_MS);
                 return true;
               },
             },
@@ -115,6 +113,9 @@ export function CodeEditor({
       view.current = null;
     };
   }, []);
+
+  // Below the effect above, which is what puts a view in the ref to measure.
+  useLiveMetrics(view, animatingGeometry);
 
   useEffect(() => {
     const editor = view.current;

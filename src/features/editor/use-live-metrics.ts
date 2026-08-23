@@ -20,23 +20,25 @@ import { type RefObject, useEffect } from "react";
  * geometry it cannot observe to be reported. The final measure on cleanup is
  * what lands the editor exactly on the settled values.
  *
- * The ref is read inside the loop and again in the cleanup rather than
- * captured once, which is the point: there is exactly one view per editor and
- * it is whichever one is mounted that needs measuring. A destroyed one leaves
- * `null` behind and the call is skipped.
+ * Call this below the effect that creates the view: there is exactly one view
+ * per editor, and taking it once means taking the one that exists by the time
+ * the first animation starts.
  */
 export function useLiveMetrics(view: RefObject<EditorView | null>, animating: boolean) {
   useEffect(() => {
-    if (!animating) return;
+    const editor = view.current;
+    if (!animating || !editor) return;
 
     let frame = requestAnimationFrame(function measure() {
-      view.current?.requestMeasure();
+      editor.requestMeasure();
       frame = requestAnimationFrame(measure);
     });
 
     return () => {
       cancelAnimationFrame(frame);
-      view.current?.requestMeasure();
+      // A no-op if the editor has since been torn down: CodeMirror drops the
+      // measure it schedules once the view is destroyed.
+      editor.requestMeasure();
     };
   }, [animating, view]);
 }
