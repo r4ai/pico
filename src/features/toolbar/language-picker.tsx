@@ -17,7 +17,7 @@ export function LanguagePicker({ value, onChange }: LanguagePickerProps) {
   return (
     <SearchableSelect
       ariaLabel="Language"
-      className="h-7 w-32 border-transparent dark:bg-transparent"
+      className="h-7 border-transparent dark:bg-transparent"
       onChange={onChange}
       options={LANGUAGE_IDS.map((id) => ({
         value: id,
@@ -27,6 +27,7 @@ export function LanguagePicker({ value, onChange }: LanguagePickerProps) {
       placeholder="Search languages"
       placement="top start"
       value={value}
+      width="content"
     />
   );
 }

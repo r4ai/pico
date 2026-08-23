@@ -8,7 +8,15 @@ import {
 } from "@/components/ui/combobox";
 import { InputGroupAddon } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
-import type { ComponentProps, ReactNode } from "react";
+import {
+  type ComponentProps,
+  type ReactNode,
+  useContext,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { ComboBoxStateContext } from "react-aria-components";
 
 export type SearchableOption<T extends string> = {
   readonly value: T;
@@ -26,10 +34,15 @@ export type SearchableSelectProps<T extends string> = {
   onChange: (value: T) => void;
   /** A small preview of the current value, drawn inside the field. */
   adornment?: ReactNode;
-  /** Sizing and framing for the field. Defaults to filling its column. */
+  /** Framing for the field. */
   className?: string;
   /** Which way the list opens. Defaults to below the field. */
   placement?: ComponentProps<typeof ComboboxContent>["placement"];
+  /**
+   * `fill` takes the width of its column; `content` shrinks to whatever the
+   * field is currently showing. Defaults to `fill`.
+   */
+  width?: "fill" | "content";
 };
 
 /**
@@ -48,7 +61,23 @@ export function SearchableSelect<T extends string>({
   adornment,
   className,
   placement,
+  width = "fill",
 }: SearchableSelectProps<T>) {
+  const field =
+    width === "content" ? (
+      <ElasticField adornment={adornment} className={className} placeholder={placeholder} />
+    ) : (
+      /* Selecting the current value on focus keeps this a picker: the list is
+         already open, and typing filters it instead of editing a name. */
+      <ComboboxInput
+        className={cn("w-full", className)}
+        onFocus={(event) => event.target.select()}
+        placeholder={placeholder}
+      >
+        {adornment && <InputGroupAddon align="inline-start">{adornment}</InputGroupAddon>}
+      </ComboboxInput>
+    );
+
   return (
     <Combobox
       allowsEmptyCollection
@@ -59,15 +88,7 @@ export function SearchableSelect<T extends string>({
       }}
       value={value}
     >
-      {/* Selecting the current value on focus keeps this a picker: the list is
-          already open, and typing filters it instead of editing a name. */}
-      <ComboboxInput
-        className={cn("w-full", className)}
-        onFocus={(event) => event.target.select()}
-        placeholder={placeholder}
-      >
-        {adornment && <InputGroupAddon align="inline-start">{adornment}</InputGroupAddon>}
-      </ComboboxInput>
+      {field}
       <ComboboxContent className="w-auto min-w-(--trigger-width)" placement={placement}>
         <ComboboxList renderEmptyState={() => <ComboboxEmpty>Nothing matches.</ComboboxEmpty>}>
           {options.map((option) => (
@@ -78,5 +99,65 @@ export function SearchableSelect<T extends string>({
         </ComboboxList>
       </ComboboxContent>
     </Combobox>
+  );
+}
+
+type ElasticFieldProps = {
+  adornment?: ReactNode;
+  className?: string;
+  placeholder: string;
+};
+
+/**
+ * A field only as wide as the text it is showing.
+ *
+ * The dock cannot reserve room for the longest name in the list, so a hidden
+ * copy of the current text is measured and the input animates to that width —
+ * which means the field also grows and shrinks under the reader's typing.
+ */
+function ElasticField({ adornment, className, placeholder }: ElasticFieldProps) {
+  const state = useContext(ComboBoxStateContext);
+  const shown = state?.inputValue || placeholder;
+  const sizer = useRef<HTMLSpanElement>(null);
+  const field = useRef<HTMLInputElement>(null);
+  const [width, setWidth] = useState<number>();
+
+  useLayoutEffect(() => {
+    const text = sizer.current;
+    const input = field.current;
+    if (!text || !input) return;
+    // The span measures the glyphs; the width we set is a border box, so the
+    // input's own padding and border have to be added back or it clips.
+    const style = getComputedStyle(input);
+    const frame =
+      parseFloat(style.paddingInlineStart) +
+      parseFloat(style.paddingInlineEnd) +
+      parseFloat(style.borderInlineStartWidth) +
+      parseFloat(style.borderInlineEndWidth);
+    setWidth(Math.ceil(text.getBoundingClientRect().width + frame));
+  }, [shown]);
+
+  return (
+    <ComboboxInput
+      className={cn(
+        "w-auto [&>input]:flex-none [&>input]:transition-[width] [&>input]:duration-200 [&>input]:ease-glass motion-reduce:[&>input]:transition-none",
+        className,
+      )}
+      onFocus={(event) => event.target.select()}
+      placeholder={placeholder}
+      ref={field}
+      style={{ width }}
+    >
+      {/* Out of flow and invisible, so measuring it costs the layout nothing.
+          Its type has to match the input's or the field lands a few px off. */}
+      <span
+        aria-hidden
+        className="invisible absolute whitespace-pre text-base md:text-sm"
+        ref={sizer}
+      >
+        {shown}
+      </span>
+      {adornment && <InputGroupAddon align="inline-start">{adornment}</InputGroupAddon>}
+    </ComboboxInput>
   );
 }
