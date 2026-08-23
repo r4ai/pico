@@ -4,6 +4,7 @@ import { ShikiCode } from "@/features/preview/shiki-code";
 import { frameColorsOfTheme } from "@/features/settings/theme";
 import { DEFAULT_SETTINGS } from "@/features/settings/settings";
 import "@/global.css";
+import { useLayoutEffect } from "react";
 import { afterEach, expect, it } from "vite-plus/test";
 import { cleanup, render } from "vitest-browser-react/pure";
 
@@ -81,4 +82,45 @@ it("draws nothing in place of an empty export", async () => {
 
   expect(document.querySelector(".pico-placeholder")).toBeNull();
   expect(document.querySelectorAll(".pico-line").length).toBe(1);
+});
+
+/**
+ * Records what the DOM looked like at the end of the commit that mounted the
+ * editor. A sibling's layout effect runs after the editor's own, and before
+ * the browser is given a chance to paint.
+ */
+function Probe({ onCommit }: { onCommit: (filled: boolean) => void }) {
+  useLayoutEffect(() => {
+    onCommit(document.querySelector(".cm-content") !== null);
+  }, [onCommit]);
+  return null;
+}
+
+it("fills the frame in the commit that empties it", async () => {
+  // The container is committed empty and CodeMirror fills it from an effect.
+  // A passive effect runs after the browser has had its chance to paint, so
+  // the frame was painted at the height of nothing for a frame and sprang back
+  // — 0.06 of layout shift on a link that had done nothing but load.
+  let filled: boolean | undefined;
+  const rendered = await render(
+    <CodeFrame colors={colors} settings={DEFAULT_SETTINGS}>
+      <CodeEditor
+        animatingGeometry={false}
+        highlight={null}
+        label="Code"
+        onChange={() => {}}
+        placeholderText={PLACEHOLDER}
+        showLineNumbers={false}
+        value={"one\ntwo\nthree"}
+      />
+      <Probe
+        onCommit={(value) => {
+          filled ??= value;
+        }}
+      />
+    </CodeFrame>,
+  );
+  unmount = rendered.unmount;
+
+  expect(filled).toBe(true);
 });

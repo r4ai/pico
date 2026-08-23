@@ -13,7 +13,7 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirro
 import { Compartment, EditorState } from "@codemirror/state";
 // react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { drawSelection, EditorView, keymap, lineNumbers, placeholder } from "@codemirror/view";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useLayoutEffect, useRef } from "react";
 
 /** Long enough to reach for Tab after Escape, short enough not to linger. */
 const TAB_FOCUS_GRACE_MS = 4000;
@@ -77,7 +77,12 @@ export function CodeEditor({
     latestOnChange.current = onChange;
   }, [onChange]);
 
-  useEffect(() => {
+  // A layout effect, not a passive one. The container is committed empty, and
+  // a passive effect runs after the browser has had its chance to paint — so
+  // the frame was painted at the height of nothing at all for a frame, and
+  // then sprang back once CodeMirror filled it. Building the view before that
+  // paint is the difference between a visible collapse and no change at all.
+  useLayoutEffect(() => {
     const parent = container.current;
     if (!parent) return;
 
