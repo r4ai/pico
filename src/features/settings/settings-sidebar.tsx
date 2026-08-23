@@ -17,7 +17,7 @@ import { COLOR_MODES, THEME_IDS, THEMES } from "@/features/settings/theme";
 import { usePanelFocus } from "@/features/settings/use-panel-focus";
 import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
 import { MoonIcon, SunIcon, XIcon } from "lucide-react";
-import { useEffect, useId } from "react";
+import { useEffect, useEffectEvent, useId } from "react";
 
 const SIZE_LABELS = { none: "None", sm: "S", md: "M", lg: "L", xl: "XL" };
 
@@ -49,19 +49,24 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
   const titleId = useId();
   const drawer = useSidebarMode() === "drawer";
 
+  // An Effect Event, so the listener is bound once per open rather than again
+  // on every render of the parent that hands `onClose` down.
+  const onEscape = useEffectEvent((event: KeyboardEvent) => {
+    // Escape inside the editor is how the keyboard gets out of it, and closing
+    // the settings from under someone doing that would be a surprise. See
+    // CodeEditor.
+    if (event.target instanceof Element && event.target.closest(".pico-editor")) return;
+    onClose();
+  });
+
   useEffect(() => {
     if (!open) return;
     const close = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      // Escape inside the editor is how the keyboard gets out of it, and
-      // closing the settings from under someone doing that would be a
-      // surprise. See CodeEditor.
-      if (event.target instanceof Element && event.target.closest(".pico-editor")) return;
-      onClose();
+      if (event.key === "Escape") onEscape(event);
     };
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
-  }, [open, onClose]);
+  }, [open]);
 
   return (
     <>

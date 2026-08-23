@@ -73,19 +73,3 @@ export const DEFAULT_RADIUS: RadiusId = "md";
 export const DEFAULT_SHADOW: ShadowId = "md";
 export const DEFAULT_FONT_SIZE: FontSizeId = "md";
 export const DEFAULT_LINE_NUMBERS = false;
-
-export function isPaddingId(value: string): value is PaddingId {
-  return (PADDING_IDS as readonly string[]).includes(value);
-}
-
-export function isRadiusId(value: string): value is RadiusId {
-  return (RADIUS_IDS as readonly string[]).includes(value);
-}
-
-export function isShadowId(value: string): value is ShadowId {
-  return (SHADOW_IDS as readonly string[]).includes(value);
-}
-
-export function isFontSizeId(value: string): value is FontSizeId {
-  return (FONT_SIZE_IDS as readonly string[]).includes(value);
-}

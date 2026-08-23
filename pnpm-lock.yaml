@@ -231,9 +231,6 @@ importers:
       '@fontsource/jetbrains-mono':
         specifier: 5.3.0
         version: 5.3.0
-      '@shikijs/core':
-        specifier: 4.4.3
-        version: 4.4.3
       '@shikijs/langs':
         specifier: 4.4.3
         version: 4.4.3
