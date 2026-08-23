@@ -17,6 +17,7 @@ export type CodeFrameProps = {
   colors: FrameColors;
   children: ReactNode;
   className?: string;
+  width?: number;
 };
 
 /**
@@ -26,7 +27,7 @@ export type CodeFrameProps = {
  * and all their geometry is read from the custom properties set here. That is
  * what keeps what you see and what you save the same shape.
  */
-export function CodeFrame({ settings, colors, children, className }: CodeFrameProps) {
+export function CodeFrame({ settings, colors, children, className, width }: CodeFrameProps) {
   const style = {
     "--pico-font-family": FONTS[settings.font].stack,
     "--pico-font-size": FONT_SIZES[settings.fontSize],
@@ -40,6 +41,7 @@ export function CodeFrame({ settings, colors, children, className }: CodeFramePr
     "--pico-line-number": colors.lineNumber,
     "--pico-gutter-gap": "1.5ch",
     "--pico-gutter-min-width": "2ch",
+    width,
   } as CSSProperties;
 
   return (
