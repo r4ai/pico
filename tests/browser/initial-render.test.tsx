@@ -1,9 +1,13 @@
 import { CodeEditor } from "@/features/editor/code-editor";
+import { createEditorTheme } from "@/features/editor/cm-theme";
 import { CodeFrame } from "@/features/preview/code-frame";
 import { DEFAULT_SETTINGS } from "@/features/settings/settings";
 import { frameColorsOfTheme, type ColorMode } from "@/features/settings/theme";
 import "@/global.css";
+import { Compartment, EditorState } from "@codemirror/state";
+import { drawSelection, EditorView } from "@codemirror/view";
 import { type RefObject, useLayoutEffect, useRef } from "react";
+import type { ThemeRegistrationResolved } from "shiki/core";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { cleanup, render } from "vitest-browser-react/pure";
 
@@ -112,4 +116,48 @@ describe("initial editor render", () => {
       expect(firstLayout?.gutterColor).toBe(firstLayout?.expectedGutterColor);
     },
   );
+
+  it("lets a loaded theme replace the fallback cursor color", async () => {
+    const fallback = "rgb(1, 2, 3)";
+    const themed = "rgb(4, 5, 6)";
+    const parent = document.createElement("div");
+    parent.className = "pico-editor";
+    parent.style.setProperty("--pico-fg", fallback);
+    document.body.append(parent);
+
+    const theme = new Compartment();
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: "const answer = 42;",
+        extensions: [drawSelection(), theme.of([])],
+      }),
+    });
+
+    const cursorTheme = {
+      name: "cursor-test",
+      type: "dark",
+      bg: "rgb(0, 0, 0)",
+      fg: fallback,
+      colors: { "editorCursor.foreground": themed },
+      settings: [],
+    } as ThemeRegistrationResolved;
+
+    try {
+      view.focus();
+      await advanceFrames(1);
+      const cursor = view.dom.querySelector(".cm-cursor");
+      if (!(cursor instanceof HTMLElement)) throw new Error("CodeMirror cursor is missing");
+
+      expect(getComputedStyle(cursor).borderLeftColor).toBe(fallback);
+
+      view.dispatch({ effects: theme.reconfigure(createEditorTheme(cursorTheme)) });
+      await advanceFrames(1);
+
+      expect(getComputedStyle(cursor).borderLeftColor).toBe(themed);
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
+  });
 });
