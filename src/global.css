@@ -153,22 +153,39 @@
   padding: var(--pico-shadow-room);
 }
 
-/* The live editor, matched to the static rendering above. */
+/* The live editor, matched to the static rendering above.
+
+   Every metric here is deliberately CSS rather than a CodeMirror theme: the
+   theme cannot be applied until Shiki has loaded, and a font, size or line
+   height arriving that late relayouts every line the reader is already
+   looking at. The theme is left with nothing but colors.
+
+   The extra .cm-editor in each selector is what outranks CodeMirror's own
+   base theme, which sets a monospace family and a 1.4 line height of its own. */
 
 .pico-editor .cm-editor {
   width: max-content;
   min-width: 100%;
+  font-family: var(--pico-font-family);
+  font-size: var(--pico-font-size);
 }
 
-.pico-editor .cm-scroller {
+.pico-editor .cm-editor .cm-scroller {
   overflow: visible;
+  font-family: inherit;
+  line-height: var(--pico-line-height);
 }
 
-.pico-editor .cm-gutters {
+.pico-editor .cm-editor .cm-content,
+.pico-editor .cm-editor .cm-line {
   padding: 0;
 }
 
-.pico-editor .cm-lineNumbers .cm-gutterElement {
+.pico-editor .cm-editor .cm-gutters {
+  padding: 0;
+}
+
+.pico-editor .cm-editor .cm-lineNumbers .cm-gutterElement {
   min-width: var(--pico-gutter-min-width);
   padding: 0 var(--pico-gutter-gap) 0 0;
   text-align: right;

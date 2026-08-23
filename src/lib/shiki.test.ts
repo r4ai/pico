@@ -1,4 +1,5 @@
 import { LANGUAGE_IDS, LANGUAGES } from "@/features/editor/language";
+import { frameColorsOf } from "@/features/preview/frame-colors";
 import { THEME_IDS, THEMES } from "@/features/settings/theme";
 import type { ShikiThemeName } from "@/features/settings/theme";
 import { ensureHighlighter, shikiLangOf } from "@/lib/shiki";
@@ -59,11 +60,11 @@ describe("shiki registry", () => {
     expect(names).toContain("keyword.operator.kernel-launch.cuda");
   });
 
-  it.each(THEME_IDS)("keeps %s's sidebar swatches in step with the theme files", async (id) => {
+  it.each(THEME_IDS)("keeps %s's registry colors in step with the theme files", async (id) => {
     const pair = THEMES[id];
     for (const mode of ["light", "dark"] as const) {
       const highlighter = await ensureHighlighter("ts", pair[mode]);
-      expect(highlighter.getTheme(pair[mode]).bg).toBe(pair.swatch[mode]);
+      expect(frameColorsOf(highlighter.getTheme(pair[mode]))).toEqual(pair.colors[mode]);
     }
   });
 

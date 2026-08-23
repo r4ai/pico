@@ -72,7 +72,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
           <section className="flex flex-col gap-3">
             <SectionTitle>Theme</SectionTitle>
             <SearchableSelect
-              adornment={<Swatch color={THEMES[settings.theme].swatch[settings.mode]} />}
+              adornment={<Swatch color={THEMES[settings.theme].colors[settings.mode].background} />}
               ariaLabel="Theme"
               onChange={(theme) => onChange({ theme })}
               options={THEME_IDS.map((id) => ({
@@ -80,7 +80,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                 label: THEMES[id].label,
                 render: (
                   <span className="flex items-center gap-2">
-                    <Swatch color={THEMES[id].swatch[settings.mode]} />
+                    <Swatch color={THEMES[id].colors[settings.mode].background} />
                     {THEMES[id].label}
                   </span>
                 ),

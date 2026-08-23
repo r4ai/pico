@@ -6,7 +6,7 @@ import { useShikiHighlight } from "@/features/editor/use-shiki-highlight";
 import { type ExportScale, DEFAULT_SCALE } from "@/features/export/export-image";
 import { useExport } from "@/features/export/use-export";
 import { CodeFrame } from "@/features/preview/code-frame";
-import { frameColorsOf, TRANSPARENT_FRAME } from "@/features/preview/frame-colors";
+import { frameColorsOf } from "@/features/preview/frame-colors";
 import { ExportNode } from "@/features/preview/export-node";
 import {
   buildShareUrl,
@@ -18,7 +18,7 @@ import {
 import { SettingsSidebar } from "@/features/settings/settings-sidebar";
 import { sidebarOpenAtom } from "@/features/settings/sidebar-state";
 import { SidebarToggle } from "@/features/settings/sidebar-toggle";
-import { shikiThemeOf } from "@/features/settings/theme";
+import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -49,10 +49,11 @@ export function App() {
   const highlight = useShikiHighlight(settings.lang, shikiThemeOf(settings.theme, settings.mode));
   // highlight.theme, not the requested one: while a new theme loads the
   // highlighter still only knows the previous one, and asking it for a theme it
-  // has not loaded throws.
+  // has not loaded throws. Until the very first one arrives the registry's own
+  // copy of the colors stands in, so the frame is never unpainted.
   const colors = highlight
     ? frameColorsOf(highlight.highlighter.getTheme(highlight.theme))
-    : TRANSPARENT_FRAME;
+    : frameColorsOfTheme(settings.theme, settings.mode);
 
   const { busy, copy, save } = useExport({ node: exportNode, settings, scale });
 
