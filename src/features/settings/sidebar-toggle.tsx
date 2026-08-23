@@ -11,8 +11,8 @@ export type SidebarToggleProps = {
 export function SidebarToggle({ hidden, onOpen }: SidebarToggleProps) {
   return (
     <GlassPanel className="pico-sidebar-toggle p-1" data-hidden={hidden} inert={hidden}>
-      <Button aria-label="Open settings" onClick={onOpen} size="icon" variant="ghost">
-        <SlidersHorizontalIcon className="size-4" />
+      <Button aria-label="Open settings" onPress={onOpen} size="icon" variant="ghost">
+        <SlidersHorizontalIcon />
       </Button>
     </GlassPanel>
   );

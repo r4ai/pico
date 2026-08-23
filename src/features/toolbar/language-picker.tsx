@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
+  DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { isLanguageId, LANGUAGE_IDS, LANGUAGES, type LanguageId } from "@/features/editor/language";
@@ -20,27 +19,27 @@ export type LanguagePickerProps = {
  */
 export function LanguagePicker({ value, onChange }: LanguagePickerProps) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button className="gap-1.5 px-2.5" size="sm" variant="ghost">
-          {LANGUAGES[value].label}
-          <ChevronDownIcon className="size-3.5 opacity-60" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-40" side="top">
-        <DropdownMenuRadioGroup
-          onValueChange={(next) => {
-            if (isLanguageId(next)) onChange(next);
+    <DropdownMenuTrigger>
+      <Button size="sm" variant="ghost">
+        {LANGUAGES[value].label}
+        <ChevronDownIcon className="opacity-60" data-icon="inline-end" />
+      </Button>
+      <DropdownMenu className="w-auto min-w-40" placement="top start">
+        <DropdownMenuGroup
+          onSelectionChange={(keys) => {
+            const next = keys === "all" ? undefined : keys.values().next().value;
+            if (typeof next === "string" && isLanguageId(next)) onChange(next);
           }}
-          value={value}
+          selectedKeys={[value]}
+          selectionMode="single"
         >
           {LANGUAGE_IDS.map((id) => (
-            <DropdownMenuRadioItem key={id} value={id}>
+            <DropdownMenuItem id={id} key={id}>
               {LANGUAGES[id].label}
-            </DropdownMenuRadioItem>
+            </DropdownMenuItem>
           ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuGroup>
+      </DropdownMenu>
+    </DropdownMenuTrigger>
   );
 }

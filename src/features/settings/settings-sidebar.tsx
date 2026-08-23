@@ -47,8 +47,8 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
     <GlassPanel aria-label="Settings" className="pico-sidebar" data-open={open} inert={!open}>
       <header className="flex items-center justify-between px-4 pt-3.5 pb-2">
         <h2 className="font-medium text-sm">Settings</h2>
-        <Button aria-label="Close settings" onClick={onClose} size="icon" variant="ghost">
-          <XIcon className="size-4" />
+        <Button aria-label="Close settings" onPress={onClose} size="icon" variant="ghost">
+          <XIcon />
         </Button>
       </header>
       <Separator />
@@ -57,6 +57,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
         <section className="flex flex-col gap-3">
           <SectionTitle>Theme</SectionTitle>
           <SearchableSelect
+            adornment={<Swatch color={THEMES[settings.theme].swatch[settings.mode]} />}
             ariaLabel="Theme"
             onChange={(theme) => onChange({ theme })}
             options={THEME_IDS.map((id) => ({
@@ -64,10 +65,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
               label: THEMES[id].label,
               render: (
                 <span className="flex items-center gap-2">
-                  <span
-                    className="size-3.5 rounded-full border border-border"
-                    style={{ background: THEMES[id].swatch[settings.mode] }}
-                  />
+                  <Swatch color={THEMES[id].swatch[settings.mode]} />
                   {THEMES[id].label}
                 </span>
               ),
@@ -97,6 +95,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
         <section className="flex flex-col gap-3">
           <SectionTitle>Type</SectionTitle>
           <SearchableSelect
+            adornment={<span style={{ fontFamily: FONTS[settings.font].stack }}>Aa</span>}
             ariaLabel="Font"
             onChange={(font) => onChange({ font })}
             options={FONT_IDS.map((id) => ({
@@ -126,9 +125,9 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
           <SettingRow label="Line numbers">
             <Switch
               aria-label="Line numbers"
-              checked={settings.lineNumbers}
               id="line-numbers"
-              onCheckedChange={(lineNumbers) => onChange({ lineNumbers })}
+              isSelected={settings.lineNumbers}
+              onChange={(lineNumbers) => onChange({ lineNumbers })}
             />
             <Label className="sr-only" htmlFor="line-numbers">
               Line numbers
@@ -164,6 +163,12 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
         </section>
       </div>
     </GlassPanel>
+  );
+}
+
+function Swatch({ color }: { color: string }) {
+  return (
+    <span className="size-3.5 rounded-full border border-border" style={{ background: color }} />
   );
 }
 
