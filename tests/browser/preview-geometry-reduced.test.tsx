@@ -43,7 +43,9 @@ it("applies geometry immediately when reduced motion is requested", async () => 
 
   await padding.getByRole("radio", { name: "S" }).click();
   await nextFrame();
-  await padding.getByRole("radio", { name: "XL" }).click();
+  const xlPadding = padding.getByRole("radio", { name: "XL" });
+  await xlPadding.click();
+  await expect.element(xlPadding).toBeChecked();
   await nextFrame();
   await nextFrame();
 
