@@ -34,7 +34,7 @@ jobs:
           NPM_CONFIG_FORCE: "true"
         with:
           blocking: none
-          scope: changed
+          scope: ${{ github.event_name == 'push' && 'full' || 'changed' }}
           comment: true
           review-comments: true
           commit-status: true
