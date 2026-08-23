@@ -3,7 +3,7 @@ import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
 import type { ShikiThemeName } from "@/features/settings/theme";
 import { ensureHighlighter } from "@/lib/shiki";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/toast";
 
 /**
  * Loads the grammar and theme, then hands back the three of them as one value.

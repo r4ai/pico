@@ -1,5 +1,5 @@
 import { useBriefFlag } from "@/components/use-brief-flag";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/toaster";
 import { CodeEditor } from "@/features/editor/code-editor";
 import type { LanguageId } from "@/features/editor/language";
 import { useLanguageDetection } from "@/features/editor/use-language-detection";
@@ -27,7 +27,7 @@ import {
 import type { Settings } from "@/features/settings/settings";
 import { useAtom } from "jotai";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/toast";
 
 const Chrome = lazy(() => import("@/features/chrome"));
 
@@ -215,7 +215,7 @@ export function App() {
         ref={exportNode}
         settings={settings}
       />
-      <Toaster position="top-center" theme={settings.mode} />
+      <Toaster theme={settings.mode} />
     </div>
   );
 }
