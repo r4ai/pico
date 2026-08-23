@@ -1,10 +1,22 @@
-# Pico
+<p align="center">
+  <a href="https://pico.r4ai.dev">
+    <img src="./assets/pico-icon.png" alt="Pico" width="128" height="128" />
+  </a>
+</p>
 
-**Pico = Picture + Code.** Turn a snippet into an image you can copy, save, or share as a link.
+<h1 align="center">Pico</h1>
 
-Paste code in the middle of the screen. That editor _is_ the preview — what you type is what gets
-exported. The dock at the bottom copies, saves, or hands you a link. Everything else lives behind
-one toggle in the top-left corner, and stays out of your way until you want it.
+<p align="center">
+  <strong>Code, framed.</strong><br />
+  Turn a snippet into a picture you can copy, save, or share.
+</p>
+
+**Pico = Picture + Code.** The editor and the exported image are the same surface: what you type is
+what you get.
+
+Paste code in the middle of the screen. The dock at the bottom copies, saves, or hands you a link.
+Everything else lives behind one toggle in the top-left corner, and stays out of your way until you
+want it.
 
 ## Design principles
 
