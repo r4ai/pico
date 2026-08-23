@@ -183,5 +183,16 @@ jobs:
             curl --fail --silent --show-error --retry 5 --retry-all-errors "${BASE_URL}${path}" \
               | grep --fixed-strings '<title>Pico — Picture + Code</title>'
           done
-          curl --fail --silent --show-error --retry 5 --retry-all-errors --head \
-            "${BASE_URL}/favicon-32x32.png" | grep --ignore-case --fixed-strings 'content-type: image/png'
+          for attempt in {1..10}; do
+            headers="$(curl --fail --silent --show-error --retry 5 --retry-all-errors --head \
+              "${BASE_URL}/favicon-32x32.png?deployment=${GITHUB_SHA}")"
+            if grep --ignore-case --fixed-strings 'content-type: image/png' <<< "${headers}"; then
+              break
+            fi
+            if (( attempt == 10 )); then
+              printf '%s\n' "${headers}" >&2
+              echo 'Production favicon did not become available in time.' >&2
+              exit 1
+            fi
+            sleep 3
+          done
