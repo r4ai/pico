@@ -1,5 +1,6 @@
 import { RangeSetBuilder, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
+import { tokenStyleCss } from "@/features/editor/token-style";
 import type { HighlighterCore, ThemedToken } from "shiki/core";
 
 /**
@@ -25,31 +26,17 @@ const highlightConfig = StateField.define<ShikiHighlight | null>({
   },
 });
 
-/** Shiki's FontStyle flags. */
-const ITALIC = 1;
-const BOLD = 2;
-const UNDERLINE = 4;
-
 /** Marks are shared across tokens with the same appearance, of which there are few. */
 const markCache = new Map<string, Decoration>();
 
 function markFor(token: ThemedToken): Decoration | null {
-  const fontStyle = token.fontStyle ?? 0;
-  if (!token.color && fontStyle === 0) return null;
+  const style = tokenStyleCss(token);
+  if (style === "") return null;
 
-  const declarations = [
-    token.color ? `color:${token.color}` : "",
-    fontStyle & ITALIC ? "font-style:italic" : "",
-    fontStyle & BOLD ? "font-weight:bold" : "",
-    fontStyle & UNDERLINE ? "text-decoration:underline" : "",
-  ]
-    .filter(Boolean)
-    .join(";");
-
-  let mark = markCache.get(declarations);
+  let mark = markCache.get(style);
   if (!mark) {
-    mark = Decoration.mark({ attributes: { style: declarations } });
-    markCache.set(declarations, mark);
+    mark = Decoration.mark({ attributes: { style } });
+    markCache.set(style, mark);
   }
   return mark;
 }

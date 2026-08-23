@@ -90,22 +90,66 @@
 
 /* ---------------------------------------------------------------------------
    The code frame. Shared by the live editor and the hidden export node so both
-   render at the same size; see CodeFrame.
+   render at exactly the same size; see CodeFrame.
    --------------------------------------------------------------------------- */
 
 .pico-frame {
   width: max-content;
-  min-width: min(28rem, 100%);
+  min-width: 28rem;
   padding: var(--pico-pad);
   border-radius: var(--pico-radius);
   background: var(--pico-bg);
+  color: var(--pico-fg);
   box-shadow: var(--pico-shadow);
   font-family: var(--pico-font-family);
   font-size: var(--pico-font-size);
   line-height: var(--pico-line-height);
-  text-rendering: geometricPrecision;
   font-variant-ligatures: none;
+  tab-size: 2;
 }
+
+/* The static rendering used for export. */
+
+.pico-code {
+  display: flex;
+  align-items: flex-start;
+}
+
+.pico-gutter {
+  flex: none;
+  min-width: var(--pico-gutter-min-width);
+  padding-right: var(--pico-gutter-gap);
+  color: var(--pico-line-number);
+  text-align: right;
+}
+
+.pico-lines {
+  white-space: pre;
+}
+
+.pico-line {
+  min-height: 1lh;
+}
+
+/* Off-screen, but still laid out: html-to-image needs real computed styles.
+   Only the stage is moved out of sight — the captured node must stay in normal
+   flow, or the capture paints it off-screen inside the SVG too. */
+
+.pico-export-stage {
+  position: fixed;
+  top: 0;
+  left: -200vw;
+  pointer-events: none;
+}
+
+/* The padding gives the drop shadow room so the image does not clip it. */
+
+.pico-export-host {
+  width: max-content;
+  padding: var(--pico-shadow-room);
+}
+
+/* The live editor, matched to the static rendering above. */
 
 .pico-editor .cm-editor {
   width: max-content;
@@ -114,4 +158,45 @@
 
 .pico-editor .cm-scroller {
   overflow: visible;
+}
+
+.pico-editor .cm-gutters {
+  padding: 0;
+}
+
+.pico-editor .cm-lineNumbers .cm-gutterElement {
+  min-width: var(--pico-gutter-min-width);
+  padding: 0 var(--pico-gutter-gap) 0 0;
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------------------
+   Liquid glass. Blur behind the surface, a hairline highlight along the top
+   inside edge where light would catch, and a soft shadow to lift it off the
+   canvas.
+   --------------------------------------------------------------------------- */
+
+.pico-glass {
+  --pico-glass-tint: light-dark(oklch(1 0 0 / 62%), oklch(0.32 0 0 / 55%));
+  --pico-glass-edge: light-dark(oklch(0 0 0 / 8%), oklch(1 0 0 / 10%));
+  --pico-glass-sheen: light-dark(oklch(1 0 0 / 70%), oklch(1 0 0 / 12%));
+
+  position: relative;
+  border: 1px solid var(--pico-glass-edge);
+  border-radius: 1rem;
+  background: var(--pico-glass-tint);
+  box-shadow:
+    inset 0 1px 0 0 var(--pico-glass-sheen),
+    0 1px 2px oklch(0 0 0 / 10%),
+    0 12px 32px oklch(0 0 0 / 18%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
 }

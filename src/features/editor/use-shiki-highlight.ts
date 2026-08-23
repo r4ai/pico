@@ -1,6 +1,7 @@
 import type { LanguageId } from "@/features/editor/language";
 import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
-import { ensureHighlighter, type ShikiThemeName, shikiLangOf } from "@/lib/shiki";
+import type { ShikiThemeName } from "@/features/settings/theme";
+import { ensureHighlighter, shikiLangOf } from "@/lib/shiki";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 

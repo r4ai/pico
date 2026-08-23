@@ -33,6 +33,17 @@ export const SHADOWS: Record<ShadowId, string> = {
   lg: "0 4px 8px rgb(0 0 0 / 0.12), 0 24px 56px rgb(0 0 0 / 0.24)",
 };
 
+/**
+ * How much transparent room the export needs around the frame so the drop
+ * shadow is not clipped at the edge of the image.
+ */
+export const SHADOW_ROOM: Record<ShadowId, string> = {
+  none: "0px",
+  sm: "16px",
+  md: "36px",
+  lg: "72px",
+};
+
 export const FONT_SIZES: Record<FontSizeId, string> = {
   sm: "12px",
   md: "14px",

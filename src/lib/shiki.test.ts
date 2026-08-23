@@ -1,6 +1,7 @@
 import { LANGUAGE_IDS, LANGUAGES } from "@/features/editor/language";
 import { THEME_IDS, THEMES } from "@/features/settings/theme";
-import { ensureHighlighter, type ShikiThemeName, shikiLangOf } from "@/lib/shiki";
+import type { ShikiThemeName } from "@/features/settings/theme";
+import { ensureHighlighter, shikiLangOf } from "@/lib/shiki";
 import { describe, expect, it } from "vite-plus/test";
 
 /** One snippet per language, each exercising several token kinds. */

@@ -1,6 +1,7 @@
 import { App } from "@/app";
 import "@/global.css";
 import { fontFaceCss } from "@/features/settings/fonts";
+import { NuqsAdapter } from "nuqs/adapters/react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -13,6 +14,8 @@ if (!root) throw new Error("#root is missing from index.html");
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <NuqsAdapter>
+      <App />
+    </NuqsAdapter>
   </StrictMode>,
 );

@@ -1,7 +1,13 @@
 import { cudaGrammars } from "@/features/editor/cuda-grammar";
 import type { LanguageId } from "@/features/editor/language";
 import { LANGUAGES } from "@/features/editor/language";
-import { createHighlighterCore, type HighlighterCore, type LanguageRegistration } from "shiki/core";
+import type { ShikiThemeName } from "@/features/settings/theme";
+import {
+  createHighlighterCore,
+  type HighlighterCore,
+  type LanguageRegistration,
+  type ThemeRegistration,
+} from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 
 /**
@@ -20,7 +26,8 @@ const LANG_LOADERS: Record<LanguageId, () => Promise<LanguageRegistration[]>> = 
   llvm: async () => (await import("@shikijs/langs/llvm")).default,
 };
 
-const THEME_LOADERS = {
+/** Typed by the registry, so a theme without a loader is a compile error. */
+const THEME_LOADERS: Record<ShikiThemeName, () => Promise<{ default: ThemeRegistration }>> = {
   "vitesse-light": () => import("@shikijs/themes/vitesse-light"),
   "vitesse-dark": () => import("@shikijs/themes/vitesse-dark"),
   "github-light": () => import("@shikijs/themes/github-light"),
@@ -31,9 +38,7 @@ const THEME_LOADERS = {
   "one-dark-pro": () => import("@shikijs/themes/one-dark-pro"),
   "rose-pine-dawn": () => import("@shikijs/themes/rose-pine-dawn"),
   "rose-pine": () => import("@shikijs/themes/rose-pine"),
-} as const;
-
-export type ShikiThemeName = keyof typeof THEME_LOADERS;
+};
 
 let highlighter: Promise<HighlighterCore> | undefined;
 

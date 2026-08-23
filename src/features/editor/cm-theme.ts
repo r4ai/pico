@@ -49,7 +49,7 @@ export function createEditorTheme(theme: ThemeRegistrationResolved): Extension {
       ".cm-gutters": {
         backgroundColor: "transparent",
         border: "none",
-        color: color(theme, "editorLineNumber.foreground", `${foreground}66`),
+        color: "var(--pico-line-number)",
       },
       ".cm-lineNumbers .cm-gutterElement": {
         padding: "0 var(--pico-gutter-gap) 0 0",

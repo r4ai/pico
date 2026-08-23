@@ -2,7 +2,9 @@ export const THEME_IDS = ["vitesse", "github", "catppuccin", "one", "rose-pine"]
 
 export type ThemeId = (typeof THEME_IDS)[number];
 
-export type ColorMode = "light" | "dark";
+export const COLOR_MODES = ["light", "dark"] as const;
+
+export type ColorMode = (typeof COLOR_MODES)[number];
 
 export type ThemePair = {
   readonly id: ThemeId;
@@ -34,6 +36,9 @@ export const THEMES = {
   },
 } as const satisfies Record<ThemeId, ThemePair>;
 
+/** Every Shiki theme name reachable from the registry. */
+export type ShikiThemeName = (typeof THEMES)[ThemeId]["light"] | (typeof THEMES)[ThemeId]["dark"];
+
 export const DEFAULT_THEME: ThemeId = "vitesse";
 export const DEFAULT_MODE: ColorMode = "dark";
 
@@ -42,6 +47,6 @@ export function isThemeId(value: string): value is ThemeId {
 }
 
 /** Resolves a theme pair and a mode to the Shiki theme name to highlight with. */
-export function shikiThemeOf(theme: ThemeId, mode: ColorMode): string {
+export function shikiThemeOf(theme: ThemeId, mode: ColorMode): ShikiThemeName {
   return THEMES[theme][mode];
 }
