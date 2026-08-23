@@ -6,7 +6,12 @@ import {
 } from "@/features/editor/shiki-highlight";
 import { useLiveMetrics } from "@/features/editor/use-live-metrics";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
+// This module is the split point: it is the one CodeMirror is imported
+// dynamically through, and half of what the entry chunk would otherwise be.
+// See useCodeEditor.
+// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { Compartment, EditorState } from "@codemirror/state";
+// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { drawSelection, EditorView, keymap, lineNumbers, placeholder } from "@codemirror/view";
 import { useEffect, useId, useRef } from "react";
 
@@ -24,6 +29,14 @@ export type CodeEditorProps = {
   placeholderText: string;
   /** True while the frame's geometry is easing between two settings. */
   animatingGeometry: boolean;
+  /**
+   * Whether to take the keyboard as soon as there is an editor to take it.
+   *
+   * For a click that landed on the static rendering standing in for this while
+   * it downloaded: somebody who has pressed on a frame meaning to type into it
+   * should not have to press it again. See {@link CodeSurface}.
+   */
+  focusOnMount?: boolean;
 };
 
 /**
@@ -40,6 +53,7 @@ export function CodeEditor({
   showLineNumbers,
   placeholderText,
   animatingGeometry,
+  focusOnMount = false,
 }: CodeEditorProps) {
   const hintId = useId();
   const container = useRef<HTMLDivElement>(null);
@@ -51,6 +65,9 @@ export function CodeEditor({
   });
   // The initial document; later values are synced by their own effect.
   const initialValue = useRef(value);
+  // Read once, for the same reason: the click it stands for happened before
+  // this component existed, and nothing later should re-take the keyboard.
+  const initialFocus = useRef(focusOnMount);
   // Announced once, when focus first lands in the editor. Neither changes, so
   // they do not need a compartment of their own.
   const initialLabel = useRef(label);
@@ -108,6 +125,7 @@ export function CodeEditor({
       }),
     });
     view.current = editor;
+    if (initialFocus.current) editor.focus();
     return () => {
       editor.destroy();
       view.current = null;

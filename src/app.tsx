@@ -1,6 +1,6 @@
 import { useBriefFlag } from "@/components/use-brief-flag";
 import { Toaster } from "@/components/toaster";
-import { CodeEditor } from "@/features/editor/code-editor";
+import { CodeSurface } from "@/features/editor/code-surface";
 import type { LanguageId } from "@/features/editor/language";
 import { useLanguageDetection } from "@/features/editor/use-language-detection";
 import { useShikiHighlight } from "@/features/editor/use-shiki-highlight";
@@ -216,7 +216,7 @@ export function App() {
             settings={settings}
             width={frameWidth}
           >
-            <CodeEditor
+            <CodeSurface
               animatingGeometry={animateGeometry}
               highlight={highlight}
               label="Code"

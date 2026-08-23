@@ -1,4 +1,8 @@
+// Nothing reaches this module without waiting for code-editor.tsx, which is
+// itself only ever imported dynamically. See useCodeEditor.
+// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { RangeSetBuilder, StateEffect, StateField } from "@codemirror/state";
+// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
 import { tokenStyleCss } from "@/features/editor/token-style";
 import { tokenize } from "@/features/editor/tokenize";

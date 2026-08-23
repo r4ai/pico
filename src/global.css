@@ -229,6 +229,19 @@
   min-height: 1lh;
 }
 
+/* What an empty frame says before there is anything in it. The editor draws
+   its own placeholder at `${foreground}66` once it is here; this is the same
+   wash of the frame's foreground, so the swap is invisible.
+
+   `pointer-events: none` for the same reason CodeMirror's has it: the words
+   are an invitation, not something to select. */
+
+.pico-placeholder {
+  color: color-mix(in srgb, var(--pico-fg) 40%, transparent);
+  pointer-events: none;
+  user-select: none;
+}
+
 /* Off-screen, but still laid out: html-to-image needs real computed styles.
    Only the stage is moved out of sight — the captured node must stay in normal
    flow, or the capture paints it off-screen inside the SVG too. */

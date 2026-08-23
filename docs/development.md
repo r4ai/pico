@@ -55,6 +55,14 @@ pnpm preview
 `.claude/launch.json` has an entry for that server. Several things are easy to
 undo:
 
+- CodeMirror loads as its own chunk, and the static rendering the export node
+  is made of holds the frame until it lands. It was more than half the entry
+  chunk — larger than React and React DOM together — and none of it is needed
+  to lay out and paint the picture, which is the whole of what a shared link
+  is for. Importing anything from `@codemirror/*`, `cm-theme`, or
+  `shiki-highlight` outside `code-editor.tsx` puts it back. The three files
+  carry a `react-doctor-disable-next-line` for exactly that reason; the rule
+  reads one file at a time and cannot see the split.
 - The editor's font, size, and line height are stylesheet rules rather than
   part of the CodeMirror theme, because the theme cannot be applied until
   Shiki has loaded and metrics arriving that late relayout every line.
@@ -79,11 +87,16 @@ undo:
   announce. Importing `sonner` directly anywhere puts it back in the entry
   chunk.
 
-Preview geometry has six invariants:
+Preview geometry has seven invariants:
 
 - Padding, font size, frame width, and the line-number gutter use the same
   `260ms / --ease-glass` transition, and only a settings action or a font
   arriving late may enable it.
+- The static rendering and the editor are the same size, empty or full. It is
+  the invariant the export already rests on — what you see is what you save —
+  and it is what lets the editor be swapped in under the reader without
+  anything moving. The one thing only the live rendering draws is the
+  placeholder, and it replaces the single empty line rather than joining it.
 - The off-screen export node is always at the final settings. Its frame is
   synchronously measured as a border box before paint; `ResizeObserver` follows
   later font or content changes.
@@ -118,10 +131,19 @@ taken during one is the picture, not a blend.
 
 `pnpm test:browser` covers intermediate frames, rapid retargeting, export/live
 agreement, height tracking while shrinking, the keyboard's way out of the
-editor, the picker, the settings as a dialog, and the dissolve. It runs three
+editor, the picker, the settings as a dialog and as a remembered layout, the
+static rendering that stands in for the editor, and the dissolve. It runs three
 Chromium instances: one at 1280px, where the settings sit beside the picture
 and both can be driven at once; one at 420px for the drawer and the frame that
 has to fit inside it; and one with reduced motion enabled.
+
+Measured on the production build at 4x CPU and 1.6 Mbps with a 150 ms round
+trip, splitting the editor off took the entry chunk from 178 kB to 83 kB of
+gzip, first contentful paint from about 1680 ms to about 1180 ms, and the
+moment the picture behind a shared link is on screen from about 1.4 s to about
+0.9 s. The editor itself arrives a few hundred milliseconds later than the
+frame does; a click that lands in the meantime is remembered, and the editor
+takes the keyboard as it mounts.
 
 For a performance comparison, use the same 40-line snippet and the same
 settings sequence on production builds before and after the change. Record a

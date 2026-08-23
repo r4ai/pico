@@ -34,6 +34,7 @@ export default mergeConfig(baseConfig, {
             "tests/browser/settings-motion.test.tsx",
             "tests/browser/sidebar-memory.test.tsx",
             "tests/browser/save-menu.test.tsx",
+            "tests/browser/code-surface.test.tsx",
           ],
           name: "chromium",
         },

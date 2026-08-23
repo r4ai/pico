@@ -1,4 +1,7 @@
 import type { Extension } from "@codemirror/state";
+// Nothing reaches this module without waiting for code-editor.tsx, which is
+// itself only ever imported dynamically. See useCodeEditor.
+// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { EditorView } from "@codemirror/view";
 import type { ThemeRegistrationResolved } from "shiki/core";
 

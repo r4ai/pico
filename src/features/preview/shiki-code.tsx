@@ -7,6 +7,13 @@ export type ShikiCodeProps = {
   /** `null` until the first grammar and theme have loaded. */
   highlight: ShikiHighlight | null;
   showLineNumbers: boolean;
+  /**
+   * What an empty document says, drawn the way the editor draws its own.
+   *
+   * Only the live rendering passes one. An export of an empty document is an
+   * empty picture, not a picture of an invitation to paste something.
+   */
+  placeholder?: string;
 };
 
 /**
@@ -18,8 +25,9 @@ export type ShikiCodeProps = {
  * documents, none of which belong in a picture. Rendering the same Shiki
  * tokens into plain markup makes the capture deterministic.
  */
-export function ShikiCode({ code, highlight, showLineNumbers }: ShikiCodeProps) {
+export function ShikiCode({ code, highlight, showLineNumbers, placeholder }: ShikiCodeProps) {
   const tokens = tokenize(code, highlight);
+  const empty = code === "";
 
   return (
     <div className="pico-code">
@@ -31,18 +39,24 @@ export function ShikiCode({ code, highlight, showLineNumbers }: ShikiCodeProps) 
         </div>
       )}
       <div className="pico-lines">
-        {tokens.map((line, lineIndex) => (
-          <div className="pico-line" key={`line-${lineIndex + 1}`}>
-            {/* Keyed by position rather than by offset: a token's offset moves
-                with every character typed before it, which would remount every
-                span after the caret on every keystroke. */}
-            {line.map((token, tokenIndex) => (
-              <span key={`${lineIndex}-${tokenIndex}`} style={tokenStyle(token)}>
-                {token.content}
-              </span>
-            ))}
-          </div>
-        ))}
+        {empty && placeholder !== undefined ? (
+          // In place of the one empty line an empty document already has, so
+          // the frame is exactly the height it is without a placeholder.
+          <div className="pico-line pico-placeholder">{placeholder}</div>
+        ) : (
+          tokens.map((line, lineIndex) => (
+            <div className="pico-line" key={`line-${lineIndex + 1}`}>
+              {/* Keyed by position rather than by offset: a token's offset
+                  moves with every character typed before it, which would
+                  remount every span after the caret on every keystroke. */}
+              {line.map((token, tokenIndex) => (
+                <span key={`${lineIndex}-${tokenIndex}`} style={tokenStyle(token)}>
+                  {token.content}
+                </span>
+              ))}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
