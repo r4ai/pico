@@ -20,7 +20,10 @@ import { sidebarOpenAtom } from "@/features/settings/sidebar-state";
 import { FONTS } from "@/features/settings/fonts";
 import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
 import { useFontReady } from "@/features/settings/use-font-ready";
-import { PREVIEW_GEOMETRY_DURATION_MS } from "@/features/settings/appearance";
+import {
+  PREVIEW_GEOMETRY_DURATION_MS,
+  PREVIEW_GEOMETRY_GRACE_MS,
+} from "@/features/settings/appearance";
 import type { Settings } from "@/features/settings/settings";
 import { useAtom } from "jotai";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -66,7 +69,7 @@ export function App() {
     on: animateGeometry,
     raise: animatePreviewGeometry,
     lower: stopPreviewGeometry,
-  } = useBriefFlag(PREVIEW_GEOMETRY_DURATION_MS);
+  } = useBriefFlag(PREVIEW_GEOMETRY_DURATION_MS + PREVIEW_GEOMETRY_GRACE_MS);
   const lineNumberDigits = String(code.split("\n").length).length;
 
   const fontPhase = useFontReady(FONTS[settings.font]);
