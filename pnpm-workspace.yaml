@@ -1,5 +1,6 @@
 allowBuilds:
   esbuild: true
+  workerd: true
 blockExoticSubdeps: true
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.2.9
