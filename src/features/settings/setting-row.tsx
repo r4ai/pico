@@ -44,21 +44,22 @@ export function PresetToggle<T extends string>({
   return (
     <SettingRow label={label}>
       <ToggleGroup
-        onValueChange={(next) => {
-          // Radix reports "" when the active item is clicked again.
-          if (next !== "") onChange(next as T);
+        disallowEmptySelection
+        onSelectionChange={(keys) => {
+          const next = keys.values().next().value;
+          if (typeof next === "string") onChange(next as T);
         }}
+        selectedKeys={[value]}
         size="sm"
-        type="single"
-        value={value}
+        spacing={0}
         variant="outline"
       >
         {options.map((option) => (
           <ToggleGroupItem
             aria-label={ariaLabelOf?.(option)}
-            className="min-w-9 px-2 text-xs data-[state=on]:bg-foreground/12 data-[state=on]:font-medium data-[state=on]:text-foreground"
+            className="min-w-9 px-2 text-xs data-selected:bg-foreground/12 data-selected:font-medium data-selected:text-foreground"
+            id={option}
             key={option}
-            value={option}
           >
             {labelOf?.(option) ?? option}
           </ToggleGroupItem>

@@ -36,8 +36,8 @@ export function BottomDock({
     <GlassPanel className="flex items-center gap-1 p-1.5">
       <LanguagePicker onChange={onLangChange} value={lang} />
       <Separator className="mx-1 !h-5" orientation="vertical" />
-      <Button className="gap-1.5 px-2.5" disabled={busy} onClick={onCopy} size="sm" variant="ghost">
-        <CopyIcon className="size-4" />
+      <Button isDisabled={busy} onPress={onCopy} size="sm" variant="ghost">
+        <CopyIcon data-icon="inline-start" />
         Copy
       </Button>
       <SaveSplitButton
@@ -46,8 +46,8 @@ export function BottomDock({
         onScaleChange={onScaleChange}
         scale={scale}
       />
-      <Button className="gap-1.5 px-2.5" onClick={onCopyLink} size="sm" variant="ghost">
-        <Link2Icon className="size-4" />
+      <Button onPress={onCopyLink} size="sm" variant="ghost">
+        <Link2Icon data-icon="inline-start" />
         Link
       </Button>
     </GlassPanel>

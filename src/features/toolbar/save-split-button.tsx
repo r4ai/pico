@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   DropdownMenu,
-  DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -32,49 +31,43 @@ export type SaveSplitButtonProps = {
  */
 export function SaveSplitButton({ scale, onScaleChange, onSave, disabled }: SaveSplitButtonProps) {
   return (
-    <div className="flex items-center">
-      <Button
-        className="gap-1.5 rounded-r-none pr-2.5"
-        disabled={disabled}
-        onClick={() => onSave("png")}
-        size="sm"
-        variant="ghost"
-      >
-        <DownloadIcon className="size-4" />
+    <ButtonGroup>
+      <Button isDisabled={disabled} onPress={() => onSave("png")} size="sm" variant="ghost">
+        <DownloadIcon data-icon="inline-start" />
         Save
       </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            aria-label="Export options"
-            className="rounded-l-none px-1.5"
-            disabled={disabled}
-            size="sm"
-            variant="ghost"
-          >
-            <ChevronUpIcon className="size-3.5 opacity-60" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-44" side="top">
-          <DropdownMenuLabel>Resolution</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
-            onValueChange={(next) => {
+      <DropdownMenuTrigger>
+        <Button
+          aria-label="Export options"
+          className="px-1.5"
+          isDisabled={disabled}
+          size="sm"
+          variant="ghost"
+        >
+          <ChevronUpIcon className="opacity-60" />
+        </Button>
+        <DropdownMenu className="w-auto min-w-44" placement="top end">
+          <DropdownMenuGroup
+            onSelectionChange={(keys) => {
+              const next = keys === "all" ? undefined : keys.values().next().value;
               const parsed = Number(next);
               if (isExportScale(parsed)) onScaleChange(parsed);
             }}
-            value={String(scale)}
+            selectedKeys={[String(scale)]}
+            selectionMode="single"
           >
+            <DropdownMenuLabel>Resolution</DropdownMenuLabel>
             {EXPORT_SCALES.map((option) => (
-              <DropdownMenuRadioItem key={option} value={String(option)}>
+              <DropdownMenuItem id={String(option)} key={option} textValue={`${option}x`}>
                 {option}× {option === 2 && <span className="ml-auto opacity-60">Retina</span>}
-              </DropdownMenuRadioItem>
+              </DropdownMenuItem>
             ))}
-          </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => onSave("png")}>Save as PNG</DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => onSave("svg")}>Save as SVG</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+          <DropdownMenuItem onAction={() => onSave("png")}>Save as PNG</DropdownMenuItem>
+          <DropdownMenuItem onAction={() => onSave("svg")}>Save as SVG</DropdownMenuItem>
+        </DropdownMenu>
+      </DropdownMenuTrigger>
+    </ButtonGroup>
   );
 }
