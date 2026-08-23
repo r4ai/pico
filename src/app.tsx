@@ -16,16 +16,15 @@ import {
   useCode,
   useSettings,
 } from "@/features/settings/search-params";
-import { SettingsSidebar } from "@/features/settings/settings-sidebar";
 import { sidebarOpenAtom } from "@/features/settings/sidebar-state";
-import { SidebarToggle } from "@/features/settings/sidebar-toggle";
 import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
 import { PREVIEW_GEOMETRY_DURATION_MS } from "@/features/settings/appearance";
 import type { Settings } from "@/features/settings/settings";
-import { BottomDock } from "@/features/toolbar/bottom-dock";
 import { useAtom } from "jotai";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+
+const Chrome = lazy(() => import("@/features/chrome"));
 
 const PLACEHOLDER = "Paste your code here";
 const GEOMETRY_SETTINGS = new Set<keyof Settings>(["padding", "font", "fontSize", "lineNumbers"]);
@@ -164,28 +163,25 @@ export function App() {
         </div>
       </main>
 
-      <div className="pico-shell-dock">
-        <BottomDock
+      {/* No fallback: the chrome has no placeholder worth drawing, and the
+          editor underneath is already usable without it. */}
+      <Suspense fallback={null}>
+        <Chrome
           copied={copied}
-          lang={settings.lang}
           linkCopied={linkCopied.on}
           onCopy={copy}
           onCopyLink={copyLink}
           onLangChange={chooseLanguage}
           onSave={save}
           onScaleChange={setScale}
+          onSettingsChange={changeSettings}
+          onSidebarOpenChange={setSidebarOpen}
           running={running}
           scale={scale}
+          settings={settings}
+          sidebarOpen={sidebarOpen}
         />
-      </div>
-
-      <SidebarToggle hidden={sidebarOpen} onOpen={() => setSidebarOpen(true)} />
-      <SettingsSidebar
-        onChange={changeSettings}
-        onClose={() => setSidebarOpen(false)}
-        open={sidebarOpen}
-        settings={settings}
-      />
+      </Suspense>
 
       <ExportNode
         code={code}

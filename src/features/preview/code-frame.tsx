@@ -10,7 +10,7 @@ import {
 } from "@/features/settings/appearance";
 import { FONTS } from "@/features/settings/fonts";
 import type { Settings } from "@/features/settings/settings";
-import { cn } from "@/lib/utils";
+import { clsx } from "clsx";
 import type { CSSProperties, ReactNode } from "react";
 
 export type CodeFrameProps = {
@@ -59,7 +59,11 @@ export function CodeFrame({
 
   return (
     <div
-      className={cn("pico-frame", className)}
+      // clsx rather than cn: the frame sets one class of its own, so there is
+      // no Tailwind conflict to resolve, and this is the only thing on the
+      // first-paint path that would otherwise pull tailwind-merge into the
+      // entry chunk.
+      className={clsx("pico-frame", className)}
       data-animate-geometry={animateGeometry}
       style={style}
     >
