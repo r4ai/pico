@@ -23,12 +23,12 @@ pnpm install
 pnpm dev
 ```
 
-| Command      | What it does                       |
-| ------------ | ---------------------------------- |
-| `pnpm dev`   | Start the dev server               |
-| `pnpm build` | Production build                   |
-| `pnpm check` | Format, lint, and type-check       |
-| `pnpm test`  | Run unit tests                     |
+| Command      | What it does                 |
+| ------------ | ---------------------------- |
+| `pnpm dev`   | Start the dev server         |
+| `pnpm build` | Production build             |
+| `pnpm check` | Format, lint, and type-check |
+| `pnpm test`  | Run unit tests               |
 
 ## License
 
