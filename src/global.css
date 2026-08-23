@@ -419,12 +419,27 @@
   z-index: 20;
   transition:
     transform 380ms var(--ease-glass),
-    opacity 220ms var(--ease-glass);
+    opacity 220ms var(--ease-glass),
+    visibility 0s;
 }
 
+/* Faded out and out of the tab order, the same way the dock goes: an invisible
+   button that Tab still lands on is a stop that leads nowhere, and pressing it
+   asks for settings that are already open.
+
+   visibility rather than `inert`, which React Aria writes to the top of the
+   page itself while a popover is open and restores on close — restoring
+   whatever it found, which is not what React last rendered. CSS is the one
+   mechanism nothing else here reaches for. */
+
 .pico-sidebar-toggle[data-hidden="true"] {
+  visibility: hidden;
   transform: translateX(-0.5rem);
   opacity: 0;
+  transition:
+    transform 380ms var(--ease-glass),
+    opacity 220ms var(--ease-glass),
+    visibility 0s 380ms;
 }
 
 /* The chrome rises into place on load. Only the chrome: the picture is what

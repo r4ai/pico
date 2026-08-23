@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
   DropdownMenu,
@@ -14,6 +13,7 @@ import {
   type ExportScale,
   isExportScale,
 } from "@/features/export/export-image";
+import { DockButton } from "@/features/toolbar/dock-button";
 import { DockIcon, DockLabel } from "@/features/toolbar/dock-icon";
 import { ChevronUpIcon, DownloadIcon } from "lucide-react";
 
@@ -21,7 +21,8 @@ export type SaveSplitButtonProps = {
   scale: ExportScale;
   onScaleChange: (scale: ExportScale) => void;
   onSave: (format: ExportFormat) => void;
-  disabled: boolean;
+  /** True while any capture is running. */
+  busy: boolean;
   /** True while this button's own capture is running. */
   pending: boolean;
 };
@@ -31,32 +32,31 @@ export type SaveSplitButtonProps = {
  *
  * The button itself saves a PNG at the current scale, which is what almost
  * everyone wants; the menu is there for the times it is not.
+ *
+ * The chevron stays live while a capture runs. It opens a menu rather than
+ * doing anything, the resolution it sets applies to the next capture rather
+ * than the one in flight, and the two save commands inside it are refused the
+ * same way this button is.
  */
 export function SaveSplitButton({
   scale,
   onScaleChange,
   onSave,
-  disabled,
+  busy,
   pending,
 }: SaveSplitButtonProps) {
   return (
     <ButtonGroup>
-      <Button isDisabled={disabled} onPress={() => onSave("png")} size="sm" variant="ghost">
+      <DockButton busy={busy} onPress={() => onSave("png")}>
         <DockIcon pending={pending}>
           <DownloadIcon data-icon="inline-start" />
         </DockIcon>
         <DockLabel>Save</DockLabel>
-      </Button>
+      </DockButton>
       <DropdownMenuTrigger>
-        <Button
-          aria-label="Export options"
-          className="px-1.5"
-          isDisabled={disabled}
-          size="sm"
-          variant="ghost"
-        >
+        <DockButton aria-label="Export options" className="px-1.5">
           <ChevronUpIcon className="opacity-60" />
-        </Button>
+        </DockButton>
         <DropdownMenu className="w-auto min-w-44" placement="top end">
           <DropdownMenuGroup
             onSelectionChange={(keys) => {
