@@ -32,6 +32,10 @@ export type SettingsSidebarProps = {
  *
  * It stays mounted while closed so opening it is a transform rather than a
  * mount, and is marked `inert` so nothing inside can be tabbed to meanwhile.
+ *
+ * Where the window is wide enough the panel takes a column of its own and the
+ * canvas shifts over to make room; where it is not, it slides over the canvas
+ * as a drawer, and the scrim behind it dismisses it.
  */
 export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsSidebarProps) {
   useEffect(() => {
@@ -44,125 +48,137 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
   }, [open, onClose]);
 
   return (
-    <GlassPanel aria-label="Settings" className="pico-sidebar" data-open={open} inert={!open}>
-      <header className="flex items-center justify-between px-4 pt-3.5 pb-2">
-        <h2 className="font-medium text-sm">Settings</h2>
-        <Button aria-label="Close settings" onPress={onClose} size="icon" variant="ghost">
-          <XIcon />
-        </Button>
-      </header>
-      <Separator />
-
-      <div className="flex flex-col gap-5 overflow-y-auto px-4 py-4">
-        <section className="flex flex-col gap-3">
-          <SectionTitle>Theme</SectionTitle>
-          <SearchableSelect
-            adornment={<Swatch color={THEMES[settings.theme].swatch[settings.mode]} />}
-            ariaLabel="Theme"
-            onChange={(theme) => onChange({ theme })}
-            options={THEME_IDS.map((id) => ({
-              value: id,
-              label: THEMES[id].label,
-              render: (
-                <span className="flex items-center gap-2">
-                  <Swatch color={THEMES[id].swatch[settings.mode]} />
-                  {THEMES[id].label}
-                </span>
-              ),
-            }))}
-            placeholder="Search themes"
-            value={settings.theme}
-          />
-
-          <PresetToggle
-            ariaLabelOf={(mode) => mode}
-            label="Appearance"
-            labelOf={(mode) =>
-              mode === "light" ? (
-                <SunIcon className="size-3.5" />
-              ) : (
-                <MoonIcon className="size-3.5" />
-              )
-            }
-            onChange={(mode) => onChange({ mode })}
-            options={COLOR_MODES}
-            value={settings.mode}
-          />
-        </section>
-
+    <>
+      {/* Reachable by pointer only: Escape and the close button already cover
+          the keyboard, and a second stop for the same action would be noise. */}
+      <button
+        aria-label="Close settings"
+        className="pico-sidebar-scrim"
+        data-open={open}
+        onClick={onClose}
+        tabIndex={-1}
+        type="button"
+      />
+      <GlassPanel aria-label="Settings" className="pico-sidebar" data-open={open} inert={!open}>
+        <header className="flex items-center justify-between px-4 pt-3.5 pb-2">
+          <h2 className="font-medium text-sm">Settings</h2>
+          <Button aria-label="Close settings" onPress={onClose} size="icon" variant="ghost">
+            <XIcon />
+          </Button>
+        </header>
         <Separator />
 
-        <section className="flex flex-col gap-3">
-          <SectionTitle>Type</SectionTitle>
-          <SearchableSelect
-            adornment={<span style={{ fontFamily: FONTS[settings.font].stack }}>Aa</span>}
-            ariaLabel="Font"
-            onChange={(font) => onChange({ font })}
-            options={FONT_IDS.map((id) => ({
-              value: id,
-              label: FONTS[id].label,
-              render: (
-                <span className="flex items-center gap-2">
-                  <span style={{ fontFamily: FONTS[id].stack }}>{FONTS[id].label}</span>
-                  {FONTS[id].note && (
-                    <span className="text-muted-foreground text-xs">{FONTS[id].note}</span>
-                  )}
-                </span>
-              ),
-            }))}
-            placeholder="Search fonts"
-            value={settings.font}
-          />
-
-          <PresetToggle
-            label="Size"
-            labelOf={(id) => FONT_SIZES[id].replace("px", "")}
-            onChange={(fontSize) => onChange({ fontSize })}
-            options={FONT_SIZE_IDS}
-            value={settings.fontSize}
-          />
-
-          <SettingRow label="Line numbers">
-            <Switch
-              aria-label="Line numbers"
-              id="line-numbers"
-              isSelected={settings.lineNumbers}
-              onChange={(lineNumbers) => onChange({ lineNumbers })}
+        <div className="flex flex-col gap-5 overflow-y-auto px-4 py-4">
+          <section className="flex flex-col gap-3">
+            <SectionTitle>Theme</SectionTitle>
+            <SearchableSelect
+              adornment={<Swatch color={THEMES[settings.theme].swatch[settings.mode]} />}
+              ariaLabel="Theme"
+              onChange={(theme) => onChange({ theme })}
+              options={THEME_IDS.map((id) => ({
+                value: id,
+                label: THEMES[id].label,
+                render: (
+                  <span className="flex items-center gap-2">
+                    <Swatch color={THEMES[id].swatch[settings.mode]} />
+                    {THEMES[id].label}
+                  </span>
+                ),
+              }))}
+              placeholder="Search themes"
+              value={settings.theme}
             />
-            <Label className="sr-only" htmlFor="line-numbers">
-              Line numbers
-            </Label>
-          </SettingRow>
-        </section>
 
-        <Separator />
+            <PresetToggle
+              ariaLabelOf={(mode) => mode}
+              label="Appearance"
+              labelOf={(mode) =>
+                mode === "light" ? (
+                  <SunIcon className="size-3.5" />
+                ) : (
+                  <MoonIcon className="size-3.5" />
+                )
+              }
+              onChange={(mode) => onChange({ mode })}
+              options={COLOR_MODES}
+              value={settings.mode}
+            />
+          </section>
 
-        <section className="flex flex-col gap-3">
-          <SectionTitle>Frame</SectionTitle>
-          <PresetToggle
-            label="Padding"
-            labelOf={(id) => SIZE_LABELS[id]}
-            onChange={(padding) => onChange({ padding })}
-            options={PADDING_IDS}
-            value={settings.padding}
-          />
-          <PresetToggle
-            label="Corners"
-            labelOf={(id) => SIZE_LABELS[id]}
-            onChange={(radius) => onChange({ radius })}
-            options={RADIUS_IDS}
-            value={settings.radius}
-          />
-          <PresetToggle
-            label="Shadow"
-            labelOf={(id) => SIZE_LABELS[id]}
-            onChange={(shadow) => onChange({ shadow })}
-            options={SHADOW_IDS}
-            value={settings.shadow}
-          />
-        </section>
-      </div>
-    </GlassPanel>
+          <Separator />
+
+          <section className="flex flex-col gap-3">
+            <SectionTitle>Type</SectionTitle>
+            <SearchableSelect
+              adornment={<span style={{ fontFamily: FONTS[settings.font].stack }}>Aa</span>}
+              ariaLabel="Font"
+              onChange={(font) => onChange({ font })}
+              options={FONT_IDS.map((id) => ({
+                value: id,
+                label: FONTS[id].label,
+                render: (
+                  <span className="flex items-center gap-2">
+                    <span style={{ fontFamily: FONTS[id].stack }}>{FONTS[id].label}</span>
+                    {FONTS[id].note && (
+                      <span className="text-muted-foreground text-xs">{FONTS[id].note}</span>
+                    )}
+                  </span>
+                ),
+              }))}
+              placeholder="Search fonts"
+              value={settings.font}
+            />
+
+            <PresetToggle
+              label="Size"
+              labelOf={(id) => FONT_SIZES[id].replace("px", "")}
+              onChange={(fontSize) => onChange({ fontSize })}
+              options={FONT_SIZE_IDS}
+              value={settings.fontSize}
+            />
+
+            <SettingRow label="Line numbers">
+              <Switch
+                aria-label="Line numbers"
+                id="line-numbers"
+                isSelected={settings.lineNumbers}
+                onChange={(lineNumbers) => onChange({ lineNumbers })}
+              />
+              <Label className="sr-only" htmlFor="line-numbers">
+                Line numbers
+              </Label>
+            </SettingRow>
+          </section>
+
+          <Separator />
+
+          <section className="flex flex-col gap-3">
+            <SectionTitle>Frame</SectionTitle>
+            <PresetToggle
+              label="Padding"
+              labelOf={(id) => SIZE_LABELS[id]}
+              onChange={(padding) => onChange({ padding })}
+              options={PADDING_IDS}
+              value={settings.padding}
+            />
+            <PresetToggle
+              label="Corners"
+              labelOf={(id) => SIZE_LABELS[id]}
+              onChange={(radius) => onChange({ radius })}
+              options={RADIUS_IDS}
+              value={settings.radius}
+            />
+            <PresetToggle
+              label="Shadow"
+              labelOf={(id) => SIZE_LABELS[id]}
+              onChange={(shadow) => onChange({ shadow })}
+              options={SHADOW_IDS}
+              value={settings.shadow}
+            />
+          </section>
+        </div>
+      </GlassPanel>
+    </>
   );
 }
 

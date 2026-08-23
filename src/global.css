@@ -208,7 +208,40 @@
 /* ---------------------------------------------------------------------------
    The settings sidebar. Stays mounted while closed so opening it is a
    transform, and rides the same spring-like curve as the rest of the chrome.
+
+   Wide enough, and the sidebar takes its own column: the canvas is inset by
+   the width the panel occupies, so opening the settings narrows the picture
+   instead of covering it. Narrow enough, and there is no room to give up, so
+   the panel goes back to being a drawer over a scrim.
    --------------------------------------------------------------------------- */
+
+:root {
+  --pico-sidebar-width: 18rem;
+  --pico-sidebar-inset: 0px;
+}
+
+@media (width >= 48rem) {
+  .pico-shell[data-sidebar-open="true"] {
+    --pico-sidebar-inset: calc(var(--pico-sidebar-width) + 2rem);
+  }
+}
+
+.pico-shell-canvas {
+  padding-left: var(--pico-sidebar-inset);
+  transition: padding-left 380ms var(--ease-glass);
+}
+
+/* Centred on the canvas rather than on the window, so the dock moves with the
+   picture it belongs to. */
+
+.pico-shell-dock {
+  position: fixed;
+  bottom: 1.5rem;
+  left: calc(50% + var(--pico-sidebar-inset) / 2);
+  z-index: 20;
+  transform: translateX(-50%);
+  transition: left 380ms var(--ease-glass);
+}
 
 .pico-sidebar {
   position: fixed;
@@ -217,7 +250,7 @@
   left: 1rem;
   z-index: 30;
   display: flex;
-  width: 18rem;
+  width: var(--pico-sidebar-width);
   flex-direction: column;
   overflow: hidden;
   transform: translateX(calc(-100% - 1.5rem));
@@ -230,6 +263,30 @@
 .pico-sidebar[data-open="true"] {
   transform: translateX(0);
   opacity: 1;
+}
+
+/* Only ever seen in drawer mode: where the sidebar has its own column there is
+   nothing behind it to dismiss. */
+
+.pico-sidebar-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: oklch(0 0 0 / 40%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms var(--ease-glass);
+}
+
+.pico-sidebar-scrim[data-open="true"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (width >= 48rem) {
+  .pico-sidebar-scrim {
+    display: none;
+  }
 }
 
 .pico-sidebar-toggle {
@@ -247,8 +304,41 @@
   opacity: 0;
 }
 
+/* ---------------------------------------------------------------------------
+   The rows of presets. The stock toggle tints are a hair off white and vanish
+   against the glass, so the three states are drawn as widening washes of the
+   foreground colour instead: nothing, a hint, and a clear block.
+   --------------------------------------------------------------------------- */
+
+.pico-preset-item {
+  border-color: light-dark(oklch(0 0 0 / 12%), oklch(1 0 0 / 14%));
+  background: transparent;
+  color: var(--muted-foreground);
+  transition:
+    background-color 150ms var(--ease-glass),
+    color 150ms var(--ease-glass);
+}
+
+.pico-preset-item[data-hovered] {
+  background: light-dark(oklch(0 0 0 / 8%), oklch(1 0 0 / 10%));
+  color: var(--foreground);
+}
+
+.pico-preset-item[data-selected] {
+  background: light-dark(oklch(0 0 0 / 16%), oklch(1 0 0 / 22%));
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.pico-preset-item[data-selected][data-hovered] {
+  background: light-dark(oklch(0 0 0 / 23%), oklch(1 0 0 / 30%));
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .pico-shell-canvas,
+  .pico-shell-dock,
   .pico-sidebar,
+  .pico-sidebar-scrim,
   .pico-sidebar-toggle {
     transition-duration: 1ms;
   }
