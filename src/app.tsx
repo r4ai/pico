@@ -22,7 +22,7 @@ import { SidebarToggle } from "@/features/settings/sidebar-toggle";
 import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
 import { useAtom } from "jotai";
-import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const PLACEHOLDER = "Paste your code here";
@@ -59,16 +59,13 @@ export function App() {
   const { running, copied, copy, save } = useExport({ node: exportNode, settings, scale });
   const linkCopied = useBriefFlag();
 
-  // Nobody looks at the export node, so it can lag the editor by a frame.
-  // Rendering it at low priority takes the second tokenization of the document
-  // and a rebuilt span per token off the path a keystroke has to travel before
-  // the character appears.
-  //
-  // It cannot lag into a capture. Exporting is asynchronous before it ever
-  // reads the node — the exporter is fetched and the fonts are awaited first —
-  // so a low-priority render scheduled by an earlier keystroke has always been
-  // committed by the time the node is photographed.
-  const deferredCode = useDeferredValue(code);
+  // The export node is deliberately not deferred. Rendering it at a low
+  // priority would take a tokenization and a span per token off the path a
+  // keystroke travels, but nothing orders that background commit against a
+  // capture: once the exporter module and the fonts are warm, everything the
+  // capture awaits settles in microtasks, and the picture would come out
+  // missing the last keystrokes. The saving was single digit percentages of
+  // one keystroke; the failure is the wrong image, silently.
 
   useLanguageDetection({
     code,
@@ -157,7 +154,7 @@ export function App() {
       />
 
       <ExportNode
-        code={deferredCode}
+        code={code}
         colors={colors}
         highlight={highlight}
         onFrameWidthChange={setFrameWidth}
