@@ -4,6 +4,7 @@ import {
   type ShikiHighlight,
   shikiHighlighting,
 } from "@/features/editor/shiki-highlight";
+import { useLiveMetrics } from "@/features/editor/use-live-metrics";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { Compartment, EditorState } from "@codemirror/state";
 import { drawSelection, EditorView, keymap, lineNumbers, placeholder } from "@codemirror/view";
@@ -18,6 +19,8 @@ export type CodeEditorProps = {
   highlight: ShikiHighlight | null;
   showLineNumbers: boolean;
   placeholderText: string;
+  /** True while the frame's geometry is easing between two settings. */
+  animatingGeometry: boolean;
 };
 
 /**
@@ -33,6 +36,7 @@ export function CodeEditor({
   highlight,
   showLineNumbers,
   placeholderText,
+  animatingGeometry,
 }: CodeEditorProps) {
   const container = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
@@ -46,6 +50,8 @@ export function CodeEditor({
   // Announced once, when focus first lands in the editor. It never changes, so
   // it does not need a compartment of its own.
   const initialLabel = useRef(label);
+
+  useLiveMetrics(view, animatingGeometry);
 
   useEffect(() => {
     latestOnChange.current = onChange;

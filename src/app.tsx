@@ -152,6 +152,7 @@ export function App() {
             width={frameWidth}
           >
             <CodeEditor
+              animatingGeometry={animateGeometry}
               highlight={highlight}
               label="Code"
               onChange={changeCode}
