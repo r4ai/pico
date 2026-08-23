@@ -21,10 +21,11 @@ const CUDA_LAUNCH = /<<<[^<>]*>>>\s*\(/;
 const SIGNATURE_LANGUAGES = [
   {
     id: "java",
-    markers: /\bpackage\s+[\w.]+\s*;|\bimport\s+java\.|\bpublic\s+(?:final\s+)?class\s+\w+/,
+    markers:
+      /\bpackage\s+[\w.]+\s*;|\bimport\s+java\.|\b(?:public\s+)?static\s+void\s+main\s*\(\s*String(?:\[\]|\.\.\.)/,
   },
   { id: "dart", markers: /\bimport\s+['"]dart:|\b(?:Future|Stream)<[^>]+>/ },
-  { id: "scala", markers: /\bcase\s+class\b|\bobject\s+[A-Z]\w*\s*\{|\bdef\s+\w+\([^)]*\)\s*:/ },
+  { id: "scala", markers: /\bcase\s+class\b|\bdef\s+\w+\([^)]*\)\s*:/ },
   { id: "powershell", markers: /\[Parameter\b|\b(?:Get|Set|New|Remove)-[A-Z]\w+|\$_\./ },
   { id: "r", markers: /(?:^|\s)<-\s|\b(?:library|mutate|summarise)\s*\(|%>%/m },
   { id: "elixir", markers: /\bdefmodule\s+[A-Z]|\bdefp?\s+\w+.*\bdo\b|\|>\s*[A-Z]\w*\./ },

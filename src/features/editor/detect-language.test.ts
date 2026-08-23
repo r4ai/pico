@@ -300,6 +300,30 @@ describe("detectLanguage", () => {
 
   it.each([
     [
+      "C# classes",
+      "csharp",
+      `using System;
+
+public class Customer {
+  public string Name { get; set; } = string.Empty;
+}`,
+    ],
+    [
+      "Kotlin singleton objects",
+      "kotlin",
+      `object Main {
+  @JvmStatic
+  fun main(args: Array<String>) {
+    println("Hello")
+  }
+}`,
+    ],
+  ])("does not let signature markers steal %s", async (_name, expected, code) => {
+    expect(await detectLanguage(code)).toBe(expected);
+  });
+
+  it.each([
+    [
       "a bare kernel, which highlight.js scores as LLVM IR",
       `__global__ void saxpy(int n, float a, const float *x, float *y) {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
