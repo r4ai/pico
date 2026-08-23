@@ -20,12 +20,15 @@ import { SettingsSidebar } from "@/features/settings/settings-sidebar";
 import { sidebarOpenAtom } from "@/features/settings/sidebar-state";
 import { SidebarToggle } from "@/features/settings/sidebar-toggle";
 import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
+import { PREVIEW_GEOMETRY_DURATION_MS } from "@/features/settings/appearance";
+import type { Settings } from "@/features/settings/settings";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const PLACEHOLDER = "Paste your code here";
+const GEOMETRY_SETTINGS = new Set<keyof Settings>(["padding", "font", "fontSize", "lineNumbers"]);
 
 export function App() {
   const [settings, setSettings] = useSettings();
@@ -58,6 +61,30 @@ export function App() {
 
   const { running, copied, copy, save } = useExport({ node: exportNode, settings, scale });
   const linkCopied = useBriefFlag();
+  const {
+    on: animateGeometry,
+    raise: animatePreviewGeometry,
+    lower: stopPreviewGeometry,
+  } = useBriefFlag(PREVIEW_GEOMETRY_DURATION_MS);
+  const lineNumberDigits = String(code.split("\n").length).length;
+
+  const changeSettings = useCallback(
+    (patch: Partial<Settings>) => {
+      if (Object.keys(patch).some((key) => GEOMETRY_SETTINGS.has(key as keyof Settings))) {
+        animatePreviewGeometry();
+      }
+      void setSettings(patch);
+    },
+    [animatePreviewGeometry, setSettings],
+  );
+
+  const changeCode = useCallback(
+    (nextCode: string) => {
+      stopPreviewGeometry();
+      void setCode(nextCode);
+    },
+    [setCode, stopPreviewGeometry],
+  );
 
   // The export node is deliberately not deferred. Rendering it at a low
   // priority would take a tokenization and a span per token off the path a
@@ -117,11 +144,17 @@ export function App() {
           stable even while CodeMirror virtualises lines during scrolling. */}
       <main className="pico-shell-canvas flex-1 overflow-auto">
         <div className="flex min-h-full w-full min-w-max items-center justify-center p-10 pb-32">
-          <CodeFrame colors={colors} settings={settings} width={frameWidth}>
+          <CodeFrame
+            animateGeometry={animateGeometry}
+            colors={colors}
+            lineNumberDigits={lineNumberDigits}
+            settings={settings}
+            width={frameWidth}
+          >
             <CodeEditor
               highlight={highlight}
               label="Code"
-              onChange={setCode}
+              onChange={changeCode}
               placeholderText={PLACEHOLDER}
               showLineNumbers={settings.lineNumbers}
               value={code}
@@ -147,7 +180,7 @@ export function App() {
 
       <SidebarToggle hidden={sidebarOpen} onOpen={() => setSidebarOpen(true)} />
       <SettingsSidebar
-        onChange={setSettings}
+        onChange={changeSettings}
         onClose={() => setSidebarOpen(false)}
         open={sidebarOpen}
         settings={settings}
@@ -157,6 +190,7 @@ export function App() {
         code={code}
         colors={colors}
         highlight={highlight}
+        lineNumberDigits={lineNumberDigits}
         onFrameWidthChange={setFrameWidth}
         ref={exportNode}
         settings={settings}

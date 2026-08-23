@@ -6,6 +6,7 @@ const DEFAULT_DURATION_MS = 1600;
 export type BriefFlag = {
   readonly on: boolean;
   readonly raise: () => void;
+  readonly lower: () => void;
 };
 
 /**
@@ -26,7 +27,12 @@ export function useBriefFlag(durationMs: number = DEFAULT_DURATION_MS): BriefFla
     timer.current = setTimeout(() => setOn(false), durationMs);
   }, [durationMs]);
 
+  const lower = useCallback(() => {
+    clearTimeout(timer.current);
+    setOn(false);
+  }, []);
+
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  return { on, raise };
+  return { on, raise, lower };
 }

@@ -39,7 +39,6 @@ export function CodeEditor({
   const latestOnChange = useRef(onChange);
   const compartments = useRef({
     theme: new Compartment(),
-    lineNumbers: new Compartment(),
     placeholder: new Compartment(),
   });
   // The initial document; later values are synced by their own effect.
@@ -56,11 +55,7 @@ export function CodeEditor({
     const parent = container.current;
     if (!parent) return;
 
-    const {
-      theme,
-      lineNumbers: lineNumbersCompartment,
-      placeholder: placeholderCompartment,
-    } = compartments.current;
+    const { theme, placeholder: placeholderCompartment } = compartments.current;
     const editor = new EditorView({
       parent,
       state: EditorState.create({
@@ -79,7 +74,7 @@ export function CodeEditor({
           keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
           shikiHighlighting(),
           theme.of([]),
-          lineNumbersCompartment.of([]),
+          lineNumbers(),
           placeholderCompartment.of([]),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) latestOnChange.current(update.state.doc.toString());
@@ -115,15 +110,15 @@ export function CodeEditor({
 
   useEffect(() => {
     view.current?.dispatch({
-      effects: compartments.current.lineNumbers.reconfigure(showLineNumbers ? lineNumbers() : []),
-    });
-  }, [showLineNumbers]);
-
-  useEffect(() => {
-    view.current?.dispatch({
       effects: compartments.current.placeholder.reconfigure(placeholder(placeholderText)),
     });
   }, [placeholderText]);
 
-  return <div ref={container} className="pico-editor" />;
+  useEffect(() => {
+    view.current?.dom
+      .querySelector(".cm-gutters")
+      ?.setAttribute("aria-hidden", String(!showLineNumbers));
+  }, [showLineNumbers]);
+
+  return <div ref={container} className="pico-editor" data-line-numbers={showLineNumbers} />;
 }

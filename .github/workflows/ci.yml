@@ -65,6 +65,9 @@ jobs:
             script: check
           - name: Test
             script: test
+          - name: Browser
+            script: test:browser
+            browser: true
           - name: Build
             script: build
           - name: Storybook
@@ -91,6 +94,10 @@ jobs:
 
       # --frozen-lockfile fails rather than resolving anything the lockfile does not pin.
       - run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        if: matrix.browser
+        run: pnpm exec playwright install --with-deps chromium
 
       - run: pnpm run ${{ matrix.script }}
 

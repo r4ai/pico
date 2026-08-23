@@ -98,6 +98,11 @@
    --------------------------------------------------------------------------- */
 
 .pico-frame {
+  --pico-gutter-width: max(
+    var(--pico-gutter-min-width),
+    calc(var(--pico-line-number-digits) * 1ch + var(--pico-gutter-gap))
+  );
+
   width: max-content;
   min-width: 28rem;
   padding: var(--pico-pad);
@@ -112,20 +117,25 @@
   tab-size: 2;
 }
 
-/* Corners and shadow ease between presets, so picking one along the row reads
-   as one surface changing rather than four separate pictures. Padding and type
-   are left alone: they decide how much room the code takes, and the frame's
-   width is measured, not transitioned, so easing them would leave the code
-   sitting outside its own box for a moment.
-
-   The live frame only. The export node is photographed from its computed
-   styles, and a capture taken a moment after a setting changed would come out
-   half way between the two. */
+/* Corners and shadow always ease between presets. Geometry joins that motion
+   only while a settings action is changing the live preview: the export node
+   stays at the final computed values so a capture can never contain an
+   intermediate frame. */
 
 .pico-shell-canvas .pico-frame {
   transition:
     border-radius 260ms var(--ease-glass),
     box-shadow 260ms var(--ease-glass);
+}
+
+.pico-shell-canvas .pico-frame[data-animate-geometry="true"] {
+  overflow: clip;
+  transition:
+    width var(--pico-geometry-duration) var(--ease-glass),
+    padding var(--pico-geometry-duration) var(--ease-glass),
+    font-size var(--pico-geometry-duration) var(--ease-glass),
+    border-radius var(--pico-geometry-duration) var(--ease-glass),
+    box-shadow var(--pico-geometry-duration) var(--ease-glass);
 }
 
 /* The static rendering used for export. */
@@ -137,7 +147,7 @@
 
 .pico-gutter {
   flex: none;
-  min-width: var(--pico-gutter-min-width);
+  width: var(--pico-gutter-width);
   padding-right: var(--pico-gutter-gap);
   color: var(--pico-line-number);
   text-align: right;
@@ -198,11 +208,33 @@
 }
 
 .pico-editor .cm-editor .cm-gutters {
+  box-sizing: border-box;
+  width: var(--pico-gutter-width);
+  min-width: 0;
   padding: 0;
+  overflow: clip;
+  opacity: 1;
+  flex: none;
+}
+
+.pico-editor[data-line-numbers="false"] .cm-editor .cm-gutters {
+  width: 0;
+  opacity: 0;
+}
+
+.pico-frame[data-animate-geometry="true"] .pico-editor .cm-editor .cm-gutters {
+  transition:
+    width var(--pico-geometry-duration) var(--ease-glass),
+    opacity var(--pico-geometry-duration) var(--ease-glass);
+}
+
+.pico-editor .cm-editor .cm-lineNumbers {
+  width: var(--pico-gutter-width);
 }
 
 .pico-editor .cm-editor .cm-lineNumbers .cm-gutterElement {
-  min-width: var(--pico-gutter-min-width);
+  width: 100%;
+  min-width: 0;
   padding: 0 var(--pico-gutter-gap) 0 0;
   text-align: right;
 }
@@ -448,6 +480,8 @@
   .pico-shell-canvas,
   .pico-shell-dock,
   .pico-shell-canvas .pico-frame,
+  .pico-shell-canvas .pico-frame[data-animate-geometry="true"],
+  .pico-frame[data-animate-geometry="true"] .pico-editor .cm-editor .cm-gutters,
   .pico-sidebar,
   .pico-sidebar-scrim,
   .pico-sidebar-toggle {
