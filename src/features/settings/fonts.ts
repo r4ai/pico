@@ -5,7 +5,7 @@ import jetBrainsMono400Italic from "@fontsource/jetbrains-mono/files/jetbrains-m
 import jetBrainsMono400 from "@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2?url";
 import jetBrainsMono700 from "@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff2?url";
 
-export const FONT_IDS = ["geist-mono", "jetbrains-mono"] as const;
+export const FONT_IDS = ["geist-mono", "jetbrains-mono", "udev-gothic"] as const;
 
 export type FontId = (typeof FONT_IDS)[number];
 
@@ -18,12 +18,14 @@ export type FontFace = {
 export type Font = {
   readonly id: FontId;
   readonly label: string;
+  /** A word about what sets this font apart, shown beside its name. */
+  readonly note?: string;
   /** The `font-family` value, always ending in a generic fallback. */
   readonly stack: string;
   readonly faces: readonly FontFace[];
 };
 
-export const FONTS = {
+export const FONTS: Record<FontId, Font> = {
   "geist-mono": {
     id: "geist-mono",
     label: "Geist Mono",
@@ -44,7 +46,23 @@ export const FONTS = {
       { url: jetBrainsMono700, weight: 700, style: "normal" },
     ],
   },
-} as const satisfies Record<FontId, Font>;
+  "udev-gothic": {
+    id: "udev-gothic",
+    label: "UDEV Gothic",
+    note: "Japanese",
+    stack: '"UDEV Gothic", ui-monospace, SFMono-Regular, Menlo, monospace',
+    // Regular only. Every export inlines the whole face, and doubling that for
+    // the few tokens a theme emboldens is not worth it — the browser
+    // synthesizes bold instead. See scripts/build-udev-subset.sh.
+    faces: [
+      {
+        url: `${import.meta.env.BASE_URL}fonts/udev-gothic-subset.woff2`,
+        weight: 400,
+        style: "normal",
+      },
+    ],
+  },
+};
 
 export const DEFAULT_FONT: FontId = "geist-mono";
 

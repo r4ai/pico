@@ -102,7 +102,14 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
             options={FONT_IDS.map((id) => ({
               value: id,
               label: FONTS[id].label,
-              render: <span style={{ fontFamily: FONTS[id].stack }}>{FONTS[id].label}</span>,
+              render: (
+                <span className="flex items-center gap-2">
+                  <span style={{ fontFamily: FONTS[id].stack }}>{FONTS[id].label}</span>
+                  {FONTS[id].note && (
+                    <span className="text-muted-foreground text-xs">{FONTS[id].note}</span>
+                  )}
+                </span>
+              ),
             }))}
             placeholder="Search fonts"
             value={settings.font}

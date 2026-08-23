@@ -81,6 +81,11 @@ export function hasBrokenCodeParam(search: string): boolean {
 
 const serializeShareUrl = createSerializer({ ...settingsParsers, [CODE_PARAM]: codeParser });
 
+/** Whether the reader arrived with a language already chosen for them. */
+export function hasExplicitLanguage(search: string): boolean {
+  return new URLSearchParams(search).has("lang");
+}
+
 export type ShareUrl = {
   readonly url: string;
   /** Long links get truncated by some clients, so the UI warns about them. */

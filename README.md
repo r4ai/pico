@@ -30,6 +30,13 @@ pnpm dev
 | `pnpm check` | Format, lint, and type-check |
 | `pnpm test`  | Run unit tests               |
 
+## Fonts
+
+Geist Mono, JetBrains Mono, and a subset of UDEV Gothic for Japanese. Only the
+one you pick is downloaded, and only that one is embedded in an exported image.
+See `public/fonts/README.md`.
+
 ## License
 
-MIT
+MIT for Pico itself. The bundled UDEV Gothic subset is under the SIL Open Font
+License 1.1 — see `public/fonts/UDEVGothic-LICENSE.txt`.

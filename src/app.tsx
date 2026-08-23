@@ -1,5 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { CodeEditor } from "@/features/editor/code-editor";
+import type { LanguageId } from "@/features/editor/language";
+import { useLanguageDetection } from "@/features/editor/use-language-detection";
 import { useShikiHighlight } from "@/features/editor/use-shiki-highlight";
 import { type ExportScale, DEFAULT_SCALE } from "@/features/export/export-image";
 import { useExport } from "@/features/export/use-export";
@@ -9,6 +11,7 @@ import { ExportNode } from "@/features/preview/export-node";
 import {
   buildShareUrl,
   hasBrokenCodeParam,
+  hasExplicitLanguage,
   useCode,
   useSettings,
 } from "@/features/settings/search-params";
@@ -28,6 +31,18 @@ export function App() {
   const [code, setCode] = useCode();
   const [scale, setScale] = useState<ExportScale>(DEFAULT_SCALE);
   const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom);
+  // Once someone picks a language themselves, guessing would only fight them.
+  const [languageChosen, setLanguageChosen] = useState(() =>
+    hasExplicitLanguage(window.location.search),
+  );
+
+  const chooseLanguage = useCallback(
+    (lang: LanguageId) => {
+      setLanguageChosen(true);
+      void setSettings({ lang });
+    },
+    [setSettings],
+  );
   const exportNode = useRef<HTMLDivElement>(null);
 
   const themeName = shikiThemeOf(settings.theme, settings.mode);
@@ -37,6 +52,12 @@ export function App() {
     : TRANSPARENT_FRAME;
 
   const { busy, copy, save } = useExport({ node: exportNode, settings, scale });
+
+  useLanguageDetection({
+    code,
+    enabled: !languageChosen,
+    onDetect: (lang) => void setSettings({ lang }),
+  });
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", settings.mode === "dark");
@@ -90,7 +111,7 @@ export function App() {
           lang={settings.lang}
           onCopy={copy}
           onCopyLink={copyLink}
-          onLangChange={(lang) => setSettings({ lang })}
+          onLangChange={chooseLanguage}
           onSave={save}
           onScaleChange={setScale}
           scale={scale}
