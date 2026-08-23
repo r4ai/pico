@@ -5,7 +5,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: oklch(0.93 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -26,7 +26,7 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.22 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -86,4 +86,32 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   The code frame. Shared by the live editor and the hidden export node so both
+   render at the same size; see CodeFrame.
+   --------------------------------------------------------------------------- */
+
+.pico-frame {
+  width: max-content;
+  min-width: min(28rem, 100%);
+  padding: var(--pico-pad);
+  border-radius: var(--pico-radius);
+  background: var(--pico-bg);
+  box-shadow: var(--pico-shadow);
+  font-family: var(--pico-font-family);
+  font-size: var(--pico-font-size);
+  line-height: var(--pico-line-height);
+  text-rendering: geometricPrecision;
+  font-variant-ligatures: none;
+}
+
+.pico-editor .cm-editor {
+  width: max-content;
+  min-width: 100%;
+}
+
+.pico-editor .cm-scroller {
+  overflow: visible;
 }
