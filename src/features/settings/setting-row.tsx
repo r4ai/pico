@@ -44,7 +44,6 @@ export function PresetToggle<T extends string>({
   return (
     <SettingRow label={label}>
       <ToggleGroup
-        className="gap-0.5"
         onValueChange={(next) => {
           // Radix reports "" when the active item is clicked again.
           if (next !== "") onChange(next as T);
