@@ -24,21 +24,17 @@ function color(theme: ThemeRegistrationResolved, key: string, fallback: string):
  */
 export function createEditorTheme(theme: ThemeRegistrationResolved): Extension {
   const foreground = theme.fg;
+  const cursor = color(theme, "editorCursor.foreground", foreground);
   const selection = color(theme, "editor.selectionBackground", `${foreground}22`);
 
   return EditorView.theme(
     {
       "&": {
+        "--pico-cursor-color": cursor,
         backgroundColor: "transparent",
         color: foreground,
       },
       "&.cm-focused": { outline: "none" },
-      ".cm-content": {
-        caretColor: color(theme, "editorCursor.foreground", foreground),
-      },
-      ".cm-cursor, .cm-dropCursor": {
-        borderLeftColor: color(theme, "editorCursor.foreground", foreground),
-      },
       "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
         backgroundColor: selection,
       },

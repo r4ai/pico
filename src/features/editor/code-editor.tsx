@@ -8,7 +8,7 @@ import { useLiveMetrics } from "@/features/editor/use-live-metrics";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { Compartment, EditorState } from "@codemirror/state";
 import { drawSelection, EditorView, keymap, lineNumbers, placeholder } from "@codemirror/view";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useLayoutEffect, useRef } from "react";
 
 /** Long enough to reach for Tab after Escape, short enough not to linger. */
 const TAB_FOCUS_GRACE_MS = 4000;
@@ -60,7 +60,7 @@ export function CodeEditor({
     latestOnChange.current = onChange;
   }, [onChange]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const parent = container.current;
     if (!parent) return;
 
