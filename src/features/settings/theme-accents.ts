@@ -34,11 +34,32 @@ const SCOPES: Record<keyof ThemeAccents, readonly string[]> = {
 
 type ThemeRule = { scope?: string | string[]; settings?: { foreground?: string } };
 
-function scopesOf(rule: ThemeRule): string[] {
-  const scope = rule.scope ?? [];
-  return (Array.isArray(scope) ? scope : scope.split(","))
-    .map((name) => name.trim())
-    .filter(Boolean);
+/**
+ * Every scope the theme colours, and what it colours it.
+ *
+ * Flattened once rather than walked per candidate: a theme is around sixty
+ * rules and each rule names up to a dozen scopes, and the alternative was
+ * re-splitting all of it for each of the nine scopes below. First mention of a
+ * scope wins, which is the rule a `find` over the list in order would have
+ * followed anyway.
+ */
+function foregroundsByScope(theme: ThemeRegistrationResolved): Map<string, string> {
+  const byScope = new Map<string, string>();
+
+  // `settings` rather than `tokenColors`: Shiki normalizes one into the other
+  // as it loads a theme, and a resolved theme only ever has the former.
+  for (const rule of (theme.settings as ThemeRule[] | undefined) ?? []) {
+    const foreground = rule.settings?.foreground;
+    if (!foreground) continue;
+
+    const scope = rule.scope ?? [];
+    for (const name of Array.isArray(scope) ? scope : scope.split(",")) {
+      const trimmed = name.trim();
+      if (trimmed && !byScope.has(trimmed)) byScope.set(trimmed, foreground);
+    }
+  }
+
+  return byScope;
 }
 
 /**
@@ -49,22 +70,17 @@ function scopesOf(rule: ThemeRule): string[] {
  * literals to.
  */
 export function themeAccentsOf(theme: ThemeRegistrationResolved): ThemeAccents {
-  // `settings` rather than `tokenColors`: Shiki normalizes one into the other
-  // as it loads a theme, and a resolved theme only ever has the former.
-  const rules = ((theme.settings as ThemeRule[] | undefined) ?? []).filter(
-    (rule) => rule.settings?.foreground,
-  );
+  const foregrounds = foregroundsByScope(theme);
 
   const pick = (candidates: readonly string[]): string => {
     for (const scope of candidates) {
-      const exact = rules.find((rule) => scopesOf(rule).includes(scope));
-      if (exact?.settings?.foreground) return exact.settings.foreground;
+      const exact = foregrounds.get(scope);
+      if (exact) return exact;
     }
     for (const scope of candidates) {
-      const prefixed = rules.find((rule) =>
-        scopesOf(rule).some((name) => name.startsWith(`${scope}.`)),
-      );
-      if (prefixed?.settings?.foreground) return prefixed.settings.foreground;
+      for (const [name, foreground] of foregrounds) {
+        if (name.startsWith(`${scope}.`)) return foreground;
+      }
     }
     return theme.fg;
   };
