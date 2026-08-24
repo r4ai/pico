@@ -172,6 +172,14 @@ through it — a setting that moves something is already easing to a new size.
 The export node is at its new colours before the dissolve starts, so a capture
 taken during one is the picture, not a blend.
 
+`layout-shift.test.tsx` watches the browser's own `layout-shift` entries rather
+than any of that indirectly: arriving at a link with code in it moves nothing at
+all, picking a language moves nothing, and once a settings action's easing is
+over nothing moves again. Not during one — every geometry change here is a
+transition somebody started, and the picture easing to a new size is the point
+of them. What the last of the three catches is the move after the move: a frame
+holding a stale height and then collapsing into the right one in a single frame.
+
 `pnpm test:browser` covers intermediate frames, rapid retargeting, export/live
 agreement, height tracking while shrinking, the keyboard's way out of the
 editor, the picker, the settings as a dialog and as a remembered layout, the
