@@ -56,6 +56,15 @@ type Drag = {
   dx: number;
   /** Milliseconds the drag takes. A short one is a flick. */
   over?: number;
+  /**
+   * How many moves it is made of.
+   *
+   * Velocity is read from the last pair of moves, so this is what decides how
+   * much slack a flick has: the same distance in fewer, larger steps is the
+   * same gesture at the same speed, and stays a flick for longer once the
+   * machine running it starts overshooting its own timers.
+   */
+  steps?: number;
   dy?: number;
   /** Left mid-drag rather than let go of, the way a browser cancels one. */
   cancel?: boolean;
@@ -69,7 +78,7 @@ type Drag = {
  * commits, and how fast it was going when it was let go — is all in the event
  * stream, and all of it is here.
  */
-async function drag({ dx, over = 200, dy = 0, cancel = false }: Drag): Promise<void> {
+async function drag({ dx, over = 200, steps = 8, dy = 0, cancel = false }: Drag): Promise<void> {
   const element = panel();
   const box = element.getBoundingClientRect();
   const startX = box.left + box.width / 2;
@@ -89,7 +98,6 @@ async function drag({ dx, over = 200, dy = 0, cancel = false }: Drag): Promise<v
     );
 
   send("pointerdown", startX, startY);
-  const steps = 8;
   for (let step = 1; step <= steps; step++) {
     send("pointermove", startX + (dx * step) / steps, startY + (dy * step) / steps);
     await new Promise((resolve) => setTimeout(resolve, over / steps));
@@ -152,7 +160,12 @@ it("lets go when it has been pushed far enough", async () => {
 
 it("lets go for a flick that never travelled far", async () => {
   await openSettings();
-  await drag({ dx: -40, over: 40 });
+  // Well short of the four tenths of its width that would let go on distance
+  // alone, and fast: two moves of thirty pixels about ten milliseconds apart.
+  // Written as few large steps rather than many small ones because velocity is
+  // read from the last pair — a machine that overshoots a 5ms timer by 30ms
+  // turns eight small steps into a slow push and the flick into a spring-back.
+  await drag({ dx: -60, over: 20, steps: 2 });
 
   await expect.poll(() => panel().dataset.open).toBe("false");
 });

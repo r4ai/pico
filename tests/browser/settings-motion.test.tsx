@@ -205,6 +205,13 @@ const WARMED_BY_THIS_TEST = "Gruvbox";
  * Rather than by clicking a row: the list scrolls itself to whatever is
  * selected as it opens, so on the second visit the row a click was aimed at is
  * still moving when the click lands.
+ *
+ * The wait before Enter is the whole of what makes this reliable. The list is
+ * already open by the time anything is typed into it, so filtering it does not
+ * move the keyboard on its own — an effect pass does, once the option it was
+ * on has been filtered away. Enter pressed before that pass commits nothing,
+ * which on a loaded machine is a theme that never changed and a test that
+ * waits for a colour that is never coming.
  */
 async function pickTheme(name: string): Promise<void> {
   const field = page.getByRole("combobox", { name: "Theme" });
@@ -212,6 +219,9 @@ async function pickTheme(name: string): Promise<void> {
   await field.fill(name);
   await expect
     .poll(() => document.querySelector<HTMLInputElement>('input[aria-label="Theme"]')?.value)
+    .toBe(name);
+  await expect
+    .poll(() => document.querySelector('[data-slot="combobox-item"][data-focused]')?.textContent)
     .toBe(name);
   await userEvent.keyboard("{Enter}");
 }
