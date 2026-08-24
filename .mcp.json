@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "mise",
+      "args": [
+        "exec",
+        "--",
+        "pnpm",
+        "exec",
+        "chrome-devtools-mcp",
+        "--headless",
+        "--isolated",
+        "--no-usage-statistics"
+      ]
+    }
+  }
+}
