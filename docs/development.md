@@ -214,7 +214,17 @@ budget at the sizes Pico is for; the language picker's list is virtualized
 above forty options, without which opening it and typing in it each dropped a
 frame.
 
-Guessing the language runs in a worker. `highlightAuto` scores a document
+Guessing the language runs in a worker, and `vite.config.ts` names its
+grammars in `optimizeDeps.include`. Vite's dependency scan does not follow a
+worker, so nothing else knows they exist: left undeclared, the first guess of a
+session has the dev server discovering twenty-one modules at once, optimizing
+them, and reloading the page underneath whatever was already running. In a
+browser test that is a reload in the middle of a render, and it surfaces as a
+null dispatcher in an unrelated component — `rm -rf node_modules/.vite` is what
+reproduces it, because a warm optimizer cache hides it completely. The list is
+derived from the detector's own grammar map; see `HLJS_MODULES`.
+
+`highlightAuto` scores a document
 against twenty grammars in one synchronous pass, and it was the longest task on
 the page: measured on a hundred-line snippet, 223ms landing 1.1s after the
 paste, alone, with nothing else running — which is to say while somebody is

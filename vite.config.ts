@@ -2,6 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig, type Plugin } from "vite-plus";
+import { HLJS_MODULES } from "./src/features/editor/detect-language";
 
 /**
  * The face the first screen is painted in, unless a link says otherwise.
@@ -76,6 +77,14 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  // The detector's grammars, which nothing here can find on its own: they are
+  // reachable only from inside a worker, and Vite's dependency scan does not
+  // follow one. Left undeclared, the first guess of a session has the dev
+  // server discovering twenty-one modules at once, optimizing them, and
+  // reloading the page underneath whatever was already running — which in a
+  // browser test is a reload in the middle of a render, and fails as a null
+  // dispatcher somewhere else entirely. See HLJS_MODULES.
+  optimizeDeps: { include: [...HLJS_MODULES] },
   fmt: {},
   lint: {
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],

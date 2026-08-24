@@ -85,6 +85,25 @@ type HljsLang = keyof typeof GRAMMARS;
 const SUBSET = Object.keys(GRAMMARS) as HljsLang[];
 
 /**
+ * Every highlight.js module the detector loads, spelled the way a bundler
+ * resolves it.
+ *
+ * Named so that `vite.config.ts` can prebundle them. They are reachable only
+ * from inside a worker, and Vite's dependency scan does not follow one — so the
+ * first guess of a session had the dev server discovering twenty-one modules at
+ * once, optimizing them, and reloading the page underneath whatever was already
+ * running. In a browser test that is a reload in the middle of a render, which
+ * fails as a null dispatcher somewhere else entirely.
+ *
+ * Derived from {@link GRAMMARS} rather than written out again, because a list
+ * of module names kept in step by hand is a list that drifts.
+ */
+export const HLJS_MODULES: readonly string[] = [
+  "highlight.js/lib/core",
+  ...SUBSET.map((name) => `highlight.js/lib/languages/${name}`),
+];
+
+/**
  * highlight.js grammars that name exactly one of Pico's languages.
  *
  * The rest each cover more than one and are settled by their own rules below:
