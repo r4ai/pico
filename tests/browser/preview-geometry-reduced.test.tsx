@@ -50,7 +50,11 @@ it("applies geometry immediately when reduced motion is requested", async () => 
   const hasLongTransition = animations.some(
     (animation) => Number(animation.effect?.getTiming().duration) > 1,
   );
+  const hasDelayedTransition = animations.some(
+    (animation) => Number(animation.effect?.getTiming().delay) > 0,
+  );
   expect(hasLongTransition).toBe(false);
+  expect(hasDelayedTransition).toBe(false);
   // Reduced motion leaves a 1ms transition rather than none, so the browser
   // still owns when the final style becomes observable. Finish the verified
   // short animations themselves instead of guessing how many frames CI needs.
