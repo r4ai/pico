@@ -65,12 +65,30 @@ export function useSwipeDismiss({ panel, scrim, enabled, onDismiss }: SwipeDismi
 
   useEffect(() => {
     const element = panel.current;
-    if (!enabled || !element) return;
+    if (!element) return;
 
-    // Whatever a previous drag left behind. Only ever matters on the open that
-    // follows a dismissal, which ends with the panel written off-screen.
-    element.style.removeProperty("--pico-drawer-offset");
-    scrim.current?.style.removeProperty("--pico-drawer-progress");
+    /**
+     * Puts back everything a drag writes.
+     *
+     * A dismissal ends with the panel written to where the closed state puts
+     * it, and that offset has to go before anything can open again — including
+     * when what opens is not a drawer. Widening the window past the breakpoint
+     * after a swipe leaves the gesture unbound and the offset behind, and an
+     * inset panel reading it comes up translated off the side of the window: a
+     * settings column that cannot be reached and cannot be swiped back. So it
+     * is cleared on the way out as well as on the way in, and the way out is
+     * the case that matters.
+     *
+     * It costs nothing where it does nothing: by the time this runs the panel
+     * is already closed, and the closed state does not read the offset at all.
+     */
+    const clearGesture = () => {
+      element.style.removeProperty("--pico-drawer-offset");
+      scrim.current?.style.removeProperty("--pico-drawer-progress");
+    };
+
+    clearGesture();
+    if (!enabled) return;
 
     let pointer: number | undefined;
     let startX = 0;
@@ -190,6 +208,7 @@ export function useSwipeDismiss({ panel, scrim, enabled, onDismiss }: SwipeDismi
       element.removeEventListener("pointerup", onPointerUp);
       element.removeEventListener("pointercancel", onPointerCancel);
       stopDragging();
+      clearGesture();
     };
   }, [enabled, panel, scrim]);
 }

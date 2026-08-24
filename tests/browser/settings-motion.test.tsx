@@ -233,3 +233,26 @@ it("dissolves a theme rather than growing it from a list", async () => {
   expect(started).toBe(1);
   expect(reveals[0]?.marked).toBeUndefined();
 });
+
+it("does not inherit a reveal's origin for a change that has none", async () => {
+  // Warm the theme, so the switch back to it is a dissolve rather than a snap.
+  const cold = exportBackground();
+  await pickTheme(WARMED_BY_THIS_TEST);
+  await settle(cold);
+
+  // A reveal first, which leaves a marker on the root for as long as it runs.
+  await setAppearance("Light");
+  started = 0;
+  reveals = [];
+
+  const warm = exportBackground();
+  await pickTheme("Vitesse");
+  await settle(warm);
+
+  // Interrupt one and the browser skips it, marker and all still on the root:
+  // a dissolve that never asked for an origin would be cut in from wherever
+  // the reveal it interrupted had started. The marker says what the current
+  // change is, not what the last one was.
+  expect(started).toBe(1);
+  expect(reveals[0]?.marked).toBeUndefined();
+});

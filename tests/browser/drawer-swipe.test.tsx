@@ -218,6 +218,20 @@ it("puts the panel back when the browser takes the gesture away", async () => {
   expect(panel().dataset.dragging).toBeUndefined();
 });
 
+it("leaves no offset behind for the arrangement that follows", async () => {
+  await openSettings();
+  await drag({ dx: -Math.round(panel().getBoundingClientRect().width * 0.6) });
+  await expect.poll(() => panel().dataset.open).toBe("false");
+
+  // A dismissal ends with the panel written to where the closed state puts it,
+  // and that offset has to go before anything opens again — including when
+  // what opens is not a drawer. Widen the window past the breakpoint after a
+  // swipe and the gesture is not bound any more, so an offset left here is one
+  // nothing will clear: the inset panel comes up translated off the side of
+  // the window, unreachable and no longer swipeable.
+  await expect.poll(offset).toBe("");
+});
+
 it("opens again where it started", async () => {
   await openSettings();
   await drag({ dx: -Math.round(panel().getBoundingClientRect().width * 0.6) });

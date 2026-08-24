@@ -78,6 +78,12 @@ export function crossFade(change: () => void, origin?: RevealOrigin): void {
     root.style.setProperty("--pico-reveal-y", `${origin.y}px`);
     root.style.setProperty("--pico-reveal-radius", `${radiusFrom(origin)}px`);
     root.dataset.picoReveal = "true";
+  } else {
+    // Written rather than assumed absent. A change that interrupts a reveal
+    // skips it, and what the skipped one leaves behind is a marker still on
+    // the root: a dissolve that never asked for an origin would have been cut
+    // in from wherever the reveal it interrupted had started.
+    delete root.dataset.picoReveal;
   }
 
   const transition = document.startViewTransition(() => {
