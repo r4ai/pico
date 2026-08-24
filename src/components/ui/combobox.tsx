@@ -39,6 +39,18 @@ import {
 } from "@/components/ui/input-group";
 import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react";
 
+/**
+ * The arrow on a picker, which turns over while its list is open.
+ *
+ * A list that opens and closes with nothing on the field acknowledging it
+ * leaves the arrow reading as decoration; turned over, it is the one part of
+ * the control that says which state it is in without looking away from it. The
+ * rotation is read off `aria-expanded`, which React Aria already maintains, so
+ * there is no second copy of "is it open" to keep in step.
+ */
+const CHEVRON =
+  "pointer-events-none size-4 text-muted-foreground transition-transform duration-200 ease-glass [[aria-expanded=true]_&]:rotate-180 motion-reduce:transition-none";
+
 function ComboboxValue<T>({ ...props }: ComboBoxValueProps<T>) {
   return <ComboBoxValuePrimitive data-slot="combobox-value" {...props} />;
 }
@@ -57,7 +69,7 @@ function ComboboxTrigger({
       {...props}
     >
       {children}
-      <ChevronDownIcon className="pointer-events-none size-4 text-muted-foreground" />
+      <ChevronDownIcon className={CHEVRON} />
     </ButtonPrimitive>
   );
 }
@@ -109,7 +121,7 @@ function ComboboxInput({
             className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent [&_svg:not([class*='size-'])]:size-4"
             isDisabled={disabled}
           >
-            <ChevronDownIcon className="pointer-events-none size-4 text-muted-foreground" />
+            <ChevronDownIcon className={CHEVRON} />
           </InputGroupButton>
         )}
         {showClear && <ComboboxClear isDisabled={disabled} />}

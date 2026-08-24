@@ -133,3 +133,19 @@ it("does not scroll sideways", async () => {
   // wider than the box it scrolls in.
   await expect.poll(() => list.scrollWidth).toBe(list.clientWidth);
 });
+
+it("turns its arrow over while the list is open", async () => {
+  const chevron = document.querySelector('[data-slot="combobox-trigger"] svg');
+  if (!(chevron instanceof SVGElement)) throw new Error("the arrow is missing");
+  expect(getComputedStyle(chevron).rotate).toBe("none");
+
+  await openPicker();
+  // The rotation is read off `aria-expanded`, so it eases rather than snapping;
+  // the value under test is where it ends up.
+  await expect
+    .poll(() => {
+      for (const animation of chevron.getAnimations()) animation.finish();
+      return getComputedStyle(chevron).rotate;
+    })
+    .toBe("180deg");
+});
