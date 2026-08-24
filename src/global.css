@@ -477,8 +477,33 @@
 }
 
 .pico-sidebar[data-open="true"] {
-  transform: translateX(0);
+  transform: translateX(var(--pico-drawer-offset, 0px));
   opacity: 1;
+}
+
+/* Under a finger the panel is written to directly rather than transitioned to,
+   which is what makes it a sheet being pushed instead of a box being sent
+   somewhere. The offset the drag leaves behind is the same one the closed
+   state uses, so when a drag ends in a dismissal the transform React writes is
+   the one already running and the panel simply keeps going.
+
+   See useSwipeDismiss. */
+
+.pico-sidebar[data-dragging="true"],
+.pico-sidebar-scrim[data-dragging="true"] {
+  transition: none;
+}
+
+/* pan-y and not `preventDefault`: the browser keeps the vertical scrolling the
+   settings column needs and hands over the horizontal pans, which is what lets
+   a drag start inside a list of settings without either gesture having to
+   guess. Only where the panel is a drawer — in its own column there is nothing
+   to push it off. */
+
+@media (width < 56rem) {
+  .pico-sidebar {
+    touch-action: pan-y;
+  }
 }
 
 /* Everything the panel holds, in one box so that `inert` can go on it rather
@@ -509,8 +534,11 @@
   transition: opacity 220ms var(--ease-glass);
 }
 
+/* The scrim thins out with the drag, so what is behind the panel comes back as
+   it goes rather than all at once when it has gone. */
+
 .pico-sidebar-scrim[data-open="true"] {
-  opacity: 1;
+  opacity: var(--pico-drawer-progress, 1);
   pointer-events: auto;
 }
 

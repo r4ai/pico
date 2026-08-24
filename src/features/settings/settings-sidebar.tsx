@@ -23,8 +23,9 @@ import {
 } from "@/features/settings/theme";
 import { usePanelFocus } from "@/features/settings/use-panel-focus";
 import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
+import { useSwipeDismiss } from "@/features/settings/use-swipe-dismiss";
 import { MoonIcon, SunIcon, XIcon } from "lucide-react";
-import { useEffect, useEffectEvent, useId } from "react";
+import { useEffect, useEffectEvent, useId, useRef } from "react";
 
 const SIZE_LABELS = { none: "None", sm: "S", md: "M", lg: "L", xl: "XL" };
 
@@ -48,15 +49,23 @@ export type SettingsSidebarProps = {
  *
  * Where the window is wide enough the panel takes a column of its own and the
  * canvas shifts over to make room; where it is not, it slides over the canvas
- * as a drawer, and the scrim behind it dismisses it. Which of the two it is
+ * as a drawer, and the scrim behind it dismisses it — as does pushing it off
+ * the side with a finger, which is the gesture the hand already expects of a
+ * sheet; see {@link useSwipeDismiss}. Which of the two it is
  * decides what it is, and not only how it looks: beside the picture it is a
  * second region of the same page, and on top of it, behind a scrim that
  * swallows every click, it is a dialog. See {@link useSidebarMode}.
  */
 export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsSidebarProps) {
   const panel = usePanelFocus(open);
+  const scrim = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const drawer = useSidebarMode() === "drawer";
+
+  // Only where it is a drawer. Beside the picture the panel is a column of the
+  // page, and a column that can be shoved off the side of the window is not a
+  // column. See {@link useSwipeDismiss}.
+  useSwipeDismiss({ enabled: drawer && open, onDismiss: onClose, panel, scrim });
 
   // An Effect Event, so the listener is bound once per open rather than again
   // on every render of the parent that hands `onClose` down.
@@ -88,6 +97,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
         className="pico-sidebar-scrim"
         data-open={open}
         onClick={onClose}
+        ref={scrim}
         tabIndex={-1}
         type="button"
       />

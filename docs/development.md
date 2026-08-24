@@ -258,6 +258,17 @@ undo:
   makes them modal: `dialog`, `aria-modal`, and the canvas `inert` underneath.
   `useSidebarMode` is the single answer to which arrangement they are in, and a
   test holds the width it names to the one the stylesheet uses.
+- As a drawer it can be pushed off the side with a finger; see
+  `useSwipeDismiss`. Three things are easy to undo. The panel is written to
+  directly rather than through state — a React render per pointer move would
+  re-render every control the panel holds, sixty times a second, to move one
+  box. The stylesheet says `touch-action: pan-y` rather than the hook calling
+  `preventDefault`, which is what leaves the settings column its vertical
+  scrolling while horizontal pans come here. And a dismissal ends by writing the
+  panel to exactly where the closed state puts it, so the transform React writes
+  a moment later is the one already running and the panel keeps going instead of
+  restarting. Touch and pen only: a pointer with a cursor has the close button,
+  the scrim, and Escape.
 - That `inert` goes on the canvas div rather than on `<main>`, and the button
   that opens the settings leaves the tab order through `visibility` rather than
   `inert`. React Aria marks the top of the page inert while a popover is open

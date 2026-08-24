@@ -52,6 +52,7 @@ export default mergeConfig(baseConfig, {
           browser: "chromium",
           include: [
             "tests/browser/settings-drawer.test.tsx",
+            "tests/browser/drawer-swipe.test.tsx",
             "tests/browser/narrow-frame.test.tsx",
           ],
           name: "chromium-narrow",
