@@ -734,6 +734,50 @@
 }
 
 /* ---------------------------------------------------------------------------
+   A button on glass.
+
+   The stock ghost hover is a wash of `--muted`, which is a hair off the panel
+   it sits on — and in dark mode a shade darker than it. At an 80% tint the two
+   composite to within a percent of each other, so the close button in the
+   corner of the settings gave no sign at all that the pointer had reached it.
+
+   Washes of the foreground colour instead, which is the answer the preset rows
+   already arrived at, and the one thing that reads on a surface of any tint.
+   The same three states they have: nothing, a hint, and a clear block.
+   --------------------------------------------------------------------------- */
+
+.pico-glass-hover {
+  transition:
+    background-color 150ms var(--ease-glass),
+    color 150ms var(--ease-glass);
+}
+
+.pico-glass-hover[data-hovered],
+.pico-glass-hover[aria-expanded="true"] {
+  background: light-dark(oklch(0 0 0 / 9%), oklch(1 0 0 / 12%));
+  color: var(--foreground);
+}
+
+.pico-glass-hover[data-pressed] {
+  background: light-dark(oklch(0 0 0 / 16%), oklch(1 0 0 / 20%));
+}
+
+/* The one button whose whole job is to make the panel go away, and the one
+   that had the least to say for itself: a 16px cross in the corner, against a
+   hover tint that was not there. The wash above is most of the answer; the
+   cross leaning into the pointer is what makes it feel pressed before it is.
+   Rotation and not scale, because a cross grown by a tenth at this size is a
+   cross drawn slightly wrong, and an eighth of a turn is unmistakably motion. */
+
+.pico-sidebar-close svg {
+  transition: rotate 200ms var(--ease-glass);
+}
+
+.pico-sidebar-close[data-hovered] svg {
+  rotate: 90deg;
+}
+
+/* ---------------------------------------------------------------------------
    The rows of presets. The stock toggle tints are a hair off white and vanish
    against the glass, so the three states are drawn as widening washes of the
    foreground colour instead: nothing, a hint, and a clear block.
@@ -779,8 +823,14 @@
     transition-delay: 0s;
   }
 
-  .pico-split-chevron {
+  .pico-split-chevron,
+  .pico-sidebar-close svg,
+  .pico-glass-hover {
     transition-duration: 1ms;
+  }
+
+  .pico-sidebar-close[data-hovered] svg {
+    rotate: none;
   }
 
   .pico-icon-arrives {

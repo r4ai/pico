@@ -37,6 +37,7 @@ export default mergeConfig(baseConfig, {
             "tests/browser/save-menu.test.tsx",
             "tests/browser/code-surface.test.tsx",
             "tests/browser/toast.test.tsx",
+            "tests/browser/glass-hover.test.tsx",
           ],
           name: "chromium",
         },

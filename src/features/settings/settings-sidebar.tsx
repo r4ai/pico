@@ -107,7 +107,15 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
             <h2 className="font-medium text-sm" id={titleId}>
               Settings
             </h2>
-            <Button aria-label="Close settings" onPress={onClose} size="icon" variant="ghost">
+            {/* The stock ghost hover is a wash of `--muted`, which on glass
+                this tinted is not a tint at all; see `.pico-glass-hover`. */}
+            <Button
+              aria-label="Close settings"
+              className="pico-glass-hover pico-sidebar-close"
+              onPress={onClose}
+              size="icon"
+              variant="ghost"
+            >
               <XIcon />
             </Button>
           </div>
