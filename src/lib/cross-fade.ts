@@ -6,6 +6,16 @@ export type RevealOrigin = {
   readonly y: number;
 };
 
+/**
+ * Which transition is the current one.
+ *
+ * Pressing a switch twice inside a fade skips the first transition, whose
+ * `finished` then rejects — and its cleanup would take the marker off the
+ * second one, which had just put it on. Only the latest change tidies up
+ * after itself.
+ */
+let latest = 0;
+
 /** The distance from a point to the furthest corner of the window. */
 function radiusFrom({ x, y }: RevealOrigin): number {
   return Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
@@ -62,6 +72,7 @@ export function crossFade(change: () => void, origin?: RevealOrigin): void {
   }
 
   const root = document.documentElement;
+  const ticket = ++latest;
   if (origin) {
     root.style.setProperty("--pico-reveal-x", `${origin.x}px`);
     root.style.setProperty("--pico-reveal-y", `${origin.y}px`);
@@ -76,6 +87,11 @@ export function crossFade(change: () => void, origin?: RevealOrigin): void {
   // `finished` rejects when a second change skips this one, which is a thing
   // somebody pressing a switch twice is entitled to do; either way the marker
   // has to come off, or the next plain dissolve would be cut in from wherever
-  // this one started.
-  void transition.finished.catch(() => {}).finally(() => delete root.dataset.picoReveal);
+  // this one started. Unless that second change is still running, and put the
+  // marker there itself.
+  void transition.finished
+    .catch(() => {})
+    .finally(() => {
+      if (latest === ticket) delete root.dataset.picoReveal;
+    });
 }

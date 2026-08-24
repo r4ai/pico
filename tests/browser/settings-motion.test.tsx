@@ -174,6 +174,24 @@ it("takes the marker off again, so the next dissolve is a dissolve", async () =>
   await expect.poll(() => document.documentElement.dataset.picoReveal).toBeUndefined();
 });
 
+it("survives a change that interrupts another", async () => {
+  // A change inside a fade skips the one it interrupts, whose `finished` then
+  // rejects rather than resolving. What is held here is that the interrupted
+  // transition's tidying up does not land on the one that replaced it; see the
+  // ticket in `crossFade`, which is what makes that true in the case this
+  // cannot reach — a dissolve interrupted by a reveal, where the marker the
+  // second one just wrote is the thing at stake.
+  const group = page.getByRole("radiogroup", { name: "Appearance" });
+  await group.getByRole("radio", { name: "Light" }).click();
+  await group.getByRole("radio", { name: "Dark" }).click();
+
+  await expect.poll(() => reveals.length).toBeGreaterThanOrEqual(1);
+  expect(reveals.at(-1)?.marked).toBe("true");
+  expect(document.documentElement.dataset.picoReveal).toBe("true");
+
+  await expect.poll(() => document.documentElement.dataset.picoReveal).toBeUndefined();
+});
+
 /**
  * A theme this test warms itself, so that switching back to Vitesse is a switch
  * between two themes the highlighter already holds. Deliberately not the one
