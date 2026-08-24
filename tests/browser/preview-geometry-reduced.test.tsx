@@ -13,10 +13,6 @@ function frame(selector: string): HTMLElement {
   return element;
 }
 
-async function nextFrame(): Promise<void> {
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-}
-
 beforeEach(async () => {
   window.history.replaceState(null, "", window.location.pathname);
   // The sidebar remembers whether it was open, and these tests share a page:
@@ -46,17 +42,23 @@ it("applies geometry immediately when reduced motion is requested", async () => 
   const padding = page.getByRole("radiogroup", { name: "Padding" });
 
   await padding.getByRole("radio", { name: "S" }).click();
-  await nextFrame();
   const xlPadding = padding.getByRole("radio", { name: "XL" });
   await xlPadding.click();
   await expect.element(xlPadding).toBeChecked();
-  await nextFrame();
-  await nextFrame();
 
-  const hasLongTransition = liveFrame
-    .getAnimations()
-    .some((animation) => Number(animation.effect?.getTiming().duration) > 1);
+  const animations = liveFrame.getAnimations();
+  const hasLongTransition = animations.some(
+    (animation) => Number(animation.effect?.getTiming().duration) > 1,
+  );
+  const hasDelayedTransition = animations.some(
+    (animation) => Number(animation.effect?.getTiming().delay) > 0,
+  );
   expect(hasLongTransition).toBe(false);
+  expect(hasDelayedTransition).toBe(false);
+  // Reduced motion leaves a 1ms transition rather than none, so the browser
+  // still owns when the final style becomes observable. Finish the verified
+  // short animations themselves instead of guessing how many frames CI needs.
+  animations.forEach((animation) => animation.finish());
   expect(Number.parseFloat(getComputedStyle(liveFrame).paddingLeft)).toBe(64);
   expect(liveFrame.getBoundingClientRect().width).toBeCloseTo(
     exportFrame.getBoundingClientRect().width,
