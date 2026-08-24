@@ -149,3 +149,16 @@ it("turns its arrow over while the list is open", async () => {
     })
     .toBe("180deg");
 });
+
+it("names its own controls in the language the document declares", async () => {
+  const trigger = document.querySelector('[data-slot="combobox-trigger"]');
+  if (!(trigger instanceof HTMLElement)) throw new Error("the trigger is missing");
+
+  // React Aria names the controls it adds — the button that opens a list, what
+  // the list is called — and it names them in the browser's language rather
+  // than the document's. On a Japanese browser a screen reader following
+  // `lang="en"` was being handed Japanese words to read with English
+  // pronunciation. See `Chrome`.
+  expect(document.documentElement.lang).toBe("en");
+  expect(trigger.getAttribute("aria-label")).toBe("Show suggestions");
+});

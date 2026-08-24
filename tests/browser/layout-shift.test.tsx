@@ -36,7 +36,19 @@ let observer: PerformanceObserver | undefined;
  */
 const NOISE = 0.001;
 
-function describe(entry: LayoutShift): string[] {
+/**
+ * The part of a `layout-shift` entry this file reads.
+ *
+ * Declared here because the DOM lib does not: the entry is standard in Chrome
+ * and nowhere in TypeScript's `PerformanceEntry` union.
+ */
+type LayoutShiftEntry = PerformanceEntry & {
+  readonly value: number;
+  readonly hadRecentInput: boolean;
+  readonly sources: readonly { readonly node: Node | null }[];
+};
+
+function describe(entry: LayoutShiftEntry): string[] {
   return entry.sources.map((source) => {
     const node = source.node;
     if (!(node instanceof Element)) return "detached";
@@ -69,7 +81,7 @@ beforeEach(async () => {
 
   shifts = [];
   observer = new PerformanceObserver((list) => {
-    for (const entry of list.getEntries() as LayoutShift[]) {
+    for (const entry of list.getEntries() as LayoutShiftEntry[]) {
       if (entry.hadRecentInput || entry.value < NOISE) continue;
       shifts.push({ value: entry.value, sources: describe(entry) });
     }

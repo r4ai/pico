@@ -42,6 +42,11 @@ export default mergeConfig(baseConfig, {
             "tests/browser/layout-shift.test.tsx",
           ],
           name: "chromium",
+          // Deliberately not English. React Aria names the controls it adds in
+          // the browser's language rather than the document's, and Pico says
+          // `lang="en"`: run under the same locale as the machine and the test
+          // that holds the two together cannot fail. See `Chrome`.
+          provider: playwright({ contextOptions: { locale: "ja-JP" } }),
         },
         {
           browser: "chromium",

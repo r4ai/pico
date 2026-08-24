@@ -6,6 +6,7 @@ import type { Settings } from "@/features/settings/settings";
 import type { RevealOrigin } from "@/lib/cross-fade";
 import { SidebarToggle } from "@/features/settings/sidebar-toggle";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
+import { I18nProvider } from "react-aria-components";
 
 export type ChromeProps = {
   settings: Settings;
@@ -51,7 +52,14 @@ export default function Chrome({
   linkCopied,
 }: ChromeProps) {
   return (
-    <>
+    /* React Aria names its own controls — the button that opens a picker, what
+       a list of options is called — and it names them in the browser's
+       language, not the document's. Pico is written in English and says so in
+       `<html lang="en">`, so on a Japanese browser a screen reader was being
+       handed Japanese words to read with English pronunciation. One language,
+       and it is the one the page declares; the day Pico is translated, both
+       move together. */
+    <I18nProvider locale="en-US">
       <div className="pico-shell-dock">
         <BottomDock
           copied={copied}
@@ -74,6 +82,6 @@ export default function Chrome({
         open={sidebarOpen}
         settings={settings}
       />
-    </>
+    </I18nProvider>
   );
 }

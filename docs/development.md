@@ -289,6 +289,13 @@ undo:
   `inert`. React Aria marks the top of the page inert while a popover is open
   and restores what it found there on close, so anything React writes to
   `inert` near the top of the tree is lost the first time a combobox closes.
+- React Aria names the controls it adds — the button that opens a picker, what
+  a list of options is called — in the browser's language rather than the
+  document's, and Pico is English and says so in `<html lang="en">`. On a
+  Japanese browser a screen reader was being handed Japanese words to read with
+  English pronunciation. `Chrome` pins the two together with `I18nProvider`, and
+  the wide Chromium instance runs under `ja-JP` so the test that holds them
+  together can fail.
 - `.pico-glass` asks for `backdrop-filter` and nothing else. Adding
   `-webkit-backdrop-filter` after it wins the cascade, the minifier collapses
   the pair onto the prefixed spelling, and Chrome and Firefox — which do not
