@@ -61,9 +61,14 @@ async function main() {
     logLevel: "silent",
     preview: { host: "127.0.0.1", port: 4173, strictPort: true },
   });
+  const chromeFlags = ["--headless", "--no-first-run"];
+  if (process.env.CI) {
+    // GitHub-hosted Linux runners do not provide a usable Chrome sandbox.
+    chromeFlags.push("--no-sandbox");
+  }
   const chrome = await chromeLauncher.launch({
     chromePath: chromium.executablePath(),
-    chromeFlags: ["--headless", "--no-first-run"],
+    chromeFlags,
   });
 
   try {
