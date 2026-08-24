@@ -57,11 +57,12 @@ export type SettingsSidebarProps = {
  * Where the window is wide enough the panel takes a column of its own and the
  * canvas shifts over to make room; where it is not, it slides over the canvas
  * as a drawer, and the scrim behind it dismisses it — as does pushing it off
- * the side with a finger, which is the gesture the hand already expects of a
- * sheet; see {@link useSwipeDismiss}. Which of the two it is
- * decides what it is, and not only how it looks: beside the picture it is a
- * second region of the same page, and on top of it, behind a scrim that
- * swallows every click, it is a dialog. See {@link useSidebarMode}.
+ * the side with a finger, which is what a hand expects of a sheet; see
+ * {@link useSwipeDismiss}.
+ *
+ * Which of the two it is decides what it is, and not only how it looks: beside
+ * the picture it is a second region of the same page, and on top of it, behind
+ * a scrim that swallows every click, it is a dialog. See {@link useSidebarMode}.
  */
 export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsSidebarProps) {
   const panel = usePanelFocus(open);
