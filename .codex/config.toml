@@ -1,0 +1,14 @@
+[mcp_servers.chrome-devtools]
+command = "mise"
+args = [
+  "exec",
+  "--",
+  "pnpm",
+  "exec",
+  "chrome-devtools-mcp",
+  "--headless",
+  "--isolated",
+  "--no-usage-statistics",
+]
+startup_timeout_sec = 20
+tool_timeout_sec = 120

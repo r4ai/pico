@@ -15,6 +15,18 @@ pnpm dev
 
 Open the URL printed by `pnpm dev`.
 
+## Agent tooling
+
+The repository configures Chrome DevTools MCP for Codex in `.codex/config.toml`
+and for Claude Code in `.mcp.json`. Both clients run the exact
+`chrome-devtools-mcp` version installed by `pnpm install` through mise. The
+server launches an isolated, headless Chrome profile and disables usage
+statistics so it cannot read a developer's normal browser session.
+
+Trust the project when Codex asks. Claude Code asks separately for one-time
+approval of the shared `.mcp.json` server. Restart an existing agent session
+after installing dependencies or changing either MCP configuration.
+
 ## Commands
 
 | Command                | Purpose                                          |
@@ -25,6 +37,7 @@ Open the URL printed by `pnpm dev`.
 | `pnpm test`            | Run the unit tests once                          |
 | `pnpm test:browser`    | Run geometry regressions in Chromium             |
 | `pnpm test:coverage`   | Run the unit tests with coverage                 |
+| `pnpm test:lighthouse` | Build and measure production performance         |
 | `pnpm build`           | Build the production assets                      |
 | `pnpm preview`         | Serve the production build                       |
 | `pnpm storybook`       | Start Storybook                                  |
@@ -37,6 +50,7 @@ Run at least these checks before submitting a change:
 pnpm check
 pnpm test:coverage
 pnpm test:browser
+pnpm test:lighthouse
 pnpm build
 pnpm build-storybook
 pnpm security:audit
@@ -48,9 +62,16 @@ Measure on the production build rather than the development server, which
 serves unbundled modules and renders through React's development build:
 
 ```sh
-pnpm build
-pnpm preview
+pnpm test:lighthouse
 ```
+
+Lighthouse runs three mobile-profile measurements and evaluates their median.
+CI keeps the HTML and JSON reports as a `lighthouse-reports` artifact
+for 14 days. The enforced budgets are FCP at most 3,000 ms, LCP at most
+4,000 ms, Speed Index at most 3,400 ms, TBT at most 200 ms, CLS at most 0.1,
+and transferred bytes at most 450 kB. A median performance score below 0.85 is
+reported as a warning because hosted-runner speed varies; the metric and byte
+budgets remain blocking.
 
 `.claude/launch.json` has an entry for that server. Several things are easy to
 undo:
