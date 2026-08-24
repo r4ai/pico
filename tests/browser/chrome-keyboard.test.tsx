@@ -3,7 +3,6 @@ import "@/global.css";
 import { SIDEBAR_INSET_QUERY } from "@/features/settings/use-sidebar-mode";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
 import type { ExportTask } from "@/features/export/use-export";
-import { createStore, Provider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, expect, it } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";
@@ -37,14 +36,13 @@ async function renderDock(running: ExportTask | undefined): Promise<void> {
 
 async function renderApp(): Promise<void> {
   window.history.replaceState(null, "", window.location.pathname);
-  // A store per test: the sidebar's open state is a module-level atom, and
-  // left shared it arrives at the next test already open.
+  // The sidebar remembers whether it was open, and these tests share a page:
+  // left behind, the panel arrives at the next test already open.
+  window.localStorage.clear();
   const rendered = await render(
-    <Provider store={createStore()}>
-      <NuqsAdapter>
-        <App />
-      </NuqsAdapter>
-    </Provider>,
+    <NuqsAdapter>
+      <App />
+    </NuqsAdapter>,
   );
   unmount = rendered.unmount;
   // The chrome is loaded on its own; there is nothing to reach until it lands.
@@ -119,6 +117,29 @@ it("gives the keyboard back to the button that opened the settings", async () =>
   await userEvent.keyboard("{Escape}");
   await expect.element(page.getByRole("button", { name: "Open settings" })).toBeInTheDocument();
   expect(document.activeElement?.getAttribute("aria-label")).toBe("Open settings");
+});
+
+it("keeps the closed settings out of the tab order once a popover has been open", async () => {
+  await renderApp();
+
+  // React Aria hides everything outside an open popover and puts back what it
+  // found on close — and what it puts back is not what React last rendered, so
+  // an `inert` written to the panel itself would come off here. It lives one
+  // level in, on the box the panel holds, which React Aria never reaches.
+  await page.getByRole("combobox", { name: "Language" }).click();
+  await expect.poll(() => document.querySelector('[data-slot="combobox-content"]')).toBeTruthy();
+  await userEvent.keyboard("{Escape}");
+  await expect.poll(() => document.querySelector('[data-slot="combobox-content"]')).toBeNull();
+
+  expect(document.querySelector(".pico-sidebar")?.hasAttribute("inert")).toBe(false);
+  expect(document.querySelector(".pico-sidebar-body")?.hasAttribute("inert")).toBe(true);
+
+  for (let step = 0; step < 12; step++) {
+    await userEvent.keyboard("{Tab}");
+    // A close button, a theme field and every preset, all off the left edge of
+    // the window.
+    expect(document.activeElement?.closest(".pico-sidebar")).toBeNull();
+  }
 });
 
 it("moves the settings between their two arrangements at one width", () => {

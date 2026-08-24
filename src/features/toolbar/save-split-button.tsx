@@ -33,6 +33,12 @@ export type SaveSplitButtonProps = {
  * The button itself saves a PNG at the current scale, which is what almost
  * everyone wants; the menu is there for the times it is not.
  *
+ * The two halves are drawn as one control — a single tinted surface under
+ * both, a hairline where they meet, and hover lighting only the half the
+ * pointer is over. Among the dock's ghost buttons the chevron used to read as
+ * a fourth action floating beside a word, belonging to nothing in particular.
+ * See `.pico-split`.
+ *
  * The chevron stays live while a capture runs. It opens a menu rather than
  * doing anything, the resolution it sets applies to the next capture rather
  * than the one in flight, and the two save commands inside it are refused the
@@ -46,16 +52,22 @@ export function SaveSplitButton({
   pending,
 }: SaveSplitButtonProps) {
   return (
-    <ButtonGroup>
+    <ButtonGroup className="pico-split">
       <DockButton busy={busy} onPress={() => onSave("png")}>
         <DockIcon pending={pending}>
           <DownloadIcon data-icon="inline-start" />
         </DockIcon>
         <DockLabel>Save</DockLabel>
       </DockButton>
+      {/* Decorative, and deliberately not a `separator` role: the two halves
+          are one control, and announcing a divider inside it would suggest
+          they are two. */}
+      <span aria-hidden className="pico-split-seam" />
       <DropdownMenuTrigger>
-        <DockButton aria-label="Export options" className="px-1.5">
-          <ChevronUpIcon className="opacity-60" />
+        {/* Named for the button it belongs to rather than for the dock, so
+            what it opens is obvious from the name alone. */}
+        <DockButton aria-label="Save options" className="px-1.5">
+          <ChevronUpIcon className="pico-split-chevron opacity-70" />
         </DockButton>
         <DropdownMenu className="w-auto min-w-44" placement="top end">
           <DropdownMenuGroup

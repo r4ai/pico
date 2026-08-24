@@ -1,7 +1,6 @@
 import { App } from "@/app";
 import { fontFaceCss } from "@/features/settings/fonts";
 import "@/global.css";
-import { createStore, Provider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, beforeEach, expect, it } from "vite-plus/test";
 import { page } from "vite-plus/test/browser";
@@ -13,6 +12,9 @@ let restore: (() => void) | undefined;
 
 beforeEach(async () => {
   window.history.replaceState(null, "", window.location.pathname);
+  // The sidebar remembers whether it was open, and these tests share a page:
+  // left behind, the panel arrives at the next test already open.
+  window.localStorage.clear();
   const fonts = document.createElement("style");
   fonts.dataset.testFonts = "";
   fonts.textContent = fontFaceCss();
@@ -29,15 +31,18 @@ beforeEach(async () => {
   };
 
   const rendered = await render(
-    <Provider store={createStore()}>
-      <NuqsAdapter>
-        <App />
-      </NuqsAdapter>
-    </Provider>,
+    <NuqsAdapter>
+      <App />
+    </NuqsAdapter>,
   );
   unmount = rendered.unmount;
   await page.getByRole("button", { name: "Open settings" }).click();
   await expect.element(page.getByRole("radiogroup", { name: "Padding" })).toBeInTheDocument();
+  // The panel slides in from off the left edge, and a control on a panel still
+  // on its way is a control outside the window.
+  await expect
+    .poll(() => document.querySelector(".pico-sidebar")?.getBoundingClientRect().left ?? -1)
+    .toBeGreaterThan(0);
 });
 
 afterEach(async () => {

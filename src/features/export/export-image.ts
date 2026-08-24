@@ -2,13 +2,12 @@ import { fontEmbedCss } from "@/features/export/font-embed";
 import { FONTS } from "@/features/settings/fonts";
 import type { Settings } from "@/features/settings/settings";
 
-export const EXPORT_FORMATS = ["png", "svg"] as const;
+const EXPORT_FORMATS = ["png", "svg"] as const;
 export const EXPORT_SCALES = [1, 2, 3] as const;
 
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 export type ExportScale = (typeof EXPORT_SCALES)[number];
 
-export const DEFAULT_FORMAT: ExportFormat = "png";
 /** Retina by default, so a pasted image is not soft on the display most people have. */
 export const DEFAULT_SCALE: ExportScale = 2;
 
@@ -59,7 +58,12 @@ export async function renderImage({ node, settings, format, scale }: RenderReque
 
   if (format === "svg") {
     const dataUrl = await withTimeout(toSvg(node, options));
-    return await (await fetch(dataUrl)).blob();
+    // A data: URL, so a failure here is the browser refusing to parse what the
+    // capture produced rather than a network error — but `fetch` reports that
+    // by resolving, and an unchecked read would hand back an empty file.
+    const response = await fetch(dataUrl);
+    if (!response.ok) throw new Error("The browser could not read the captured SVG");
+    return await response.blob();
   }
 
   const blob = await withTimeout(toBlob(node, options));

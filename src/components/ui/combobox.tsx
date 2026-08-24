@@ -1,7 +1,6 @@
 import * as React from "react";
 import {
   Button as ButtonPrimitive,
-  Collection,
   ComboBox as ComboBoxPrimitive,
   ComboBoxStateContext,
   ComboBoxValue as ComboBoxValuePrimitive,
@@ -335,7 +334,6 @@ export {
   ComboboxItem,
   ComboboxGroup,
   ComboboxLabel,
-  Collection as ComboboxCollection,
   ComboboxEmpty,
   ComboboxSeparator,
   ComboboxChips,

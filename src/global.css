@@ -23,7 +23,10 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Darker than the preset's 0.708. The ring is drawn at half opacity over
+     glass that is nearly white, and at the stock value keyboard focus on the
+     dock was a suggestion rather than an indication. */
+  --ring: oklch(0.45 0 0);
 }
 
 .dark {
@@ -44,7 +47,8 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 18%);
-  --ring: oklch(0.556 0 0);
+  /* Lighter than the preset's 0.556, for the same reason. */
+  --ring: oklch(0.85 0 0);
 }
 
 @theme inline {
@@ -227,6 +231,19 @@
 
 .pico-line {
   min-height: 1lh;
+}
+
+/* What an empty frame says before there is anything in it. The same wash of
+   the frame's foreground the editor's own placeholder uses, so the swap from
+   one to the other is invisible; see createEditorTheme for why it is 70%.
+
+   `pointer-events: none` for the same reason CodeMirror's has it: the words
+   are an invitation, not something to select. */
+
+.pico-placeholder {
+  color: color-mix(in srgb, var(--pico-fg) 70%, transparent);
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Off-screen, but still laid out: html-to-image needs real computed styles.
@@ -456,6 +473,21 @@
   opacity: 1;
 }
 
+/* Everything the panel holds, in one box so that `inert` can go on it rather
+   than on the panel. React Aria hides everything outside an open popover and
+   puts back what it found on close — and what it puts back is not what React
+   last rendered, so an `inert` written to the panel came off the first time
+   the language picker closed and Tab walked into a panel that was still shut.
+   It never reaches this far down; the canvas keeps its own `inert` one level
+   in for the same reason. */
+
+.pico-sidebar-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
 /* Only ever seen in drawer mode: where the sidebar has its own column there is
    nothing behind it to dismiss. */
 
@@ -537,6 +569,41 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   The split button. Save and the menu beside it are two buttons and one
+   control, and among the dock's ghost buttons they did not look like it — the
+   chevron read as a fourth action floating next to a word. A tinted surface
+   under both halves and a hairline where they meet is what says they belong
+   together; hover still lights only the half the pointer is over, so which of
+   the two is about to be pressed is never in doubt.
+
+   The radius is the one the buttons themselves take inside a group, so the
+   surface ends exactly where they do.
+   --------------------------------------------------------------------------- */
+
+.pico-split {
+  border-radius: var(--radius-lg);
+  background: light-dark(oklch(0 0 0 / 6%), oklch(1 0 0 / 9%));
+  box-shadow: inset 0 0 0 1px light-dark(oklch(0 0 0 / 5%), oklch(1 0 0 / 7%));
+}
+
+.pico-split-seam {
+  width: 1px;
+  margin: 0.375rem 0;
+  background: light-dark(oklch(0 0 0 / 12%), oklch(1 0 0 / 14%));
+}
+
+/* Turned over rather than swapped. The menu opens upwards, and a chevron still
+   pointing up while the list is above it is pointing at nothing. */
+
+.pico-split-chevron {
+  transition: rotate 200ms var(--ease-glass);
+}
+
+.pico-split [aria-expanded="true"] .pico-split-chevron {
+  rotate: 180deg;
+}
+
 /* The tick a dock button wears for a moment after it did what it was asked. It
    arrives rather than appearing: at sixteen pixels, a swap with no movement at
    all reads as a rendering glitch. */
@@ -596,6 +663,14 @@
   .pico-sidebar,
   .pico-sidebar-scrim,
   .pico-sidebar-toggle {
+    transition-duration: 1ms;
+    /* The delays exist to hold something on screen for the length of a fade
+       there no longer is. Left in place they would keep the dock and the panel
+       visible for another third of a second after they had gone. */
+    transition-delay: 0s;
+  }
+
+  .pico-split-chevron {
     transition-duration: 1ms;
   }
 

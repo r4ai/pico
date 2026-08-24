@@ -10,7 +10,7 @@ import {
 } from "react-aria-components";
 
 import { cn } from "@/lib/utils";
-import { toggleVariants } from "@/components/ui/toggle";
+import { toggleVariants } from "@/components/ui/toggle-variants";
 
 const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants> & {
@@ -38,6 +38,13 @@ function ToggleGroup({
     orientation?: "horizontal" | "vertical";
     children?: React.ReactNode;
   }) {
+  // Built once per set of values rather than per render: every item reads this
+  // context, and a fresh object would redraw the whole row on any parent render.
+  const context = React.useMemo(
+    () => ({ variant, size, spacing, orientation }),
+    [orientation, size, spacing, variant],
+  );
+
   return (
     <ToggleGroupPrimitive
       data-slot="toggle-group"
@@ -52,9 +59,7 @@ function ToggleGroup({
       )}
       {...props}
     >
-      <ToggleGroupContext.Provider value={{ variant, size, spacing, orientation }}>
-        {children}
-      </ToggleGroupContext.Provider>
+      <ToggleGroupContext.Provider value={context}>{children}</ToggleGroupContext.Provider>
     </ToggleGroupPrimitive>
   );
 }

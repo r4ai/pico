@@ -171,10 +171,6 @@ export type ShikiThemeName = (typeof THEMES)[ThemeId]["light"] | (typeof THEMES)
 export const DEFAULT_THEME: ThemeId = "vitesse";
 export const DEFAULT_MODE: ColorMode = "dark";
 
-export function isThemeId(value: string): value is ThemeId {
-  return Object.hasOwn(THEMES, value);
-}
-
 /** Resolves a theme pair and a mode to the Shiki theme name to highlight with. */
 export function shikiThemeOf(theme: ThemeId, mode: ColorMode): ShikiThemeName {
   return THEMES[theme][mode];
