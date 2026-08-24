@@ -22,7 +22,7 @@
 ## Features
 
 - Automatic detection for common languages, with highlighting for 243 languages.
-- Themes and fonts, including Japanese text support.
+- Twelve paired light and dark themes, plus fonts with Japanese text support.
 - Clipboard copy, PNG/SVG downloads, and URL sharing.
 - No account required; editing and export run entirely in the browser.
 

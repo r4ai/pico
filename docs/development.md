@@ -65,7 +65,10 @@ undo:
   reads one file at a time and cannot see the split.
 - The editor's font, size, and line height are stylesheet rules rather than
   part of the CodeMirror theme, because the theme cannot be applied until
-  Shiki has loaded and metrics arriving that late relayout every line.
+  Shiki has loaded and metrics arriving that late relayout every line. Its
+  frame, foreground, and gutter colors also have synchronous stylesheet
+  fallbacks, and CodeMirror is mounted in the layout phase, so neither its
+  appearance nor its geometry changes after the first paint.
 - The export node renders before the highlighter does, uncoloured, because the
   visible frame takes its width from it.
 - The dock and the settings sidebar load as their own chunk. They are all of
@@ -75,7 +78,8 @@ undo:
   first-paint path undoes that.
 - The build preloads the default font face from the HTML. Nothing fetches a
   webfont until something renders in it, so without the tag the request went
-  out after the entry chunk had already rendered.
+  out after the entry chunk had already rendered. Font-picker labels use the
+  interface font: opening the list must not fetch every font it contains.
 - `language.ts` holds only the ids. What a language is called and how its
   grammar is fetched lives in `language-registry.ts`, which is imported on
   demand by the highlighter and by the picker; it is 243 lazy `import()`
@@ -241,8 +245,9 @@ TSX, TypeScript, JSX, JavaScript, C, C++, CUDA, Rust, LLVM IR, Python, Java, Go,
 
 ## Fonts
 
-Pico bundles Geist Mono, JetBrains Mono, and a subset of UDEV Gothic for Japanese text.
-It downloads and embeds only the selected font.
+Pico bundles eight coding fonts, including a subset of UDEV Gothic for Japanese text.
+Opening the font picker does not download its candidates; Pico downloads and embeds only the
+selected font.
 
 See [`public/fonts/README.md`](../public/fonts/README.md) for instructions on updating the UDEV Gothic subset.
 

@@ -158,7 +158,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                   label: FONTS[id].label,
                   render: (
                     <span className="flex items-center gap-2">
-                      <span style={{ fontFamily: FONTS[id].stack }}>{FONTS[id].label}</span>
+                      <span>{FONTS[id].label}</span>
                       {FONTS[id].note && (
                         <span className="text-muted-foreground text-xs">{FONTS[id].note}</span>
                       )}

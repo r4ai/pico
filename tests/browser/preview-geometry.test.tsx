@@ -27,10 +27,6 @@ async function nextFrame(): Promise<void> {
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-async function wait(milliseconds: number): Promise<void> {
-  await new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
-}
-
 async function setCode(code: string): Promise<void> {
   await page.getByRole("textbox", { name: "Code" }).fill(code);
   await nextFrame();
@@ -288,19 +284,16 @@ describe("preview geometry", () => {
     await finishAnimations(liveFrame());
 
     await padding.getByRole("radio", { name: "XL" }).click();
-    await wait(40);
+    await pauseAtMidpoint(liveFrame());
     const inFlightPadding = Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft);
     expect(inFlightPadding).toBeGreaterThan(16);
     expect(inFlightPadding).toBeLessThan(64);
 
     await padding.getByRole("radio", { name: "L", exact: true }).click();
-    await nextFrame();
-    const firstRetargetedPadding = Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft);
-    await nextFrame();
-    const secondRetargetedPadding = Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft);
-    expect(firstRetargetedPadding).toBeGreaterThan(44);
-    expect(secondRetargetedPadding).toBeLessThan(firstRetargetedPadding);
-    expect(secondRetargetedPadding).toBeGreaterThan(44);
+    await pauseAtMidpoint(liveFrame());
+    const retargetedPadding = Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft);
+    expect(retargetedPadding).toBeLessThan(inFlightPadding);
+    expect(retargetedPadding).toBeGreaterThan(44);
 
     await finishAnimations(liveFrame());
     expect(Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft)).toBeCloseTo(44, 1);

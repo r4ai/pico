@@ -1,6 +1,19 @@
 import type { FrameColors } from "@/features/preview/frame-colors";
 
-export const THEME_IDS = ["vitesse", "github", "catppuccin", "one", "rose-pine"] as const;
+export const THEME_IDS = [
+  "vitesse",
+  "github",
+  "catppuccin",
+  "one",
+  "rose-pine",
+  "ayu",
+  "everforest",
+  "gruvbox",
+  "kanagawa",
+  "material",
+  "night-owl",
+  "solarized",
+] as const;
 
 export type ThemeId = (typeof THEME_IDS)[number];
 
@@ -17,7 +30,7 @@ export type ThemePair = {
    * What the frame is painted with, for each variant.
    *
    * Duplicated from the theme files for two reasons: the sidebar can show what
-   * a theme looks like without downloading all five, and the frame can be
+   * a theme looks like without downloading every variant, and the frame can be
    * painted in its real colours on the very first frame instead of jumping
    * into them once the highlighter arrives. A test asserts they still match.
    */
@@ -78,6 +91,76 @@ export const THEMES = {
     colors: {
       light: { background: "#faf4ed", foreground: "#575279", lineNumber: "#797593" },
       dark: { background: "#191724", foreground: "#e0def4", lineNumber: "#908caa" },
+    },
+  },
+  ayu: {
+    id: "ayu",
+    label: "Ayu",
+    light: "ayu-light",
+    dark: "ayu-dark",
+    colors: {
+      light: { background: "#f8f9fa", foreground: "#5c6166", lineNumber: "#828e9f66" },
+      dark: { background: "#0d1017", foreground: "#bfbdb6", lineNumber: "#5a6378a6" },
+    },
+  },
+  everforest: {
+    id: "everforest",
+    label: "Everforest",
+    light: "everforest-light",
+    dark: "everforest-dark",
+    colors: {
+      light: { background: "#fdf6e3", foreground: "#5c6a72", lineNumber: "#a4ad9ea0" },
+      dark: { background: "#2d353b", foreground: "#d3c6aa", lineNumber: "#7f897da0" },
+    },
+  },
+  gruvbox: {
+    id: "gruvbox",
+    label: "Gruvbox",
+    light: "gruvbox-light-medium",
+    dark: "gruvbox-dark-medium",
+    colors: {
+      light: { background: "#fbf1c7", foreground: "#3c3836", lineNumber: "#bdae93" },
+      dark: { background: "#282828", foreground: "#ebdbb2", lineNumber: "#665c54" },
+    },
+  },
+  kanagawa: {
+    id: "kanagawa",
+    label: "Kanagawa",
+    light: "kanagawa-lotus",
+    dark: "kanagawa-wave",
+    colors: {
+      light: { background: "#F2ECBC", foreground: "#545464", lineNumber: "#766B90" },
+      dark: { background: "#1F1F28", foreground: "#DCD7BA", lineNumber: "#54546D" },
+    },
+  },
+  material: {
+    id: "material",
+    label: "Material",
+    light: "material-theme-lighter",
+    dark: "material-theme-darker",
+    colors: {
+      light: { background: "#FAFAFA", foreground: "#90A4AE", lineNumber: "#CFD8DC" },
+      dark: { background: "#212121", foreground: "#EEFFFF", lineNumber: "#424242" },
+    },
+  },
+  "night-owl": {
+    id: "night-owl",
+    label: "Night Owl",
+    light: "night-owl-light",
+    dark: "night-owl",
+    colors: {
+      light: { background: "#FBFBFB", foreground: "#403f53", lineNumber: "#90A7B2" },
+      dark: { background: "#011627", foreground: "#d6deeb", lineNumber: "#4b6479" },
+    },
+  },
+  solarized: {
+    id: "solarized",
+    label: "Solarized",
+    light: "solarized-light",
+    dark: "solarized-dark",
+    colors: {
+      light: { background: "#FDF6E3", foreground: "#657B83", lineNumber: "#657B8366" },
+      dark: { background: "#002B36", foreground: "#839496", lineNumber: "#83949666" },
     },
   },
 } as const satisfies Record<ThemeId, ThemePair>;

@@ -14,6 +14,20 @@ const THEME_LOADERS: Record<ShikiThemeName, () => Promise<{ default: ThemeRegist
   "one-dark-pro": () => import("@shikijs/themes/one-dark-pro"),
   "rose-pine-dawn": () => import("@shikijs/themes/rose-pine-dawn"),
   "rose-pine": () => import("@shikijs/themes/rose-pine"),
+  "ayu-light": () => import("@shikijs/themes/ayu-light"),
+  "ayu-dark": () => import("@shikijs/themes/ayu-dark"),
+  "everforest-light": () => import("@shikijs/themes/everforest-light"),
+  "everforest-dark": () => import("@shikijs/themes/everforest-dark"),
+  "gruvbox-light-medium": () => import("@shikijs/themes/gruvbox-light-medium"),
+  "gruvbox-dark-medium": () => import("@shikijs/themes/gruvbox-dark-medium"),
+  "kanagawa-lotus": () => import("@shikijs/themes/kanagawa-lotus"),
+  "kanagawa-wave": () => import("@shikijs/themes/kanagawa-wave"),
+  "material-theme-lighter": () => import("@shikijs/themes/material-theme-lighter"),
+  "material-theme-darker": () => import("@shikijs/themes/material-theme-darker"),
+  "night-owl-light": () => import("@shikijs/themes/night-owl-light"),
+  "night-owl": () => import("@shikijs/themes/night-owl"),
+  "solarized-light": () => import("@shikijs/themes/solarized-light"),
+  "solarized-dark": () => import("@shikijs/themes/solarized-dark"),
 };
 
 let registry: Promise<typeof import("@/features/editor/language-registry")> | undefined;

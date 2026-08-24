@@ -274,9 +274,15 @@
    The extra .cm-editor in each selector is what outranks CodeMirror's own
    base theme, which sets a monospace family and a 1.4 line height of its own. */
 
+:where(.pico-editor .cm-editor) {
+  --pico-cursor-color: var(--pico-fg);
+}
+
 .pico-editor .cm-editor {
   width: max-content;
   min-width: 100%;
+  background: transparent;
+  color: var(--pico-fg);
   font-family: var(--pico-font-family);
   font-size: inherit;
 }
@@ -292,11 +298,23 @@
   padding: 0;
 }
 
+.pico-editor .cm-editor .cm-content {
+  caret-color: var(--pico-cursor-color);
+}
+
+.pico-editor .cm-editor .cm-cursor,
+.pico-editor .cm-editor .cm-dropCursor {
+  border-left-color: var(--pico-cursor-color);
+}
+
 .pico-editor .cm-editor .cm-gutters {
   box-sizing: border-box;
   width: var(--pico-gutter-width);
   min-width: 0;
   padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pico-line-number);
   overflow: clip;
   opacity: 1;
   flex: none;

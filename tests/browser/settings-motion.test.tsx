@@ -76,7 +76,7 @@ async function setAppearance(name: "Light" | "Dark"): Promise<void> {
  * only ever cold for whichever test asks for it first. This one is nobody
  * else's, which is what makes the test below deterministic whatever the order.
  */
-const NEVER_LOADED_THEME = "Rosé Pine";
+const NEVER_LOADED_THEME = "Kanagawa";
 
 it("waits for a theme it does not have yet rather than dissolving into the old one", async () => {
   const before = exportBackground();
