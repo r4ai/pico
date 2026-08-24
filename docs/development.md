@@ -199,6 +199,16 @@ budget at the sizes Pico is for; the language picker's list is virtualized
 above forty options, without which opening it and typing in it each dropped a
 frame.
 
+Guessing the language runs in a worker. `highlightAuto` scores a document
+against twenty grammars in one synchronous pass, and it was the longest task on
+the page: measured on a hundred-line snippet, 223ms landing 1.1s after the
+paste, alone, with nothing else running — which is to say while somebody is
+still moving. Nothing about the guess touches the DOM. `language-detector.ts`
+is the only thing that reaches for the worker and the only path to
+`detect-language.ts`, so highlight.js and its grammars are reachable from
+nowhere the page itself loads; importing `detect-language` from a component
+puts all of it back. A browser test watches for a long task after the settle.
+
 The React Compiler is enabled, so components do not need `useMemo` or `memo`
 to survive the re-render every keystroke causes. It skips whole components and
 hooks over syntax it cannot lower, silently as far as the app is concerned and
