@@ -348,7 +348,12 @@
    canvas.
    --------------------------------------------------------------------------- */
 
-.pico-glass {
+/* On the root rather than on the class, because the toaster is glass too and
+   is not a `.pico-glass` — sonner owns that element's position, its width and
+   the transform it arrives on, and a class that also declares those would be
+   fighting it. Sharing the tokens is what keeps the surfaces one material. */
+
+:root {
   /* Opaque enough to read against a picture. The dock floats over the code
      itself, and at the tint this started on the snippet showed through the
      labels and competed with them. Enough light still passes for the surface
@@ -356,15 +361,18 @@
   --pico-glass-tint: light-dark(oklch(1 0 0 / 82%), oklch(0.3 0 0 / 80%));
   --pico-glass-edge: light-dark(oklch(0 0 0 / 8%), oklch(1 0 0 / 10%));
   --pico-glass-sheen: light-dark(oklch(1 0 0 / 70%), oklch(1 0 0 / 12%));
+  --pico-glass-radius: 1rem;
+  --pico-glass-shadow:
+    inset 0 1px 0 0 var(--pico-glass-sheen), 0 1px 2px oklch(0 0 0 / 10%),
+    0 12px 32px oklch(0 0 0 / 18%);
+}
 
+.pico-glass {
   position: relative;
   border: 1px solid var(--pico-glass-edge);
-  border-radius: 1rem;
+  border-radius: var(--pico-glass-radius);
   background: var(--pico-glass-tint);
-  box-shadow:
-    inset 0 1px 0 0 var(--pico-glass-sheen),
-    0 1px 2px oklch(0 0 0 / 10%),
-    0 12px 32px oklch(0 0 0 / 18%);
+  box-shadow: var(--pico-glass-shadow);
   /* Unprefixed only. Written with `-webkit-backdrop-filter` after it, the
      prefixed declaration won the cascade and the minifier collapsed the pair
      onto it — and Chrome and Firefox do not implement that spelling, so the
@@ -648,6 +656,81 @@
 .pico-theme-swatch > span {
   height: 2px;
   border-radius: 1px;
+}
+
+/* ---------------------------------------------------------------------------
+   What Pico says when something happened away from the control that caused it.
+
+   The same glass as the dock and the panel, at the same corner radius: a toast
+   drawn as a plain card sat on a screen made of nothing else, and its eight
+   pixels of radius against everything else's sixteen was the part that showed.
+   It floats over the picture exactly the way the dock does, so it is made of
+   what the dock is made of.
+
+   sonner is asked for no styling at all rather than overridden. Its own card
+   rules are two attribute selectors deep and its stylesheet is injected at
+   runtime, which is to say after this one — so every override would have had to
+   outrank a selector that always wins ties. `unstyled` leaves it the stacking,
+   the lift and the swipe, which are the things it is here for, and leaves the
+   surface to us.
+   --------------------------------------------------------------------------- */
+
+.pico-toast {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--pico-glass-edge);
+  border-radius: var(--pico-glass-radius);
+  background: var(--pico-glass-tint);
+  box-shadow: var(--pico-glass-shadow);
+  backdrop-filter: blur(24px) saturate(180%);
+  color: var(--foreground);
+  gap: 0.625rem;
+  font-size: 0.8125rem;
+}
+
+/* The icon is the only colour a toast carries, and it is what says which of
+   the three kinds this is before a word of it has been read. Held just off the
+   pure hues so it belongs to the same muted palette as the rest of the chrome,
+   and it is never the only thing saying so — every toast says it in words. */
+
+.pico-toast-icon {
+  display: flex;
+  flex: none;
+  /* Optically centred on the first line of the title rather than on its box. */
+  margin-top: 0.0625rem;
+  color: var(--muted-foreground);
+}
+
+.pico-toast[data-type="success"] .pico-toast-icon {
+  color: light-dark(oklch(0.55 0.13 155), oklch(0.75 0.15 155));
+}
+
+.pico-toast[data-type="warning"] .pico-toast-icon {
+  color: light-dark(oklch(0.6 0.13 75), oklch(0.8 0.14 80));
+}
+
+.pico-toast[data-type="error"] .pico-toast-icon {
+  color: var(--destructive);
+}
+
+.pico-toast-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.pico-toast-title {
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.pico-toast-description {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.45;
 }
 
 /* ---------------------------------------------------------------------------
