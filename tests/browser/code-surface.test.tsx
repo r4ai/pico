@@ -1,7 +1,9 @@
 import { CodeEditor } from "@/features/editor/code-editor";
+import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
 import { CodeFrame } from "@/features/preview/code-frame";
 import { ShikiCode } from "@/features/preview/shiki-code";
 import { frameColorsOfTheme } from "@/features/settings/theme";
+import { ensureHighlighter } from "@/lib/shiki";
 import { DEFAULT_SETTINGS } from "@/features/settings/settings";
 import "@/global.css";
 import { useLayoutEffect } from "react";
@@ -96,31 +98,66 @@ function Probe({ onCommit }: { onCommit: (filled: boolean) => void }) {
   return null;
 }
 
-it("fills the frame in the commit that empties it", async () => {
-  // The container is committed empty and CodeMirror fills it from an effect.
-  // A passive effect runs after the browser has had its chance to paint, so
-  // the frame was painted at the height of nothing for a frame and sprang back
-  // — 0.06 of layout shift on a link that had done nothing but load.
-  let filled: boolean | undefined;
+/**
+ * Mounts an editor and reports what the DOM held at the end of the commit that
+ * mounted it — which is everything the browser could have painted before an
+ * effect got a chance to put anything right.
+ */
+async function atFirstCommit(props: {
+  value: string;
+  highlight: ShikiHighlight | null;
+}): Promise<{ filled: boolean; placeholder: boolean; coloured: boolean }> {
+  let seen: { filled: boolean; placeholder: boolean; coloured: boolean } | undefined;
   const rendered = await render(
     <CodeFrame colors={colors} settings={DEFAULT_SETTINGS}>
       <CodeEditor
         animatingGeometry={false}
-        highlight={null}
+        highlight={props.highlight}
         label="Code"
         onChange={() => {}}
         placeholderText={PLACEHOLDER}
         showLineNumbers={false}
-        value={"one\ntwo\nthree"}
+        value={props.value}
       />
       <Probe
-        onCommit={(value) => {
-          filled ??= value;
+        onCommit={() => {
+          seen ??= {
+            filled: document.querySelector(".cm-content") !== null,
+            placeholder: document.querySelector(".cm-placeholder") !== null,
+            coloured: document.querySelector('.cm-line span[style*="color"]') !== null,
+          };
         }}
       />
     </CodeFrame>,
   );
   unmount = rendered.unmount;
+  if (!seen) throw new Error("the probe never ran");
+  return seen;
+}
 
-  expect(filled).toBe(true);
+it("fills the frame in the commit that empties it", async () => {
+  // The container is committed empty and CodeMirror fills it from an effect.
+  // A passive effect runs after the browser has had its chance to paint, so
+  // the frame was painted at the height of nothing for a frame and sprang back
+  // — 0.06 of layout shift on a link that had done nothing but load.
+  const seen = await atFirstCommit({ value: "one\ntwo\nthree", highlight: null });
+  expect(seen.filled).toBe(true);
+});
+
+it("opens already wearing the placeholder the stand-in was showing", async () => {
+  const seen = await atFirstCommit({ value: "", highlight: null });
+  // Handed the placeholder afterwards, the editor spent a frame blank where
+  // the static rendering it replaced had words in it.
+  expect(seen.placeholder).toBe(true);
+});
+
+it("opens already wearing the colours the stand-in was showing", async () => {
+  const { highlighter, shikiLang } = await ensureHighlighter("tsx", "vitesse-dark");
+  const seen = await atFirstCommit({
+    value: "const answer = 42;",
+    highlight: { highlighter, lang: shikiLang, theme: "vitesse-dark" },
+  });
+  // And a frame uncoloured where it had colour. The editor is built long after
+  // the page is, so by then the grammar and the theme are usually already here.
+  expect(seen.coloured).toBe(true);
 });

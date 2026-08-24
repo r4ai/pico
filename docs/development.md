@@ -92,10 +92,14 @@ Preview geometry has eight invariants:
 - Padding, font size, frame width, and the line-number gutter use the same
   `260ms / --ease-glass` transition, and only a settings action or a font
   arriving late may enable it.
-- The editor is built in a layout effect. Its container is committed empty,
-  and a passive effect runs after the browser has had its chance to paint, so
-  the frame was painted at the height of nothing for a frame and sprang back —
-  0.06 of layout shift on a link that had done nothing but load.
+- The editor is built in a layout effect, already holding its theme and its
+  placeholder. Its container is committed empty, and a passive effect runs
+  after the browser has had its chance to paint, so the frame was painted at
+  the height of nothing for a frame and sprang back — 0.06 of layout shift on
+  a link that had done nothing but load. Anything the editor is handed from an
+  effect instead is a frame of the wrong thing in the frame it takes over from
+  the static rendering: blank where that had a placeholder, uncoloured where
+  it had colour.
 - The static rendering and the editor are the same size, empty or full. It is
   the invariant the export already rests on — what you see is what you save —
   and it is what lets the editor be swapped in under the reader without

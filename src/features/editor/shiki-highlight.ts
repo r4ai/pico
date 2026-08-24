@@ -21,16 +21,6 @@ export type ShikiHighlight = {
 
 export const setShikiHighlight = StateEffect.define<ShikiHighlight | null>();
 
-const highlightConfig = StateField.define<ShikiHighlight | null>({
-  create: () => null,
-  update(value, transaction) {
-    for (const effect of transaction.effects) {
-      if (effect.is(setShikiHighlight)) return effect.value;
-    }
-    return value;
-  },
-});
-
 /** Marks are shared across tokens with the same appearance, of which there are few. */
 const markCache = new Map<string, Decoration>();
 
@@ -66,19 +56,6 @@ function buildDecorations(doc: string, config: ShikiHighlight | null): Decoratio
   return builder.finish();
 }
 
-const shikiDecorations = StateField.define<DecorationSet>({
-  create: (state) => buildDecorations(state.doc.toString(), state.field(highlightConfig)),
-  update(decorations, transaction) {
-    const configChanged = transaction.effects.some((effect) => effect.is(setShikiHighlight));
-    if (!transaction.docChanged && !configChanged) return decorations;
-    return buildDecorations(
-      transaction.state.doc.toString(),
-      transaction.state.field(highlightConfig),
-    );
-  },
-  provide: (field) => EditorView.decorations.from(field),
-});
-
 /**
  * Colors the document from Shiki's tokens, so the editor and the exported image
  * are painted from the same source and cannot drift apart.
@@ -87,8 +64,38 @@ const shikiDecorations = StateField.define<DecorationSet>({
  * for the snippet-sized inputs this app is built for — and the result is
  * shared with the export node, which needs the same tokens for the same
  * document a moment later.
+ *
+ * @param initial whatever the highlighter has already loaded by the time the
+ * editor is built, or `null` if that is nothing yet. The editor is built long
+ * after the page is, so by then there usually is a grammar and a theme — and
+ * one that opened uncoloured and was put right by an effect would flash in the
+ * frame it took over from a static rendering that already had the colours. See
+ * {@link CodeSurface}.
  */
-export function shikiHighlighting() {
+export function shikiHighlighting(initial: ShikiHighlight | null) {
+  const highlightConfig = StateField.define<ShikiHighlight | null>({
+    create: () => initial,
+    update(value, transaction) {
+      for (const effect of transaction.effects) {
+        if (effect.is(setShikiHighlight)) return effect.value;
+      }
+      return value;
+    },
+  });
+
+  const shikiDecorations = StateField.define<DecorationSet>({
+    create: (state) => buildDecorations(state.doc.toString(), state.field(highlightConfig)),
+    update(decorations, transaction) {
+      const configChanged = transaction.effects.some((effect) => effect.is(setShikiHighlight));
+      if (!transaction.docChanged && !configChanged) return decorations;
+      return buildDecorations(
+        transaction.state.doc.toString(),
+        transaction.state.field(highlightConfig),
+      );
+    },
+    provide: (field) => EditorView.decorations.from(field),
+  });
+
   // Order matters: the decoration field reads the config field during creation.
   return [highlightConfig, shikiDecorations];
 }

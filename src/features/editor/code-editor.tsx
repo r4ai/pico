@@ -18,6 +18,11 @@ import { useEffect, useId, useLayoutEffect, useRef } from "react";
 /** Long enough to reach for Tab after Escape, short enough not to linger. */
 const TAB_FOCUS_GRACE_MS = 4000;
 
+/** The colors CodeMirror wears, or none while there is no theme to take them from. */
+function editorTheme(highlight: ShikiHighlight | null) {
+  return highlight ? createEditorTheme(highlight.highlighter.getTheme(highlight.theme)) : [];
+}
+
 export type CodeEditorProps = {
   value: string;
   /** What the editor is called, for anyone who cannot see the frame around it. */
@@ -33,8 +38,9 @@ export type CodeEditorProps = {
    * Whether to take the keyboard as soon as there is an editor to take it.
    *
    * For a click that landed on the static rendering standing in for this while
-   * it downloaded: somebody who has pressed on a frame meaning to type into it
-   * should not have to press it again. See {@link CodeSurface}.
+   * it downloaded: somebody who has clicked on a frame meaning to type into it
+   * should not have to click it again. See {@link CodeSurface}, which only
+   * asks for this after a mouse.
    */
   focusOnMount?: boolean;
 };
@@ -72,6 +78,12 @@ export function CodeEditor({
   // they do not need a compartment of their own.
   const initialLabel = useRef(label);
   const initialHintId = useRef(hintId);
+  // What the editor opens dressed in. The effects below keep both current, but
+  // an effect runs after the browser has had its chance to paint: opening
+  // without them would spend a frame blank where the static rendering had a
+  // placeholder, and uncoloured where it had colour.
+  const initialHighlight = useRef(highlight);
+  const initialPlaceholder = useRef(placeholderText);
 
   useEffect(() => {
     latestOnChange.current = onChange;
@@ -81,7 +93,9 @@ export function CodeEditor({
   // a passive effect runs after the browser has had its chance to paint — so
   // the frame was painted at the height of nothing at all for a frame, and
   // then sprang back once CodeMirror filled it. Building the view before that
-  // paint is the difference between a visible collapse and no change at all.
+  // paint is the difference between a visible collapse and no change at all,
+  // which is also why the view is built already holding its theme and its
+  // placeholder rather than being handed them afterwards.
   useLayoutEffect(() => {
     const parent = container.current;
     if (!parent) return;
@@ -119,10 +133,10 @@ export function CodeEditor({
             },
           ]),
           keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
-          shikiHighlighting(),
-          theme.of([]),
+          shikiHighlighting(initialHighlight.current),
+          theme.of(editorTheme(initialHighlight.current)),
           lineNumbers(),
-          placeholderCompartment.of([]),
+          placeholderCompartment.of(placeholder(initialPlaceholder.current)),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) latestOnChange.current(update.state.doc.toString());
           }),
@@ -152,9 +166,7 @@ export function CodeEditor({
     editor.dispatch({
       effects: [
         setShikiHighlight.of(highlight),
-        compartments.current.theme.reconfigure(
-          createEditorTheme(highlight.highlighter.getTheme(highlight.theme)),
-        ),
+        compartments.current.theme.reconfigure(editorTheme(highlight)),
       ],
     });
   }, [highlight]);

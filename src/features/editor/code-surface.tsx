@@ -18,6 +18,13 @@ export type CodeSurfaceProps = CodeEditorProps;
  * all on a warm cache, and for most of it there is nothing to type into yet
  * anyway. A click that lands in it is not lost, though: it is remembered, and
  * the editor takes the keyboard as it mounts.
+ *
+ * A click, and not a tap. Focus taken after an `import()` has resolved is
+ * focus taken outside the gesture that asked for it, and no phone raises its
+ * keyboard for that — so a remembered tap would leave a caret blinking in an
+ * editor with nothing to type on, which is a worse place to be than the one
+ * the tap started from. There, the second tap is the one that works, and it
+ * works whether or not this remembered the first.
  */
 export function CodeSurface(props: CodeSurfaceProps) {
   const Editor = useCodeEditor();
@@ -31,7 +38,12 @@ export function CodeSurface(props: CodeSurfaceProps) {
     // Not a `textbox`, and deliberately not focusable: a text field that
     // silently drops what is typed into it is worse than one that is visibly
     // not ready yet.
-    <div className="pico-code-standin" onPointerDown={() => setPressed(true)}>
+    <div
+      className="pico-code-standin"
+      onPointerDown={(event) => {
+        if (event.pointerType === "mouse") setPressed(true);
+      }}
+    >
       <ShikiCode
         code={props.value}
         highlight={props.highlight}
