@@ -151,6 +151,9 @@ static rendering that stands in for the editor, and the dissolve. It runs three
 Chromium instances: one at 1280px, where the settings sit beside the picture
 and both can be driven at once; one at 420px for the drawer and the frame that
 has to fit inside it; and one with reduced motion enabled.
+Animation assertions control the Web Animations timeline directly; do not
+replace that synchronization with frame counts or wall-clock sleeps, whose
+progress depends on CI scheduling.
 
 Measured on the production build at 4x CPU and 1.6 Mbps with a 150 ms round
 trip, splitting the editor off took the entry chunk from 178 kB to 83 kB of
