@@ -122,3 +122,14 @@ it("leaves the keyboard where the arrow keys put it", async () => {
     .poll(() => options().find((o) => o.hasAttribute("data-focused"))?.textContent)
     .not.toBe(first);
 });
+
+it("does not scroll sideways", async () => {
+  await openPicker();
+  const list = popover().querySelector('[data-slot="combobox-list"]');
+  if (!(list instanceof HTMLElement)) throw new Error("the list is missing");
+
+  // The virtualizer lays out its own padding and the class that draws it for a
+  // plain list was a second copy of it, so the content box sat eight pixels
+  // wider than the box it scrolls in.
+  await expect.poll(() => list.scrollWidth).toBe(list.clientWidth);
+});
