@@ -213,6 +213,21 @@ const WARMED_BY_THIS_TEST = "Gruvbox";
  * which on a loaded machine is a theme that never changed and a test that
  * waits for a colour that is never coming.
  */
+/**
+ * What Enter would take, right now.
+ *
+ * The keyboard never leaves the field, so which option is about to be chosen
+ * is not a matter of focus but of `aria-activedescendant` — which is both what
+ * a screen reader reads out and what the combobox commits. Asking the option
+ * for a styling attribute instead was asking the wrong thing, and answered
+ * `undefined` on a machine slow enough to be asked early.
+ */
+function activeOption(): string | undefined {
+  const field = document.querySelector<HTMLInputElement>('input[aria-label="Theme"]');
+  const id = field?.getAttribute("aria-activedescendant");
+  return id ? (document.getElementById(id)?.textContent ?? undefined) : undefined;
+}
+
 async function pickTheme(name: string): Promise<void> {
   const field = page.getByRole("combobox", { name: "Theme" });
   await field.click();
@@ -220,9 +235,16 @@ async function pickTheme(name: string): Promise<void> {
   await expect
     .poll(() => document.querySelector<HTMLInputElement>('input[aria-label="Theme"]')?.value)
     .toBe(name);
-  await expect
-    .poll(() => document.querySelector('[data-slot="combobox-item"][data-focused]')?.textContent)
-    .toBe(name);
+  // Down to exactly one, so the arrow key below has one place to go.
+  await expect.poll(() => document.querySelectorAll('[data-slot="combobox-item"]').length).toBe(1);
+
+  // The arrow key rather than the effect pass. Filtering the list does not move
+  // the keyboard by itself — an effect notices afterwards that the option it
+  // was on has gone — and waiting on that was waiting on a machine to be fast.
+  // Down reopens a list that has closed, too, which is the other way this can
+  // arrive with nothing selected to commit.
+  await userEvent.keyboard("{ArrowDown}");
+  await expect.poll(activeOption).toBe(name);
   await userEvent.keyboard("{Enter}");
 }
 
