@@ -13,7 +13,14 @@ import {
 import { FONT_IDS, FONTS } from "@/features/settings/fonts";
 import { PresetToggle, SettingRow } from "@/features/settings/setting-row";
 import type { Settings } from "@/features/settings/settings";
-import { COLOR_MODES, THEME_IDS, THEMES } from "@/features/settings/theme";
+import {
+  COLOR_MODES,
+  THEME_IDS,
+  THEMES,
+  themeAccents,
+  type ColorMode,
+  type ThemeId,
+} from "@/features/settings/theme";
 import { usePanelFocus } from "@/features/settings/use-panel-focus";
 import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
 import { MoonIcon, SunIcon, XIcon } from "lucide-react";
@@ -110,9 +117,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
             <section className="flex flex-col gap-3">
               <SectionTitle>Theme</SectionTitle>
               <SearchableSelect
-                adornment={
-                  <Swatch color={THEMES[settings.theme].colors[settings.mode].background} />
-                }
+                adornment={<Swatch mode={settings.mode} theme={settings.theme} />}
                 ariaLabel="Theme"
                 onChange={(theme) => onChange({ theme })}
                 options={THEME_IDS.map((id) => ({
@@ -120,7 +125,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                   label: THEMES[id].label,
                   render: (
                     <span className="flex items-center gap-2">
-                      <Swatch color={THEMES[id].colors[settings.mode].background} />
+                      <Swatch mode={settings.mode} theme={id} />
                       {THEMES[id].label}
                     </span>
                   ),
@@ -222,9 +227,31 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
   );
 }
 
-function Swatch({ color }: { color: string }) {
+/**
+ * What a theme looks like, in sixteen pixels.
+ *
+ * A disc of the background alone was what this used to be, and in dark mode
+ * twelve themes are twelve nearly identical near-blacks: the swatch said which
+ * theme was selected only by sitting next to its name. Three bars in the
+ * colours the theme actually gives keywords, function names and strings is a
+ * snippet small enough to fit in the field and still unmistakably Gruvbox or
+ * Night Owl.
+ *
+ * Purely decorative — every one of these sits beside the name it belongs to,
+ * and a screen reader reading out three hex values would be noise.
+ */
+function Swatch({ theme, mode }: { theme: ThemeId; mode: ColorMode }) {
+  const accents = themeAccents(theme, mode);
   return (
-    <span className="size-3.5 rounded-full border border-border" style={{ background: color }} />
+    <span
+      aria-hidden
+      className="pico-theme-swatch"
+      style={{ background: THEMES[theme].colors[mode].background }}
+    >
+      <span style={{ background: accents.keyword, width: "55%" }} />
+      <span style={{ background: accents.fn, width: "85%" }} />
+      <span style={{ background: accents.string, width: "40%" }} />
+    </span>
   );
 }
 
