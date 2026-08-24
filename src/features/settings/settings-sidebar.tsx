@@ -13,11 +13,22 @@ import {
 import { FONT_IDS, FONTS } from "@/features/settings/fonts";
 import { PresetToggle, SettingRow } from "@/features/settings/setting-row";
 import type { Settings } from "@/features/settings/settings";
-import { COLOR_MODES, THEME_IDS, THEMES } from "@/features/settings/theme";
+import {
+  COLOR_MODES,
+  THEME_IDS,
+  THEMES,
+  shikiThemeOf,
+  themeAccents,
+  type ColorMode,
+  type ThemeId,
+} from "@/features/settings/theme";
 import { usePanelFocus } from "@/features/settings/use-panel-focus";
 import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
+import { useSwipeDismiss } from "@/features/settings/use-swipe-dismiss";
+import type { RevealOrigin } from "@/lib/cross-fade";
+import { warmTheme } from "@/lib/shiki";
 import { MoonIcon, SunIcon, XIcon } from "lucide-react";
-import { useEffect, useEffectEvent, useId } from "react";
+import { useEffect, useEffectEvent, useId, useRef } from "react";
 
 const SIZE_LABELS = { none: "None", sm: "S", md: "M", lg: "L", xl: "XL" };
 
@@ -25,7 +36,11 @@ export type SettingsSidebarProps = {
   open: boolean;
   onClose: () => void;
   settings: Settings;
-  onChange: (patch: Partial<Settings>) => void;
+  /**
+   * @param origin where the change was asked for, when that is a place. Light
+   * and dark grow out of the switch that asked for them; see {@link crossFade}.
+   */
+  onChange: (patch: Partial<Settings>, origin?: RevealOrigin) => void;
 };
 
 /**
@@ -41,15 +56,24 @@ export type SettingsSidebarProps = {
  *
  * Where the window is wide enough the panel takes a column of its own and the
  * canvas shifts over to make room; where it is not, it slides over the canvas
- * as a drawer, and the scrim behind it dismisses it. Which of the two it is
- * decides what it is, and not only how it looks: beside the picture it is a
- * second region of the same page, and on top of it, behind a scrim that
- * swallows every click, it is a dialog. See {@link useSidebarMode}.
+ * as a drawer, and the scrim behind it dismisses it — as does pushing it off
+ * the side with a finger, which is what a hand expects of a sheet; see
+ * {@link useSwipeDismiss}.
+ *
+ * Which of the two it is decides what it is, and not only how it looks: beside
+ * the picture it is a second region of the same page, and on top of it, behind
+ * a scrim that swallows every click, it is a dialog. See {@link useSidebarMode}.
  */
 export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsSidebarProps) {
   const panel = usePanelFocus(open);
+  const scrim = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const drawer = useSidebarMode() === "drawer";
+
+  // Only where it is a drawer. Beside the picture the panel is a column of the
+  // page, and a column that can be shoved off the side of the window is not a
+  // column. See {@link useSwipeDismiss}.
+  useSwipeDismiss({ enabled: drawer && open, onDismiss: onClose, panel, scrim });
 
   // An Effect Event, so the listener is bound once per open rather than again
   // on every render of the parent that hands `onClose` down.
@@ -60,6 +84,18 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
     if (event.target instanceof Element && event.target.closest(".pico-editor")) return;
     onClose();
   });
+
+  // The other half of the pair, fetched while the settings are being looked at
+  // rather than when the switch beside them is pressed. A colour change is
+  // dissolved into only when its colours can be on screen in the same frame as
+  // the rest of it, so an unwarmed counterpart made the first light-or-dark
+  // switch of a session the one switch that snapped. Three kilobytes, asked for
+  // at the moment somebody is deciding whether to press it.
+  useEffect(() => {
+    if (!open) return;
+    const other = settings.mode === "light" ? "dark" : "light";
+    warmTheme(shikiThemeOf(settings.theme, other));
+  }, [open, settings.mode, settings.theme]);
 
   useEffect(() => {
     if (!open) return;
@@ -81,6 +117,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
         className="pico-sidebar-scrim"
         data-open={open}
         onClick={onClose}
+        ref={scrim}
         tabIndex={-1}
         type="button"
       />
@@ -100,7 +137,15 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
             <h2 className="font-medium text-sm" id={titleId}>
               Settings
             </h2>
-            <Button aria-label="Close settings" onPress={onClose} size="icon" variant="ghost">
+            {/* The stock ghost hover is a wash of `--muted`, which on glass
+                this tinted is not a tint at all; see `.pico-glass-hover`. */}
+            <Button
+              aria-label="Close settings"
+              className="pico-glass-hover pico-sidebar-close"
+              onPress={onClose}
+              size="icon"
+              variant="ghost"
+            >
               <XIcon />
             </Button>
           </div>
@@ -110,9 +155,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
             <section className="flex flex-col gap-3">
               <SectionTitle>Theme</SectionTitle>
               <SearchableSelect
-                adornment={
-                  <Swatch color={THEMES[settings.theme].colors[settings.mode].background} />
-                }
+                adornment={<Swatch mode={settings.mode} theme={settings.theme} />}
                 ariaLabel="Theme"
                 onChange={(theme) => onChange({ theme })}
                 options={THEME_IDS.map((id) => ({
@@ -120,7 +163,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                   label: THEMES[id].label,
                   render: (
                     <span className="flex items-center gap-2">
-                      <Swatch color={THEMES[id].colors[settings.mode].background} />
+                      <Swatch mode={settings.mode} theme={id} />
                       {THEMES[id].label}
                     </span>
                   ),
@@ -139,7 +182,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                     <MoonIcon className="size-3.5" />
                   )
                 }
-                onChange={(mode) => onChange({ mode })}
+                onChange={(mode, origin) => onChange({ mode }, origin)}
                 options={COLOR_MODES}
                 value={settings.mode}
               />
@@ -222,9 +265,31 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
   );
 }
 
-function Swatch({ color }: { color: string }) {
+/**
+ * What a theme looks like, in sixteen pixels.
+ *
+ * A disc of the background alone was what this used to be, and in dark mode
+ * twelve themes are twelve nearly identical near-blacks: the swatch said which
+ * theme was selected only by sitting next to its name. Three bars in the
+ * colours the theme actually gives keywords, function names and strings is a
+ * snippet small enough to fit in the field and still unmistakably Gruvbox or
+ * Night Owl.
+ *
+ * Purely decorative — every one of these sits beside the name it belongs to,
+ * and a screen reader reading out three hex values would be noise.
+ */
+function Swatch({ theme, mode }: { theme: ThemeId; mode: ColorMode }) {
+  const accents = themeAccents(theme, mode);
   return (
-    <span className="size-3.5 rounded-full border border-border" style={{ background: color }} />
+    <span
+      aria-hidden
+      className="pico-theme-swatch"
+      style={{ background: THEMES[theme].colors[mode].background }}
+    >
+      <span style={{ background: accents.keyword, width: "55%" }} />
+      <span style={{ background: accents.fn, width: "85%" }} />
+      <span style={{ background: accents.string, width: "40%" }} />
+    </span>
   );
 }
 

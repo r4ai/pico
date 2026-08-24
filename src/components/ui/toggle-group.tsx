@@ -33,6 +33,7 @@ function ToggleGroup({
   children,
   ...props
 }: Omit<ToggleButtonGroupProps, "children"> &
+  React.RefAttributes<HTMLDivElement> &
   VariantProps<typeof toggleVariants> & {
     spacing?: number;
     orientation?: "horizontal" | "vertical";

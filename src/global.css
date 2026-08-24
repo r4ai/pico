@@ -104,6 +104,45 @@
   animation-timing-function: var(--ease-glass);
 }
 
+/* Light and dark arrive from under the switch that asked for them, rather than
+   fading in everywhere at once: a circle of the new page grows out of the
+   control that was pressed, over the old one held still underneath. It is the
+   same two snapshots the dissolve uses — only the shape of the cut is
+   different, and it is the difference between a change that happened and a
+   change that appeared.
+
+   Only for a change somebody pointed at; see `crossFade`. The old snapshot is
+   not animated at all, so what is underneath is the page as it was, whole,
+   until the last frame covers it. The default blending is what a cross-fade
+   needs and what a cut cannot have: through `plus-lighter` the two would sum
+   inside the circle and light and dark would meet as white. */
+
+html[data-pico-reveal] {
+  &::view-transition-image-pair(root) {
+    isolation: auto;
+  }
+
+  &::view-transition-old(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  &::view-transition-new(root) {
+    animation: pico-reveal 440ms var(--ease-glass);
+    mix-blend-mode: normal;
+  }
+}
+
+@keyframes pico-reveal {
+  from {
+    clip-path: circle(0 at var(--pico-reveal-x) var(--pico-reveal-y));
+  }
+
+  to {
+    clip-path: circle(var(--pico-reveal-radius) at var(--pico-reveal-x) var(--pico-reveal-y));
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -348,7 +387,12 @@
    canvas.
    --------------------------------------------------------------------------- */
 
-.pico-glass {
+/* On the root rather than on the class, because the toaster is glass too and
+   is not a `.pico-glass` — sonner owns that element's position, its width and
+   the transform it arrives on, and a class that also declares those would be
+   fighting it. Sharing the tokens is what keeps the surfaces one material. */
+
+:root {
   /* Opaque enough to read against a picture. The dock floats over the code
      itself, and at the tint this started on the snippet showed through the
      labels and competed with them. Enough light still passes for the surface
@@ -356,15 +400,18 @@
   --pico-glass-tint: light-dark(oklch(1 0 0 / 82%), oklch(0.3 0 0 / 80%));
   --pico-glass-edge: light-dark(oklch(0 0 0 / 8%), oklch(1 0 0 / 10%));
   --pico-glass-sheen: light-dark(oklch(1 0 0 / 70%), oklch(1 0 0 / 12%));
+  --pico-glass-radius: 1rem;
+  --pico-glass-shadow:
+    inset 0 1px 0 0 var(--pico-glass-sheen), 0 1px 2px oklch(0 0 0 / 10%),
+    0 12px 32px oklch(0 0 0 / 18%);
+}
 
+.pico-glass {
   position: relative;
   border: 1px solid var(--pico-glass-edge);
-  border-radius: 1rem;
+  border-radius: var(--pico-glass-radius);
   background: var(--pico-glass-tint);
-  box-shadow:
-    inset 0 1px 0 0 var(--pico-glass-sheen),
-    0 1px 2px oklch(0 0 0 / 10%),
-    0 12px 32px oklch(0 0 0 / 18%);
+  box-shadow: var(--pico-glass-shadow);
   /* Unprefixed only. Written with `-webkit-backdrop-filter` after it, the
      prefixed declaration won the cascade and the minifier collapsed the pair
      onto it — and Chrome and Firefox do not implement that spelling, so the
@@ -469,8 +516,33 @@
 }
 
 .pico-sidebar[data-open="true"] {
-  transform: translateX(0);
+  transform: translateX(var(--pico-drawer-offset, 0px));
   opacity: 1;
+}
+
+/* Under a finger the panel is written to directly rather than transitioned to,
+   which is what makes it a sheet being pushed instead of a box being sent
+   somewhere. The offset the drag leaves behind is the same one the closed
+   state uses, so when a drag ends in a dismissal the transform React writes is
+   the one already running and the panel simply keeps going.
+
+   See useSwipeDismiss. */
+
+.pico-sidebar[data-dragging="true"],
+.pico-sidebar-scrim[data-dragging="true"] {
+  transition: none;
+}
+
+/* pan-y and not `preventDefault`: the browser keeps the vertical scrolling the
+   settings column needs and hands over the horizontal pans, which is what lets
+   a drag start inside a list of settings without either gesture having to
+   guess. Only where the panel is a drawer — in its own column there is nothing
+   to push it off. */
+
+@media (width < 56rem) {
+  .pico-sidebar {
+    touch-action: pan-y;
+  }
 }
 
 /* Everything the panel holds, in one box so that `inert` can go on it rather
@@ -501,8 +573,11 @@
   transition: opacity 220ms var(--ease-glass);
 }
 
+/* The scrim thins out with the drag, so what is behind the panel comes back as
+   it goes rather than all at once when it has gone. */
+
 .pico-sidebar-scrim[data-open="true"] {
-  opacity: 1;
+  opacity: var(--pico-drawer-progress, 1);
   pointer-events: auto;
 }
 
@@ -625,6 +700,151 @@
 }
 
 /* ---------------------------------------------------------------------------
+   A theme, in sixteen pixels. The background it paints code on, and three bars
+   in the colours it gives keywords, function names and strings — which is what
+   a snippet in that theme mostly is, and the only thing that tells twelve
+   near-black dark themes apart at this size.
+   --------------------------------------------------------------------------- */
+
+.pico-theme-swatch {
+  display: flex;
+  width: 1.375rem;
+  height: 1rem;
+  flex: none;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.pico-theme-swatch > span {
+  height: 2px;
+  border-radius: 1px;
+}
+
+/* ---------------------------------------------------------------------------
+   What Pico says when something happened away from the control that caused it.
+
+   The same glass as the dock and the panel, at the same corner radius: a toast
+   drawn as a plain card sat on a screen made of nothing else, and its eight
+   pixels of radius against everything else's sixteen was the part that showed.
+   It floats over the picture exactly the way the dock does, so it is made of
+   what the dock is made of.
+
+   sonner is asked for no styling at all rather than overridden. Its own card
+   rules are two attribute selectors deep and its stylesheet is injected at
+   runtime, which is to say after this one — so every override would have had to
+   outrank a selector that always wins ties. `unstyled` leaves it the stacking,
+   the lift and the swipe, which are the things it is here for, and leaves the
+   surface to us.
+   --------------------------------------------------------------------------- */
+
+.pico-toast {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--pico-glass-edge);
+  border-radius: var(--pico-glass-radius);
+  background: var(--pico-glass-tint);
+  box-shadow: var(--pico-glass-shadow);
+  backdrop-filter: blur(24px) saturate(180%);
+  color: var(--foreground);
+  gap: 0.625rem;
+  font-size: 0.8125rem;
+}
+
+/* The icon is the only colour a toast carries, and it is what says which of
+   the three kinds this is before a word of it has been read. Held just off the
+   pure hues so it belongs to the same muted palette as the rest of the chrome,
+   and it is never the only thing saying so — every toast says it in words. */
+
+.pico-toast-icon {
+  display: flex;
+  flex: none;
+  /* Optically centred on the first line of the title rather than on its box. */
+  margin-top: 0.0625rem;
+  color: var(--muted-foreground);
+}
+
+.pico-toast[data-type="success"] .pico-toast-icon {
+  color: light-dark(oklch(0.55 0.13 155), oklch(0.75 0.15 155));
+}
+
+.pico-toast[data-type="warning"] .pico-toast-icon {
+  color: light-dark(oklch(0.6 0.13 75), oklch(0.8 0.14 80));
+}
+
+.pico-toast[data-type="error"] .pico-toast-icon {
+  color: var(--destructive);
+}
+
+.pico-toast-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.pico-toast-title {
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.pico-toast-description {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+/* ---------------------------------------------------------------------------
+   A button on glass.
+
+   The stock ghost hover is a wash of `--muted`, which is a hair off the panel
+   it sits on — and in dark mode a shade darker than it. At an 80% tint the two
+   composite to within a percent of each other, so the close button in the
+   corner of the settings gave no sign at all that the pointer had reached it.
+
+   Washes of the foreground colour instead, which is the answer the preset rows
+   already arrived at, and the one thing that reads on a surface of any tint.
+   The same three states they have: nothing, a hint, and a clear block.
+   --------------------------------------------------------------------------- */
+
+.pico-glass-hover {
+  transition:
+    background-color 150ms var(--ease-glass),
+    color 150ms var(--ease-glass);
+}
+
+.pico-glass-hover[data-hovered],
+.pico-glass-hover[aria-expanded="true"] {
+  background: light-dark(oklch(0 0 0 / 9%), oklch(1 0 0 / 12%));
+  color: var(--foreground);
+}
+
+.pico-glass-hover[data-pressed] {
+  background: light-dark(oklch(0 0 0 / 16%), oklch(1 0 0 / 20%));
+}
+
+/* The one button whose whole job is to make the panel go away, and the one
+   that had the least to say for itself: a 16px cross in the corner, against a
+   hover tint that was not there. The wash above is most of the answer; the
+   cross leaning into the pointer is what makes it feel pressed before it is.
+   Rotation and not scale, because a cross grown by a tenth at this size is a
+   cross drawn slightly wrong, and an eighth of a turn is unmistakably motion. */
+
+.pico-sidebar-close svg {
+  transition: rotate 200ms var(--ease-glass);
+}
+
+.pico-sidebar-close[data-hovered] svg {
+  rotate: 90deg;
+}
+
+/* ---------------------------------------------------------------------------
    The rows of presets. The stock toggle tints are a hair off white and vanish
    against the glass, so the three states are drawn as widening washes of the
    foreground colour instead: nothing, a hint, and a clear block.
@@ -670,8 +890,14 @@
     transition-delay: 0s;
   }
 
-  .pico-split-chevron {
+  .pico-split-chevron,
+  .pico-sidebar-close svg,
+  .pico-glass-hover {
     transition-duration: 1ms;
+  }
+
+  .pico-sidebar-close[data-hovered] svg {
+    rotate: none;
   }
 
   .pico-icon-arrives {

@@ -156,7 +156,14 @@ Preview geometry has eight invariants:
   is wider than the window, and the picture came up clipped at both edges.
 
 Changing the theme or the appearance is a view transition rather than a
-transition per colour; see `crossFade`. Shiki's token colours are inline styles
+transition per colour; see `crossFade`. Light and dark are cut in as a circle
+growing out of the control that was pressed rather than dissolved: for that the
+old snapshot is held still and the pair's blending is put back to normal, since
+through `plus-lighter` the two would sum inside the circle and light and dark
+would meet as white. Only a change somebody pointed at gets an origin — a name
+chosen from a list has nowhere to grow from. The counterpart of a theme pair is
+warmed the moment the settings open, which is what stops the first light-or-dark
+switch of a session being the one switch that snaps; see `warmTheme`. Shiki's token colours are inline styles
 on spans CodeMirror rebuilds, so they have no value to ease from and change in
 one frame whatever the stylesheet says: easing the surfaces alone left dark
 text on a background still going light, and easing the text as well sent it
@@ -164,6 +171,14 @@ through the grey it was crossing. Only a patch that is nothing but colour goes
 through it — a setting that moves something is already easing to a new size.
 The export node is at its new colours before the dissolve starts, so a capture
 taken during one is the picture, not a blend.
+
+`layout-shift.test.tsx` watches the browser's own `layout-shift` entries rather
+than any of that indirectly: arriving at a link with code in it moves nothing at
+all, picking a language moves nothing, and once a settings action's easing is
+over nothing moves again. Not during one — every geometry change here is a
+transition somebody started, and the picture easing to a new size is the point
+of them. What the last of the three catches is the move after the move: a frame
+holding a stale height and then collapsing into the right one in a single frame.
 
 `pnpm test:browser` covers intermediate frames, rapid retargeting, export/live
 agreement, height tracking while shrinking, the keyboard's way out of the
@@ -198,6 +213,16 @@ costs is dominated by Shiki retokenizing the whole document, which is within
 budget at the sizes Pico is for; the language picker's list is virtualized
 above forty options, without which opening it and typing in it each dropped a
 frame.
+
+Guessing the language runs in a worker. `highlightAuto` scores a document
+against twenty grammars in one synchronous pass, and it was the longest task on
+the page: measured on a hundred-line snippet, 223ms landing 1.1s after the
+paste, alone, with nothing else running — which is to say while somebody is
+still moving. Nothing about the guess touches the DOM. `language-detector.ts`
+is the only thing that reaches for the worker and the only path to
+`detect-language.ts`, so highlight.js and its grammars are reachable from
+nowhere the page itself loads; importing `detect-language` from a component
+puts all of it back. A browser test watches for a long task after the settle.
 
 The React Compiler is enabled, so components do not need `useMemo` or `memo`
 to survive the re-render every keystroke causes. It skips whole components and
@@ -248,11 +273,29 @@ undo:
   makes them modal: `dialog`, `aria-modal`, and the canvas `inert` underneath.
   `useSidebarMode` is the single answer to which arrangement they are in, and a
   test holds the width it names to the one the stylesheet uses.
+- As a drawer it can be pushed off the side with a finger; see
+  `useSwipeDismiss`. Three things are easy to undo. The panel is written to
+  directly rather than through state — a React render per pointer move would
+  re-render every control the panel holds, sixty times a second, to move one
+  box. The stylesheet says `touch-action: pan-y` rather than the hook calling
+  `preventDefault`, which is what leaves the settings column its vertical
+  scrolling while horizontal pans come here. And a dismissal ends by writing the
+  panel to exactly where the closed state puts it, so the transform React writes
+  a moment later is the one already running and the panel keeps going instead of
+  restarting. Touch and pen only: a pointer with a cursor has the close button,
+  the scrim, and Escape.
 - That `inert` goes on the canvas div rather than on `<main>`, and the button
   that opens the settings leaves the tab order through `visibility` rather than
   `inert`. React Aria marks the top of the page inert while a popover is open
   and restores what it found there on close, so anything React writes to
   `inert` near the top of the tree is lost the first time a combobox closes.
+- React Aria names the controls it adds — the button that opens a picker, what
+  a list of options is called — in the browser's language rather than the
+  document's, and Pico is English and says so in `<html lang="en">`. On a
+  Japanese browser a screen reader was being handed Japanese words to read with
+  English pronunciation. `Chrome` pins the two together with `I18nProvider`, and
+  the wide Chromium instance runs under `ja-JP` so the test that holds them
+  together can fail.
 - `.pico-glass` asks for `backdrop-filter` and nothing else. Adding
   `-webkit-backdrop-filter` after it wins the cascade, the minifier collapses
   the pair onto the prefixed spelling, and Chrome and Firefox — which do not

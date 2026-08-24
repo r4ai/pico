@@ -22,7 +22,10 @@ export function DockButton({ busy = false, className, ...props }: DockButtonProp
   return (
     <Button
       aria-disabled={busy || undefined}
-      className={cn("aria-disabled:pointer-events-none aria-disabled:opacity-50", className)}
+      className={cn(
+        "pico-glass-hover aria-disabled:pointer-events-none aria-disabled:opacity-50",
+        className,
+      )}
       size="sm"
       variant="ghost"
       {...props}

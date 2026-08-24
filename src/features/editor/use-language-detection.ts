@@ -1,4 +1,4 @@
-import { detectLanguage } from "@/features/editor/detect-language";
+import { detectLanguageOffThread } from "@/features/editor/language-detector";
 import type { LanguageId } from "@/features/editor/language";
 import { useEffect, useRef } from "react";
 
@@ -18,6 +18,11 @@ export type UseLanguageDetectionOptions = {
  * It guesses once per document rather than continuously: watching every
  * keystroke would let the language flip around underneath someone who is still
  * typing. Clearing the editor arms it again for the next paste.
+ *
+ * The guess itself runs in a worker. It is a synchronous pass over twenty
+ * grammars and was the longest task on the page, landing four hundred
+ * milliseconds after a paste — which is to say while somebody is still moving.
+ * See {@link detectLanguageOffThread}.
  */
 export function useLanguageDetection({ code, enabled, onDetect }: UseLanguageDetectionOptions) {
   const armed = useRef(true);
@@ -36,7 +41,7 @@ export function useLanguageDetection({ code, enabled, onDetect }: UseLanguageDet
 
     let cancelled = false;
     const timer = setTimeout(() => {
-      detectLanguage(code).then(
+      detectLanguageOffThread(code).then(
         (lang) => {
           if (cancelled || !lang) return;
           armed.current = false;

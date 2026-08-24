@@ -122,3 +122,43 @@ it("leaves the keyboard where the arrow keys put it", async () => {
     .poll(() => options().find((o) => o.hasAttribute("data-focused"))?.textContent)
     .not.toBe(first);
 });
+
+it("does not scroll sideways", async () => {
+  await openPicker();
+  const list = popover().querySelector('[data-slot="combobox-list"]');
+  if (!(list instanceof HTMLElement)) throw new Error("the list is missing");
+
+  // The virtualizer lays out its own padding and the class that draws it for a
+  // plain list was a second copy of it, so the content box sat eight pixels
+  // wider than the box it scrolls in.
+  await expect.poll(() => list.scrollWidth).toBe(list.clientWidth);
+});
+
+it("turns its arrow over while the list is open", async () => {
+  const chevron = document.querySelector('[data-slot="combobox-trigger"] svg');
+  if (!(chevron instanceof SVGElement)) throw new Error("the arrow is missing");
+  expect(getComputedStyle(chevron).rotate).toBe("none");
+
+  await openPicker();
+  // The rotation is read off `aria-expanded`, so it eases rather than snapping;
+  // the value under test is where it ends up.
+  await expect
+    .poll(() => {
+      for (const animation of chevron.getAnimations()) animation.finish();
+      return getComputedStyle(chevron).rotate;
+    })
+    .toBe("180deg");
+});
+
+it("names its own controls in the language the document declares", async () => {
+  const trigger = document.querySelector('[data-slot="combobox-trigger"]');
+  if (!(trigger instanceof HTMLElement)) throw new Error("the trigger is missing");
+
+  // React Aria names the controls it adds — the button that opens a list, what
+  // the list is called — and it names them in the browser's language rather
+  // than the document's. On a Japanese browser a screen reader following
+  // `lang="en"` was being handed Japanese words to read with English
+  // pronunciation. See `Chrome`.
+  expect(document.documentElement.lang).toBe("en");
+  expect(trigger.getAttribute("aria-label")).toBe("Show suggestions");
+});

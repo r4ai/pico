@@ -36,8 +36,17 @@ export default mergeConfig(baseConfig, {
             "tests/browser/sidebar-memory.test.tsx",
             "tests/browser/save-menu.test.tsx",
             "tests/browser/code-surface.test.tsx",
+            "tests/browser/toast.test.tsx",
+            "tests/browser/glass-hover.test.tsx",
+            "tests/browser/language-detection.test.tsx",
+            "tests/browser/layout-shift.test.tsx",
           ],
           name: "chromium",
+          // Deliberately not English. React Aria names the controls it adds in
+          // the browser's language rather than the document's, and Pico says
+          // `lang="en"`: run under the same locale as the machine and the test
+          // that holds the two together cannot fail. See `Chrome`.
+          provider: playwright({ contextOptions: { locale: "ja-JP" } }),
         },
         {
           browser: "chromium",
@@ -49,6 +58,7 @@ export default mergeConfig(baseConfig, {
           browser: "chromium",
           include: [
             "tests/browser/settings-drawer.test.tsx",
+            "tests/browser/drawer-swipe.test.tsx",
             "tests/browser/narrow-frame.test.tsx",
           ],
           name: "chromium-narrow",

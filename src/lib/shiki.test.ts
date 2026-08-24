@@ -1,6 +1,7 @@
 import { LANGUAGE_IDS } from "@/features/editor/language";
 import { LANGUAGES } from "@/features/editor/language-registry";
 import { frameColorsOf } from "@/features/preview/frame-colors";
+import { themeAccentsOf } from "@/features/settings/theme-accents";
 import { THEME_IDS, THEMES } from "@/features/settings/theme";
 import type { ShikiThemeName } from "@/features/settings/theme";
 import { ensureHighlighter } from "@/lib/shiki";
@@ -66,6 +67,23 @@ describe("shiki registry", () => {
     for (const mode of ["light", "dark"] as const) {
       const { highlighter } = await ensureHighlighter("ts", pair[mode]);
       expect(frameColorsOf(highlighter.getTheme(pair[mode]))).toEqual(pair.colors[mode]);
+    }
+  });
+
+  it.each(THEME_IDS)("keeps %s's swatch colors in step with the theme files", async (id) => {
+    const pair = THEMES[id];
+    for (const mode of ["light", "dark"] as const) {
+      const { highlighter } = await ensureHighlighter("ts", pair[mode]);
+      expect(themeAccentsOf(highlighter.getTheme(pair[mode]))).toEqual(pair.accents[mode]);
+    }
+  });
+
+  it.each(THEME_IDS)("gives %s three swatch colors that are not the same", (id) => {
+    for (const mode of ["light", "dark"] as const) {
+      const { keyword, fn, string } = THEMES[id].accents[mode];
+      // Solarized is one palette for both variants, and that is the theme
+      // being honest; three identical bars would be a swatch saying nothing.
+      expect(new Set([keyword, fn, string]).size).toBe(3);
     }
   });
 

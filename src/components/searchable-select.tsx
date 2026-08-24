@@ -130,7 +130,15 @@ export function SearchableSelect<T extends string>({
     );
 
   const list = (
-    <ComboboxList renderEmptyState={() => <ComboboxEmpty>Nothing matches.</ComboboxEmpty>}>
+    <ComboboxList
+      // A virtualized list lays out its own padding, and the class that draws
+      // it for a plain one is a second copy: the virtualizer sizes its content
+      // box to the width it was given and then sits inside a padding it does
+      // not know about, so the list overflowed by exactly `p-1` either side and
+      // 243 languages could be scrolled sideways by eight pixels.
+      className={virtualized ? "p-0 data-empty:p-0" : undefined}
+      renderEmptyState={() => <ComboboxEmpty>Nothing matches.</ComboboxEmpty>}
+    >
       {options.map((option) => (
         <ComboboxItem id={option.value} key={option.value} textValue={option.label}>
           {option.render}

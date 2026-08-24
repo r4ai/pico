@@ -78,6 +78,36 @@ const pendingLangs = new Map<LanguageId, Promise<void>>();
 const pendingThemes = new Map<ShikiThemeName, Promise<void>>();
 const loadedThemes = new Set<ShikiThemeName>();
 
+/** Registers a theme with the highlighter, at most once for the lifetime of the page. */
+function loadTheme(theme: ShikiThemeName): Promise<void> {
+  let load = pendingThemes.get(theme);
+  if (load) return load;
+
+  const registration = THEME_LOADERS[theme]();
+  load = Promise.all([getHighlighter(), registration]).then(async ([loaded, module]) => {
+    await loaded.loadTheme(module.default);
+    loadedThemes.add(theme);
+  });
+  pendingThemes.set(theme, load);
+  return load;
+}
+
+/**
+ * Starts a theme downloading before anything asks to be painted in it.
+ *
+ * For the light and dark halves of a pair, which are one press apart from each
+ * other the moment the settings are open. A colour change is dissolved into
+ * only when its colours can be on screen in the same frame as the rest of it —
+ * see {@link isThemeLoaded} — so a theme arriving on demand meant the first
+ * switch of a session was the one switch that snapped.
+ *
+ * Deliberately fire-and-forget: nothing is worse for having been left cold, and
+ * a caller warming a cache has nothing to do with a failure to fill it.
+ */
+export function warmTheme(theme: ShikiThemeName): void {
+  void loadTheme(theme).catch(() => {});
+}
+
 /**
  * Whether a theme is already registered, answered without waiting.
  *
@@ -121,15 +151,7 @@ export async function ensureHighlighter(
     pendingLangs.set(lang, langLoad);
   }
 
-  let themeLoad = pendingThemes.get(theme);
-  if (!themeLoad) {
-    const registration = THEME_LOADERS[theme]();
-    themeLoad = Promise.all([core, registration]).then(async ([loaded, module]) => {
-      await loaded.loadTheme(module.default);
-      loadedThemes.add(theme);
-    });
-    pendingThemes.set(theme, themeLoad);
-  }
+  const themeLoad = loadTheme(theme);
 
   const [highlighter, language] = await Promise.all([core, definition, langLoad, themeLoad]);
   return { highlighter, shikiLang: language.shikiLang };
