@@ -104,6 +104,45 @@
   animation-timing-function: var(--ease-glass);
 }
 
+/* Light and dark arrive from under the switch that asked for them, rather than
+   fading in everywhere at once: a circle of the new page grows out of the
+   control that was pressed, over the old one held still underneath. It is the
+   same two snapshots the dissolve uses — only the shape of the cut is
+   different, and it is the difference between a change that happened and a
+   change that appeared.
+
+   Only for a change somebody pointed at; see `crossFade`. The old snapshot is
+   not animated at all, so what is underneath is the page as it was, whole,
+   until the last frame covers it. The default blending is what a cross-fade
+   needs and what a cut cannot have: through `plus-lighter` the two would sum
+   inside the circle and light and dark would meet as white. */
+
+html[data-pico-reveal] {
+  &::view-transition-image-pair(root) {
+    isolation: auto;
+  }
+
+  &::view-transition-old(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  &::view-transition-new(root) {
+    animation: pico-reveal 440ms var(--ease-glass);
+    mix-blend-mode: normal;
+  }
+}
+
+@keyframes pico-reveal {
+  from {
+    clip-path: circle(0 at var(--pico-reveal-x) var(--pico-reveal-y));
+  }
+
+  to {
+    clip-path: circle(var(--pico-reveal-radius) at var(--pico-reveal-x) var(--pico-reveal-y));
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

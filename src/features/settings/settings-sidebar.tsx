@@ -17,6 +17,7 @@ import {
   COLOR_MODES,
   THEME_IDS,
   THEMES,
+  shikiThemeOf,
   themeAccents,
   type ColorMode,
   type ThemeId,
@@ -24,6 +25,8 @@ import {
 import { usePanelFocus } from "@/features/settings/use-panel-focus";
 import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
 import { useSwipeDismiss } from "@/features/settings/use-swipe-dismiss";
+import type { RevealOrigin } from "@/lib/cross-fade";
+import { warmTheme } from "@/lib/shiki";
 import { MoonIcon, SunIcon, XIcon } from "lucide-react";
 import { useEffect, useEffectEvent, useId, useRef } from "react";
 
@@ -33,7 +36,11 @@ export type SettingsSidebarProps = {
   open: boolean;
   onClose: () => void;
   settings: Settings;
-  onChange: (patch: Partial<Settings>) => void;
+  /**
+   * @param origin where the change was asked for, when that is a place. Light
+   * and dark grow out of the switch that asked for them; see {@link crossFade}.
+   */
+  onChange: (patch: Partial<Settings>, origin?: RevealOrigin) => void;
 };
 
 /**
@@ -76,6 +83,18 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
     if (event.target instanceof Element && event.target.closest(".pico-editor")) return;
     onClose();
   });
+
+  // The other half of the pair, fetched while the settings are being looked at
+  // rather than when the switch beside them is pressed. A colour change is
+  // dissolved into only when its colours can be on screen in the same frame as
+  // the rest of it, so an unwarmed counterpart made the first light-or-dark
+  // switch of a session the one switch that snapped. Three kilobytes, asked for
+  // at the moment somebody is deciding whether to press it.
+  useEffect(() => {
+    if (!open) return;
+    const other = settings.mode === "light" ? "dark" : "light";
+    warmTheme(shikiThemeOf(settings.theme, other));
+  }, [open, settings.mode, settings.theme]);
 
   useEffect(() => {
     if (!open) return;
@@ -162,7 +181,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                     <MoonIcon className="size-3.5" />
                   )
                 }
-                onChange={(mode) => onChange({ mode })}
+                onChange={(mode, origin) => onChange({ mode }, origin)}
                 options={COLOR_MODES}
                 value={settings.mode}
               />

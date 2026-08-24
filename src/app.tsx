@@ -26,7 +26,7 @@ import {
   PREVIEW_GEOMETRY_GRACE_MS,
 } from "@/features/settings/appearance";
 import type { Settings } from "@/features/settings/settings";
-import { crossFade } from "@/lib/cross-fade";
+import { crossFade, type RevealOrigin } from "@/lib/cross-fade";
 import { isThemeLoaded } from "@/lib/shiki";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@/components/toast";
@@ -95,7 +95,7 @@ export function App() {
   }, [animatePreviewGeometry, fontPhase]);
 
   const changeSettings = useCallback(
-    (patch: Partial<Settings>) => {
+    (patch: Partial<Settings>, origin?: RevealOrigin) => {
       const keys = Object.keys(patch) as (keyof Settings)[];
       if (keys.some((key) => GEOMETRY_SETTINGS.has(key))) animatePreviewGeometry();
 
@@ -111,13 +111,15 @@ export function App() {
       // link, just as it ended: a snap at the end of a fade, which is worse
       // than either alone. Once the theme is warm — every switch after the
       // first, which is when anyone is going back and forth — everything moves
-      // together.
+      // together — and the counterpart of a pair is warmed the moment the
+      // settings are opened, so "the first switch" is usually not one anybody
+      // reaches. See `warmTheme`.
       const next = { ...settings, ...patch };
       if (
         keys.every((key) => COLOR_SETTINGS.has(key)) &&
         isThemeLoaded(shikiThemeOf(next.theme, next.mode))
       ) {
-        crossFade(() => void setSettings(patch));
+        crossFade(() => void setSettings(patch), origin);
         return;
       }
       void setSettings(patch);

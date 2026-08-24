@@ -156,7 +156,14 @@ Preview geometry has eight invariants:
   is wider than the window, and the picture came up clipped at both edges.
 
 Changing the theme or the appearance is a view transition rather than a
-transition per colour; see `crossFade`. Shiki's token colours are inline styles
+transition per colour; see `crossFade`. Light and dark are cut in as a circle
+growing out of the control that was pressed rather than dissolved: for that the
+old snapshot is held still and the pair's blending is put back to normal, since
+through `plus-lighter` the two would sum inside the circle and light and dark
+would meet as white. Only a change somebody pointed at gets an origin — a name
+chosen from a list has nowhere to grow from. The counterpart of a theme pair is
+warmed the moment the settings open, which is what stops the first light-or-dark
+switch of a session being the one switch that snaps; see `warmTheme`. Shiki's token colours are inline styles
 on spans CodeMirror rebuilds, so they have no value to ease from and change in
 one frame whatever the stylesheet says: easing the surfaces alone left dark
 text on a background still going light, and easing the text as well sent it

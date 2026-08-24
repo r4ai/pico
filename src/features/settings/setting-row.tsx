@@ -1,5 +1,6 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { ReactNode } from "react";
+import type { RevealOrigin } from "@/lib/cross-fade";
+import { type ReactNode, useRef } from "react";
 
 export type SettingRowProps = {
   label: string;
@@ -23,7 +24,15 @@ export type PresetToggleProps<T extends string> = {
   /** Needed when {@link labelOf} renders an icon rather than words. */
   ariaLabelOf?: (option: T) => string;
   value: T;
-  onChange: (value: T) => void;
+  /**
+   * @param origin the middle of the row that was pressed, for a change that
+   * looks better arriving from where it was asked for than from nowhere. See
+   * {@link crossFade}. The row rather than the button inside it: React Aria
+   * reports which option was chosen and not what was pressed to choose it, and
+   * at nine millimetres across the difference is not one anybody could point
+   * at.
+   */
+  onChange: (value: T, origin: RevealOrigin | undefined) => void;
 };
 
 /**
@@ -44,6 +53,8 @@ export function PresetToggle<T extends string>({
   value,
   onChange,
 }: PresetToggleProps<T>) {
+  const row = useRef<HTMLDivElement>(null);
+
   return (
     <SettingRow label={label}>
       <ToggleGroup
@@ -51,8 +62,11 @@ export function PresetToggle<T extends string>({
         disallowEmptySelection
         onSelectionChange={(keys) => {
           const next = keys.values().next().value;
-          if (typeof next === "string") onChange(next as T);
+          if (typeof next !== "string") return;
+          const box = row.current?.getBoundingClientRect();
+          onChange(next as T, box && { x: box.left + box.width / 2, y: box.top + box.height / 2 });
         }}
+        ref={row}
         selectedKeys={[value]}
         size="sm"
         spacing={0}

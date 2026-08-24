@@ -35,12 +35,6 @@ afterEach(async () => {
   await cleanup();
 });
 
-/** A colour's alpha, however the browser chose to spell the colour. */
-function alphaOf(color: string): number {
-  const channels = color.match(/[\d.]+/g) ?? [];
-  return channels.length >= 4 ? Number(channels[3]) : 1;
-}
-
 /** How far apart two composited colours are, in straight channel distance. */
 function distance(a: string, b: string): number {
   const channels = (color: string) => (color.match(/[\d.]+/g) ?? []).map(Number);
@@ -54,20 +48,24 @@ it("lights the settings close button under the pointer", async () => {
   const close = document.querySelector(".pico-sidebar-close");
   if (!(close instanceof HTMLElement)) throw new Error("the close button is missing");
 
-  const panel = document.querySelector(".pico-sidebar");
-  if (!(panel instanceof HTMLElement)) throw new Error("the panel is missing");
-  const surface = getComputedStyle(panel).backgroundColor;
-
-  // However the browser spells it — a transition still settling leaves this an
-  // interpolated `oklab(0 0 0 / 0)` rather than a plain `rgba(0, 0, 0, 0)`.
-  expect(alphaOf(getComputedStyle(close).backgroundColor)).toBe(0);
+  const title = document.querySelector(".pico-sidebar h2");
+  if (!(title instanceof HTMLElement)) throw new Error("the panel has no title");
+  // Somewhere on the panel that is not the button, so what is measured next is
+  // the button at rest rather than the button the pointer happens to be on.
+  await userEvent.hover(title);
+  await expect.poll(() => close.getAttribute("data-hovered")).toBe(null);
+  const rest = getComputedStyle(close).backgroundColor;
 
   await userEvent.hover(close);
   await expect.poll(() => close.getAttribute("data-hovered")).toBe("true");
 
   // The wash it used to wear was within a percent of the panel it sits on.
-  const hovered = getComputedStyle(close).backgroundColor;
-  expect(distance(hovered, surface)).toBeGreaterThan(0.02);
+  await expect
+    .poll(() => {
+      for (const animation of close.getAnimations()) animation.finish();
+      return distance(getComputedStyle(close).backgroundColor, rest);
+    })
+    .toBeGreaterThan(0.02);
 
   // And the cross turns under the pointer, which is the part that is felt
   // before it is seen.

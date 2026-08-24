@@ -3,12 +3,13 @@ import type { ExportFormat, ExportScale } from "@/features/export/export-image";
 import type { ExportTask } from "@/features/export/use-export";
 import { SettingsSidebar } from "@/features/settings/settings-sidebar";
 import type { Settings } from "@/features/settings/settings";
+import type { RevealOrigin } from "@/lib/cross-fade";
 import { SidebarToggle } from "@/features/settings/sidebar-toggle";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
 
 export type ChromeProps = {
   settings: Settings;
-  onSettingsChange: (patch: Partial<Settings>) => void;
+  onSettingsChange: (patch: Partial<Settings>, origin?: RevealOrigin) => void;
   onLangChange: (lang: LanguageId) => void;
   sidebarOpen: boolean;
   onSidebarOpenChange: (open: boolean) => void;
