@@ -28,7 +28,7 @@ import {
 import type { Settings } from "@/features/settings/settings";
 import { crossFade, type RevealOrigin } from "@/lib/cross-fade";
 import { isThemeLoaded } from "@/lib/shiki";
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "@/components/toast";
 
 const Chrome = lazy(() => import("@/features/chrome"));
@@ -149,7 +149,13 @@ export function App() {
     onDetect: (lang) => void setSettings({ lang }),
   });
 
-  useEffect(() => {
+  // A layout effect, because the browser photographs the page the moment
+  // `crossFade`'s `flushSync` returns and the class this sets is what nearly
+  // every colour on it comes from. React commits layout effects inside a
+  // `flushSync` and merely tends to reach passive ones in time, which is a
+  // difference between a reveal that grows the new mode and one that grows a
+  // picture of the old room and then changes underneath it. See `crossFade`.
+  useLayoutEffect(() => {
     document.documentElement.classList.toggle("dark", settings.mode === "dark");
   }, [settings.mode]);
 

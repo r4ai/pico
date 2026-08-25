@@ -10,6 +10,8 @@ let unmount: (() => Promise<void>) | undefined;
 let started: number;
 /** What the root was carrying at the moment each transition began. */
 let reveals: { marked: string | undefined; x: string; y: string; radius: string }[];
+/** The root's classes the instant each transition's callback returned. */
+let captured: string[];
 let restore: (() => void) | undefined;
 
 beforeEach(async () => {
@@ -24,19 +26,31 @@ beforeEach(async () => {
 
   started = 0;
   reveals = [];
+  captured = [];
   const original = document.startViewTransition.bind(document);
-  document.startViewTransition = (...args) => {
+  document.startViewTransition = (callback) => {
     started++;
     // Read here rather than after: the marker comes off as the transition
-    // finishes, which is well before an assertion could look for it.
+    // finishes, which is well before an assertion could look for it. The
+    // radius is asked of the cascade rather than of the inline style, because
+    // that is where it is worked out; registering the property is what makes
+    // the answer a resolved length instead of the expression that produced it.
     const root = document.documentElement;
+    const style = getComputedStyle(root);
     reveals.push({
       marked: root.dataset.picoReveal,
-      x: root.style.getPropertyValue("--pico-reveal-x"),
-      y: root.style.getPropertyValue("--pico-reveal-y"),
-      radius: root.style.getPropertyValue("--pico-reveal-radius"),
+      x: style.getPropertyValue("--pico-reveal-x"),
+      y: style.getPropertyValue("--pico-reveal-y"),
+      radius: style.getPropertyValue("--pico-reveal-radius"),
     });
-    return original(...args);
+    return original(() => {
+      const result = typeof callback === "function" ? callback() : undefined;
+      // The browser takes the second snapshot the moment this settles, so
+      // whatever the page is not wearing yet is not in the picture the reveal
+      // grows into.
+      captured.push(root.className);
+      return result;
+    });
   };
   restore = () => {
     document.startViewTransition = original;
@@ -142,31 +156,84 @@ it("grows light and dark out of the switch that asked for them", async () => {
   started = 0;
   reveals = [];
 
-  const group = page.getByRole("radiogroup", { name: "Appearance" }).element();
-  if (!(group instanceof HTMLElement)) throw new Error("the appearance row is missing");
-  const box = group.getBoundingClientRect();
+  const button = page
+    .getByRole("radiogroup", { name: "Appearance" })
+    .getByRole("radio", { name: "Dark" })
+    .element();
+  if (!(button instanceof HTMLElement)) throw new Error("the appearance row is missing");
+  // Where the click below lands.
+  const box = button.getBoundingClientRect();
 
   await setAppearance("Dark");
 
   // A change somebody pointed at has somewhere to come from, and arriving from
-  // under the control that asked for it is a thing that happened rather than a
-  // thing that faded.
+  // under the very spot that asked for it is a thing that happened rather than
+  // a thing that faded.
   expect(started).toBe(1);
   const reveal = reveals[0];
   expect(reveal?.marked).toBe("true");
   expect(Number.parseFloat(reveal?.x ?? "")).toBeCloseTo(box.left + box.width / 2, 0);
   expect(Number.parseFloat(reveal?.y ?? "")).toBeCloseTo(box.top + box.height / 2, 0);
+});
 
-  // Far enough to cover the furthest corner of the window, or the last frame
-  // of the reveal is a circle with the old page still around it.
-  const corners = [
-    Math.hypot(reveal ? Number.parseFloat(reveal.x) : 0, reveal ? Number.parseFloat(reveal.y) : 0),
-    Math.hypot(
-      window.innerWidth - (reveal ? Number.parseFloat(reveal.x) : 0),
-      window.innerHeight - (reveal ? Number.parseFloat(reveal.y) : 0),
-    ),
-  ];
-  expect(Number.parseFloat(reveal?.radius ?? "")).toBeGreaterThanOrEqual(Math.max(...corners) - 1);
+it("does not cut a keyboard change in from where a mouse last was", async () => {
+  await setAppearance("Light");
+  reveals = [];
+
+  const group = page.getByRole("radiogroup", { name: "Appearance" });
+  const element = group.element();
+  if (!(element instanceof HTMLElement)) throw new Error("the appearance row is missing");
+  const box = element.getBoundingClientRect();
+
+  // A press that chooses nothing: one dragged off the button before it lands
+  // is a `pointerdown` and then nothing at all, so nothing spends the origin
+  // it left behind.
+  element.dispatchEvent(
+    new PointerEvent("pointerdown", { bubbles: true, clientX: box.left + 4, clientY: box.top + 4 }),
+  );
+
+  const dark = group.getByRole("radio", { name: "Dark" }).element();
+  if (!(dark instanceof HTMLElement)) throw new Error("the dark option is missing");
+  dark.focus();
+
+  const before = exportBackground();
+  await userEvent.keyboard("{Enter}");
+  await settle(before);
+
+  // The middle of the row, and not the corner a mouse was last seen in.
+  expect(reveals.length).toBe(1);
+  expect(Number.parseFloat(reveals[0]?.x ?? "")).toBeCloseTo(box.left + box.width / 2, 0);
+});
+
+it("sizes the circle to the window it is actually crossing", async () => {
+  await setAppearance("Light");
+  reveals = [];
+  await setAppearance("Dark");
+
+  // Far enough to cover the furthest corner, or the last frame of the reveal
+  // is a circle with a ring of the old page still around it.
+  const reveal = reveals[0];
+  if (!reveal) throw new Error("nothing was revealed");
+  const x = Number.parseFloat(reveal.x);
+  const y = Number.parseFloat(reveal.y);
+  const furthest = Math.hypot(
+    Math.max(x, window.innerWidth - x),
+    Math.max(y, window.innerHeight - y),
+  );
+  expect(Number.parseFloat(reveal.radius)).toBeGreaterThanOrEqual(furthest - 1);
+});
+
+it("puts the page in its new mode before the picture of it is taken", async () => {
+  await setAppearance("Light");
+  captured = [];
+  await setAppearance("Dark");
+
+  // The class the whole page is coloured through. Applied a beat late — from a
+  // passive effect, say, which `flushSync` does not reach — the new snapshot
+  // is a picture of the old room, and the reveal sweeps a circle of nothing
+  // across a page that then changes in one frame on its own. Which reads as an
+  // animation that stopped before it got to the edges.
+  expect(captured).toEqual(["dark"]);
 });
 
 it("takes the marker off again, so the next dissolve is a dissolve", async () => {
