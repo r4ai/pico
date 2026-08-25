@@ -50,9 +50,29 @@ it("is one control rather than two buttons that happen to touch", async () => {
   if (!(group instanceof HTMLElement)) throw new Error("the split button is missing");
   expect(group.getAttribute("role")).toBe("group");
 
-  // The seam is decoration: a `separator` announced inside one control would
-  // say it is two.
-  const seam = group.querySelector(".pico-split-seam");
-  expect(seam?.getAttribute("aria-hidden")).toBe("true");
-  expect(seam?.getAttribute("role")).toBeNull();
+  // Touching, which is the whole of what says so: the dock sets everything
+  // else a gap apart.
+  const [save, chevron] = [...group.querySelectorAll("button")].map((button) =>
+    button.getBoundingClientRect(),
+  );
+  if (!save || !chevron) throw new Error("the split button has lost a half");
+  expect(chevron.left - save.right).toBeLessThan(1);
+});
+
+it("is dressed as one of the dock's buttons and not as its own thing", async () => {
+  const group = document.querySelector(".pico-split");
+  if (!(group instanceof HTMLElement)) throw new Error("the split button is missing");
+
+  // Save is the one action nobody needs pointing out, and a surface of its own
+  // in a row of transparent buttons is what pointing it out looks like.
+  const style = getComputedStyle(group);
+  expect(style.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+  expect(style.boxShadow).toBe("none");
+
+  // Down to the corners: a radius the dock does not use anywhere else is the
+  // same difference drawn more quietly.
+  const copy = page.getByRole("button", { name: "Copy" }).element();
+  const save = group.querySelector("button");
+  if (!(copy instanceof HTMLElement) || !save) throw new Error("the dock is missing a button");
+  expect(getComputedStyle(save).borderRadius).toBe(getComputedStyle(copy).borderRadius);
 });
