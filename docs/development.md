@@ -135,7 +135,8 @@ Preview geometry has eight invariants:
   later font or content changes.
 - The CodeMirror gutter stays mounted. Its width is shared with the export
   gutter and derives from the document's line-number digit count, including the
-  9/10 and 99/100 boundaries.
+  9/10 and 99/100 boundaries. It scrolls horizontally with the frame instead
+  of sticking above the settings sidebar.
 - CodeMirror is asked to remeasure on every frame of that transition. It caches
   the document's height and writes it onto the gutter as a `min-height`, and a
   CSS transition changes every line without a DOM mutation, so nothing else
