@@ -223,6 +223,40 @@ it("sizes the circle to the window it is actually crossing", async () => {
   expect(Number.parseFloat(reveal.radius)).toBeGreaterThanOrEqual(furthest - 1);
 });
 
+it("covers every corner before the transition snapshot is released", async () => {
+  await setAppearance("Light");
+
+  const animation = document
+    .getAnimations()
+    .find((candidate) =>
+      candidate.effect instanceof KeyframeEffect
+        ? candidate.effect.getKeyframes().some((keyframe) => "clipPath" in keyframe)
+        : false,
+    );
+  expect(animation).toBeDefined();
+  if (!animation) throw new Error("the reveal animation is missing");
+
+  animation.pause();
+  animation.currentTime = Number(animation.effect?.getComputedTiming().duration) * 0.9;
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  const clipPath = getComputedStyle(
+    document.documentElement,
+    "::view-transition-new(root)",
+  ).clipPath;
+  const radius = Number.parseFloat(clipPath.match(/^circle\(([-\d.]+)px/)?.[1] ?? "");
+  const reveal = reveals.at(-1);
+  const x = Number.parseFloat(reveal?.x ?? "");
+  const y = Number.parseFloat(reveal?.y ?? "");
+  const furthest = Math.hypot(
+    Math.max(x, window.innerWidth - x),
+    Math.max(y, window.innerHeight - y),
+  );
+
+  animation.finish();
+  expect(radius).toBeGreaterThanOrEqual(furthest - 1);
+});
+
 it("puts the page in its new mode before the picture of it is taken", async () => {
   await setAppearance("Light");
   captured = [];
