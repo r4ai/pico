@@ -25,12 +25,11 @@ export type PresetToggleProps<T extends string> = {
   ariaLabelOf?: (option: T) => string;
   value: T;
   /**
-   * @param origin the middle of the row that was pressed, for a change that
-   * looks better arriving from where it was asked for than from nowhere. See
-   * {@link crossFade}. The row rather than the button inside it: React Aria
-   * reports which option was chosen and not what was pressed to choose it, and
-   * at nine millimetres across the difference is not one anybody could point
-   * at.
+   * @param origin the point that was pressed, for a change that looks better
+   * arriving from where it was asked for than from nowhere. See
+   * {@link crossFade}. Chosen from the keyboard there is no such point, and
+   * the middle of the row stands in — the row is the thing the keyboard is on,
+   * and it is nine millimetres across.
    */
   onChange: (value: T, origin: RevealOrigin | undefined) => void;
 };
@@ -54,17 +53,29 @@ export function PresetToggle<T extends string>({
   onChange,
 }: PresetToggleProps<T>) {
   const row = useRef<HTMLDivElement>(null);
+  // Where the press that is about to choose something landed, because React
+  // Aria reports which option was chosen and not what was pressed to choose
+  // it. Spent on the change it belongs to and put back to nothing, so a change
+  // arriving from the keyboard afterwards is not cut in from the last place a
+  // mouse happened to be.
+  const pressed = useRef<RevealOrigin | null>(null);
 
   return (
     <SettingRow label={label}>
       <ToggleGroup
         aria-label={label}
         disallowEmptySelection
+        // Capture, because the button under the pointer stops the press from
+        // bubbling any further than itself.
+        onPointerDownCapture={(event) => {
+          pressed.current = { x: event.clientX, y: event.clientY };
+        }}
         onSelectionChange={(keys) => {
           const next = keys.values().next().value;
           if (typeof next !== "string") return;
-          const box = row.current?.getBoundingClientRect();
-          onChange(next as T, box && { x: box.left + box.width / 2, y: box.top + box.height / 2 });
+          const origin = pressed.current ?? rowCenter(row.current);
+          pressed.current = null;
+          onChange(next as T, origin);
         }}
         ref={row}
         selectedKeys={[value]}
@@ -85,4 +96,10 @@ export function PresetToggle<T extends string>({
       </ToggleGroup>
     </SettingRow>
   );
+}
+
+/** The middle of a row, for a change nobody pointed at. */
+function rowCenter(row: HTMLElement | null): RevealOrigin | undefined {
+  const box = row?.getBoundingClientRect();
+  return box && { x: box.left + box.width / 2, y: box.top + box.height / 2 };
 }

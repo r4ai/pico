@@ -75,6 +75,12 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --ease-glass: cubic-bezier(0.32, 0.72, 0, 1);
+  /* For the reveal, and nothing else. `--ease-glass` is a settling curve: it
+     is at nineteen twentieths of the way in half the time and creeps the rest,
+     which is what a panel arriving at its resting place should do and the
+     opposite of what a wipe crossing a window should. This one is quick off
+     the mark and still travelling when it leaves the screen. */
+  --ease-reveal: cubic-bezier(0.25, 0.6, 0.55, 0.9);
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
@@ -117,7 +123,57 @@
    needs and what a cut cannot have: through `plus-lighter` the two would sum
    inside the circle and light and dark would meet as white. */
 
+/* Registered rather than left as raw text, so the browser resolves the radius
+   below to a real length and refuses anything that is not one. An unregistered
+   custom property is substituted verbatim: a typo, or a `hypot()` an engine
+   does not know, would reach `clip-path` as nonsense and take the whole
+   declaration with it — a reveal clipped to nothing, which is a page that does
+   not change at all. Registered, a value that fails to parse falls back to the
+   initial one and the reveal is merely a plain cut. */
+
+@property --pico-reveal-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --pico-reveal-y {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --pico-reveal-radius {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
 html[data-pico-reveal] {
+  /* How far the circle has to grow: from the point that was pressed to the
+     furthest corner of the snapshot, which is the whole viewport.
+
+     Worked out here rather than handed over from JavaScript, because a number
+     measured at the moment of the press is a number about the window as it was
+     then. A phone that hides its toolbar, a window dragged between two
+     displays, a rotation, a zoom — each leaves that number describing a
+     viewport nobody is looking at any more, and a radius that is short by even
+     a few pixels is a ring of the old page still around the new one when the
+     animation ends. The lengths here are resolved by the browser every time it
+     recalculates style, so the circle is always sized for the window the
+     reveal is actually crossing.
+
+     `lvw` and `lvh` rather than `vw` and `vh`: the large viewport is the one
+     the snapshot covers, including the strip under a mobile toolbar that has
+     yet to retract. Over-reaching is free — the circle is a clip, and there is
+     nothing outside the snapshot to clip in — while falling short is the whole
+     bug. Every engine that has view transitions has `hypot()`; see the
+     registration above for what happens in one that somehow does not. */
+  --pico-reveal-radius: hypot(
+    max(var(--pico-reveal-x), 100lvw - var(--pico-reveal-x)),
+    max(var(--pico-reveal-y), 100lvh - var(--pico-reveal-y))
+  );
+
   &::view-transition-image-pair(root) {
     isolation: auto;
   }
@@ -128,7 +184,10 @@ html[data-pico-reveal] {
   }
 
   &::view-transition-new(root) {
-    animation: pico-reveal 440ms var(--ease-glass);
+    /* `both`, so the last frame is held until the pseudo-elements go rather
+       than reverting to an unclipped snapshot for whatever is left of the
+       frame. */
+    animation: pico-reveal 440ms var(--ease-reveal) both;
     mix-blend-mode: normal;
   }
 }
