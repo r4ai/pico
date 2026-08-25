@@ -1,21 +1,5 @@
 import { flushSync } from "react-dom";
 
-/** Where a change came from, in client coordinates. */
-export type RevealOrigin = {
-  readonly x: number;
-  readonly y: number;
-};
-
-/**
- * Which transition is the current one.
- *
- * Pressing a switch twice inside a fade skips the first transition, whose
- * `finished` then rejects — and its cleanup would take the marker off the
- * second one, which had just put it on. Only the latest change tidies up
- * after itself.
- */
-let latest = 0;
-
 /**
  * Makes a change that only repaints the page, and dissolves into it.
  *
@@ -48,17 +32,8 @@ let latest = 0;
  * did, in one frame. Nor does it delay anything: the DOM is at its final state
  * before the dissolve starts, so a capture taken during one is the picture you
  * asked for, not a blend of two.
- *
- * @param origin where the change was asked for, in client coordinates. Given
- * one, the new page is cut in over the old as a circle growing out of that
- * point rather than dissolved into — light and dark arriving from under the
- * switch that asked for them,
- * which is a thing that happened rather than a thing that faded. Only for a
- * change somebody pointed at: everything else has nowhere to grow from, and a
- * circle out of the middle of the window is a transition with an opinion about
- * where you were looking.
  */
-export function crossFade(change: () => void, origin?: RevealOrigin): void {
+export function crossFade(change: () => void): void {
   if (
     typeof document.startViewTransition !== "function" ||
     window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -67,37 +42,7 @@ export function crossFade(change: () => void, origin?: RevealOrigin): void {
     return;
   }
 
-  const root = document.documentElement;
-  const ticket = ++latest;
-  if (origin) {
-    // Only where the circle starts. How far it has to grow is the distance
-    // from here to the furthest corner, and the stylesheet works that out
-    // from the viewport itself — a number measured here would be a number
-    // measured once, and a window that is not that size any more is a reveal
-    // that stops short of its own corners. See `--pico-reveal-radius`.
-    root.style.setProperty("--pico-reveal-x", `${origin.x}px`);
-    root.style.setProperty("--pico-reveal-y", `${origin.y}px`);
-    root.dataset.picoReveal = "true";
-  } else {
-    // Written rather than assumed absent. A change that interrupts a reveal
-    // skips it, and what the skipped one leaves behind is a marker still on
-    // the root: a dissolve that never asked for an origin would have been cut
-    // in from wherever the reveal it interrupted had started.
-    delete root.dataset.picoReveal;
-  }
-
-  const transition = document.startViewTransition(() => {
+  document.startViewTransition(() => {
     flushSync(change);
   });
-
-  // `finished` rejects when a second change skips this one, which is a thing
-  // somebody pressing a switch twice is entitled to do; either way the marker
-  // has to come off, or the next plain dissolve would be cut in from wherever
-  // this one started. Unless that second change is still running, and put the
-  // marker there itself.
-  void transition.finished
-    .catch(() => {})
-    .finally(() => {
-      if (latest === ticket) delete root.dataset.picoReveal;
-    });
 }

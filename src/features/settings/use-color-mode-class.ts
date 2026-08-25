@@ -8,8 +8,9 @@ import { useLayoutEffect } from "react";
  * `crossFade`'s `flushSync` returns and the class this sets is what nearly
  * every colour on it comes from. React commits layout effects inside a
  * `flushSync` and merely tends to reach passive ones in time, which is a
- * difference between a reveal that grows the new mode and one that grows a
- * picture of the old room and then changes underneath it. See `crossFade`.
+ * difference between a cross-fade that captures the new mode and one that
+ * fades between two pictures of the old room before changing underneath it.
+ * See `crossFade`.
  */
 export function useColorModeClass(mode: ColorMode) {
   useLayoutEffect(() => {

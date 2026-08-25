@@ -6,7 +6,7 @@ import {
 import type { Settings } from "@/features/settings/settings";
 import { shikiThemeOf } from "@/features/settings/theme";
 import type { FontPhase } from "@/features/settings/use-font-ready";
-import { crossFade, type RevealOrigin } from "@/lib/cross-fade";
+import { crossFade } from "@/lib/cross-fade";
 import { isThemeLoaded } from "@/lib/shiki";
 import { useCallback, useEffect, useRef } from "react";
 
@@ -29,7 +29,7 @@ export type SettingsTransition = {
   /** True while the frame's geometry is easing between two settings. */
   readonly animateGeometry: boolean;
   /** Makes a settings change, and decides how it reaches the screen. */
-  readonly changeSettings: (patch: Partial<Settings>, origin?: RevealOrigin) => void;
+  readonly changeSettings: (patch: Partial<Settings>) => void;
   /**
    * Ends the easing early.
    *
@@ -72,7 +72,7 @@ export function useSettingsTransition({
   }, [animatePreviewGeometry, fontPhase]);
 
   const changeSettings = useCallback(
-    (patch: Partial<Settings>, origin?: RevealOrigin) => {
+    (patch: Partial<Settings>) => {
       const keys = Object.keys(patch) as (keyof Settings)[];
       if (keys.some((key) => GEOMETRY_SETTINGS.has(key))) animatePreviewGeometry();
 
@@ -96,7 +96,7 @@ export function useSettingsTransition({
         keys.every((key) => COLOR_SETTINGS.has(key)) &&
         isThemeLoaded(shikiThemeOf(next.theme, next.mode))
       ) {
-        crossFade(() => void apply(patch), origin);
+        crossFade(() => void apply(patch));
         return;
       }
       void apply(patch);

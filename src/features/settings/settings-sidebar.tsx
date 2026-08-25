@@ -25,7 +25,6 @@ import {
 import { usePanelFocus } from "@/features/settings/use-panel-focus";
 import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
 import { useSwipeDismiss } from "@/features/settings/use-swipe-dismiss";
-import type { RevealOrigin } from "@/lib/cross-fade";
 import { warmTheme } from "@/lib/shiki";
 import { MoonIcon, SunIcon, XIcon } from "lucide-react";
 import { useEffect, useEffectEvent, useId, useRef } from "react";
@@ -36,11 +35,7 @@ export type SettingsSidebarProps = {
   open: boolean;
   onClose: () => void;
   settings: Settings;
-  /**
-   * @param origin where the change was asked for, when that is a place. Light
-   * and dark grow out of the switch that asked for them; see {@link crossFade}.
-   */
-  onChange: (patch: Partial<Settings>, origin?: RevealOrigin) => void;
+  onChange: (patch: Partial<Settings>) => void;
 };
 
 /**
@@ -182,7 +177,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                     <MoonIcon className="size-3.5" />
                   )
                 }
-                onChange={(mode, origin) => onChange({ mode }, origin)}
+                onChange={(mode) => onChange({ mode })}
                 options={COLOR_MODES}
                 value={settings.mode}
               />
