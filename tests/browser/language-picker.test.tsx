@@ -45,10 +45,8 @@ async function openPicker(): Promise<void> {
 /**
  * Types a query into the open field.
  *
- * `fill` rather than `userEvent.keyboard`, which focuses the element again for
- * every character — and the field selects its own text when focus arrives, so
- * each keystroke would land on top of the last one and only the final letter
- * would survive.
+ * `fill` keeps tests whose concern is the filtered list concise; the separate
+ * typing regression below exercises the per-character focus behavior.
  */
 async function search(query: string): Promise<void> {
   await page.getByRole("combobox", { name: "Language" }).fill(query);
@@ -109,6 +107,16 @@ it("puts the keyboard on the first match as you type, so Enter takes it", async 
 
   await userEvent.keyboard("{Enter}");
   await expect.poll(lang).toBe("rust");
+});
+
+it("keeps typed characters instead of selecting the query again", async () => {
+  await openPicker();
+
+  await userEvent.keyboard("rust");
+
+  await expect
+    .poll(() => document.querySelector<HTMLInputElement>('input[aria-label="Language"]')?.value)
+    .toBe("rust");
 });
 
 it("leaves the keyboard where the arrow keys put it", async () => {
