@@ -12,7 +12,14 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirro
 // react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { Compartment, EditorState } from "@codemirror/state";
 // react-doctor-disable-next-line react-doctor/prefer-dynamic-import
-import { drawSelection, EditorView, keymap, lineNumbers, placeholder } from "@codemirror/view";
+import {
+  drawSelection,
+  EditorView,
+  gutters,
+  keymap,
+  lineNumbers,
+  placeholder,
+} from "@codemirror/view";
 import { useEffect, useId, useLayoutEffect, useRef } from "react";
 
 /** Long enough to reach for Tab after Escape, short enough not to linger. */
@@ -136,6 +143,7 @@ export function CodeEditor({
           shikiHighlighting(initialHighlight.current),
           theme.of(editorTheme(initialHighlight.current)),
           lineNumbers(),
+          gutters({ fixed: false }),
           placeholderCompartment.of(placeholder(initialPlaceholder.current)),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) latestOnChange.current(update.state.doc.toString());

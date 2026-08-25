@@ -205,6 +205,23 @@ describe("preview geometry", () => {
     expect(widths[3]).toBeGreaterThan(widths[2] ?? Number.POSITIVE_INFINITY);
   });
 
+  it("scrolls line numbers underneath the open sidebar with their frame", async () => {
+    await setCode(`const message = "${"x".repeat(180)}";`);
+    await page.getByRole("switch", { name: "Line numbers" }).click({ force: true });
+    await finishAnimations(liveFrame());
+
+    const canvas = frame(".pico-shell-canvas");
+    const gutter = frame(".pico-editor .cm-gutters");
+
+    canvas.scrollLeft = canvas.scrollWidth;
+    await nextFrame();
+
+    expect(canvas.scrollLeft).toBeGreaterThan(0);
+    expect(gutter.getBoundingClientRect().right).toBeLessThan(
+      frame(".pico-sidebar").getBoundingClientRect().right,
+    );
+  });
+
   it("eases font size and follows a discrete font-family change", async () => {
     const fontSize = page.getByRole("radiogroup", { name: "Size" });
     await fontSize.getByRole("radio", { name: "12" }).click();
