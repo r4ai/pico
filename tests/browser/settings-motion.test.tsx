@@ -124,6 +124,12 @@ it("cross-fades the whole viewport without clipping either snapshot", async () =
 
   expect(keyframes.some((keyframe) => "opacity" in keyframe)).toBe(true);
   expect(keyframes.some((keyframe) => "clipPath" in keyframe)).toBe(false);
+  expect(
+    getComputedStyle(document.documentElement, "::view-transition-old(root)").mixBlendMode,
+  ).toBe("plus-lighter");
+  expect(
+    getComputedStyle(document.documentElement, "::view-transition-new(root)").mixBlendMode,
+  ).toBe("plus-lighter");
 });
 
 it("leaves a change that moves something to its own easing", async () => {

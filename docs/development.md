@@ -161,12 +161,14 @@ Preview geometry has eight invariants:
 
 Changing the theme or the appearance is a view transition rather than a
 transition per colour; see `crossFade`. The whole old snapshot fades out while
-the whole new snapshot fades in. Opacity is the only animated property: there
-is no clip shape, origin or radius whose final pixels can disagree with the
-viewport or with the compositor's last painted frame. The counterpart of a theme pair is
-warmed the moment the settings open, which is what stops the first light-or-dark
-switch of a session being the one switch that snaps; see `warmTheme`. Shiki's token colours are inline styles
-on spans CodeMirror rebuilds, so they have no value to ease from and change in
+the whole new snapshot fades in. Their complementary opacities use additive
+blending, so neither snapshot is favoured by paint order. Opacity is the only
+animated property: there is no clip shape, origin or radius whose final pixels
+can disagree with the viewport or with the compositor's last painted frame. The
+counterpart of a theme pair is warmed the moment the settings open, which is
+what stops the first light-or-dark switch of a session being the one switch that
+snaps; see `warmTheme`. Shiki's token colours are inline styles on spans
+CodeMirror rebuilds, so they have no value to ease from and change in
 one frame whatever the stylesheet says: easing the surfaces alone left dark
 text on a background still going light, and easing the text as well sent it
 through the grey it was crossing. Only a patch that is nothing but colour goes
