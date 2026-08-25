@@ -1,4 +1,3 @@
-import { ButtonGroup } from "@/components/ui/button-group";
 import {
   DropdownMenu,
   DropdownMenuGroup,
@@ -33,11 +32,11 @@ export type SaveSplitButtonProps = {
  * The button itself saves a PNG at the current scale, which is what almost
  * everyone wants; the menu is there for the times it is not.
  *
- * The two halves are drawn as one control — a single tinted surface under
- * both, a hairline where they meet, and hover lighting only the half the
- * pointer is over. Among the dock's ghost buttons the chevron used to read as
- * a fourth action floating beside a word, belonging to nothing in particular.
- * See `.pico-split`.
+ * The two halves are one control, and what says so is that they touch: the
+ * dock sets everything else a gap apart. Nothing else marks them out. Drawn on
+ * a tinted surface of their own, as they were, Save was the only button in a
+ * row of four with a background — which pointed out, of the four, the one
+ * nobody needs pointing out. See `.pico-split`.
  *
  * The chevron stays live while a capture runs. It opens a menu rather than
  * doing anything, the resolution it sets applies to the next capture rather
@@ -52,17 +51,15 @@ export function SaveSplitButton({
   pending,
 }: SaveSplitButtonProps) {
   return (
-    <ButtonGroup className="pico-split">
+    // A group rather than two loose buttons: the chevron belongs to Save, and
+    // nothing else in the dock does.
+    <div className="pico-split" role="group">
       <DockButton busy={busy} onPress={() => onSave("png")}>
         <DockIcon pending={pending}>
           <DownloadIcon data-icon="inline-start" />
         </DockIcon>
         <DockLabel>Save</DockLabel>
       </DockButton>
-      {/* Decorative, and deliberately not a `separator` role: the two halves
-          are one control, and announcing a divider inside it would suggest
-          they are two. */}
-      <span aria-hidden className="pico-split-seam" />
       <DropdownMenuTrigger>
         {/* Named for the button it belongs to rather than for the dock, so
             what it opens is obvious from the name alone. */}
@@ -91,6 +88,6 @@ export function SaveSplitButton({
           <DropdownMenuItem onAction={() => onSave("svg")}>Save as SVG</DropdownMenuItem>
         </DropdownMenu>
       </DropdownMenuTrigger>
-    </ButtonGroup>
+    </div>
   );
 }
