@@ -1,0 +1,25 @@
+/* ---------------------------------------------------------------------------
+   A theme, in sixteen pixels. The background it paints code on, and three bars
+   in the colours it gives keywords, function names and strings — which is what
+   a snippet in that theme mostly is, and the only thing that tells twelve
+   near-black dark themes apart at this size.
+   --------------------------------------------------------------------------- */
+
+.pico-theme-swatch {
+  display: flex;
+  width: 1.375rem;
+  height: 1rem;
+  flex: none;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.pico-theme-swatch > span {
+  height: 2px;
+  border-radius: 1px;
+}

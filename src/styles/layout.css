@@ -1,0 +1,68 @@
+/* ---------------------------------------------------------------------------
+   The settings sidebar. Stays mounted while closed so opening it is a
+   transform, and rides the same spring-like curve as the rest of the chrome.
+
+   Wide enough, and the sidebar takes its own column: the canvas is inset by
+   the width the panel occupies, so opening the settings narrows the picture
+   instead of covering it. Narrow enough, and there is no room to give up, so
+   the panel goes back to being a drawer over a scrim.
+
+   56rem is what "wide enough" costs: the 20rem the inset panel takes, the
+   28rem the narrowest frame is, and the canvas padding either side of it.
+   Below that the column left the frame hanging off the right edge of the
+   window, which is the thing the drawer exists to avoid.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --pico-sidebar-width: 18rem;
+  --pico-sidebar-inset: 0px;
+}
+
+@media (width >= 56rem) {
+  .pico-shell[data-sidebar-open="true"] {
+    --pico-sidebar-inset: calc(var(--pico-sidebar-width) + 2rem);
+  }
+}
+
+.pico-shell-canvas {
+  padding-left: var(--pico-sidebar-inset);
+  transition: padding-left 380ms var(--ease-glass);
+}
+
+/* Centred on the canvas rather than on the window, so the dock moves with the
+   picture it belongs to. */
+
+.pico-shell-dock {
+  position: fixed;
+  bottom: 1.5rem;
+  left: calc(50% + var(--pico-sidebar-inset) / 2);
+  z-index: 20;
+  /* On a phone the dock is wider than the window, and being centred on it put
+     the language field off one edge and the link button off the other. Capped
+     here and allowed to squeeze the field, which is the one control that can
+     give ground: it already truncates, and what it says is also in the URL. */
+  max-width: calc(100vw - 1.5rem);
+  transform: translateX(-50%);
+  transition:
+    left 380ms var(--ease-glass),
+    opacity 220ms var(--ease-glass),
+    translate 220ms var(--ease-glass),
+    visibility 0s;
+}
+
+/* As a drawer, the sidebar covers the dock and the scrim puts it out of reach,
+   but it still peeked out from behind the panel and was still a tab stop.
+   Hiding it settles both: visibility, not just opacity, is what takes it out
+   of the tab order. */
+
+@media (width < 56rem) {
+  .pico-shell[data-sidebar-open="true"] .pico-shell-dock {
+    visibility: hidden;
+    translate: 0 0.75rem;
+    opacity: 0;
+    transition:
+      opacity 220ms var(--ease-glass),
+      translate 220ms var(--ease-glass),
+      visibility 0s 220ms;
+  }
+}

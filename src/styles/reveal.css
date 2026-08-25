@@ -1,0 +1,124 @@
+/* ---------------------------------------------------------------------------
+   Changing the light. A theme or an appearance repaints nearly everything on
+   screen, and doing it in one frame was a jump cut in the middle of an app
+   whose every other change eases.
+
+   A cross-fade of the whole page rather than a transition per property. Shiki's
+   colors are inline styles on spans that CodeMirror throws away and rebuilds,
+   so a token has no value to ease from and changes in one frame whatever a
+   stylesheet says; easing the surfaces around it left dark text sitting on a
+   background that had not gone light yet, and easing the text as well sent it
+   through the exact grey it was crossing. A snapshot dissolving into the next
+   one has neither problem: everything moves together because nothing is being
+   interpolated. See crossFade.
+
+   Same duration and curve as the frame's geometry, so a settings action moves
+   the picture and the room around it as one thing.
+   --------------------------------------------------------------------------- */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+  animation-timing-function: var(--ease-glass);
+}
+
+/* Light and dark arrive from under the switch that asked for them, rather than
+   fading in everywhere at once: a circle of the new page grows out of the
+   control that was pressed, over the old one held still underneath. It is the
+   same two snapshots the dissolve uses — only the shape of the cut is
+   different, and it is the difference between a change that happened and a
+   change that appeared.
+
+   Only for a change somebody pointed at; see `crossFade`. The old snapshot is
+   not animated at all, so what is underneath is the page as it was, whole,
+   until the last frame covers it. The default blending is what a cross-fade
+   needs and what a cut cannot have: through `plus-lighter` the two would sum
+   inside the circle and light and dark would meet as white. */
+
+/* Registered rather than left as raw text, so the browser resolves the radius
+   below to a real length and refuses anything that is not one. An unregistered
+   custom property is substituted verbatim: a typo, or a `hypot()` an engine
+   does not know, would reach `clip-path` as nonsense and take the whole
+   declaration with it — a reveal clipped to nothing, which is a page that does
+   not change at all. Registered, a value that fails to parse falls back to the
+   initial one and the reveal is merely a plain cut. */
+
+@property --pico-reveal-x {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --pico-reveal-y {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --pico-reveal-radius {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+html[data-pico-reveal] {
+  /* How far the circle has to grow: from the point that was pressed to the
+     furthest corner of the snapshot, which is the whole viewport.
+
+     Worked out here rather than handed over from JavaScript, because a number
+     measured at the moment of the press is a number about the window as it was
+     then. A phone that hides its toolbar, a window dragged between two
+     displays, a rotation, a zoom — each leaves that number describing a
+     viewport nobody is looking at any more, and a radius that is short by even
+     a few pixels is a ring of the old page still around the new one when the
+     animation ends. The lengths here are resolved by the browser every time it
+     recalculates style, so the circle is always sized for the window the
+     reveal is actually crossing.
+
+     `lvw` and `lvh` rather than `vw` and `vh`: the large viewport is the one
+     the snapshot covers, including the strip under a mobile toolbar that has
+     yet to retract. Over-reaching is free — the circle is a clip, and there is
+     nothing outside the snapshot to clip in — while falling short is the whole
+     bug. Every engine that has view transitions has `hypot()`; see the
+     registration above for what happens in one that somehow does not. */
+  --pico-reveal-radius: hypot(
+    max(var(--pico-reveal-x), 100lvw - var(--pico-reveal-x)),
+    max(var(--pico-reveal-y), 100lvh - var(--pico-reveal-y))
+  );
+
+  &::view-transition-image-pair(root) {
+    isolation: auto;
+  }
+
+  &::view-transition-old(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  &::view-transition-new(root) {
+    /* `both`, so the last frame is held until the pseudo-elements go rather
+       than reverting to an unclipped snapshot for whatever is left of the
+       frame. The keyframes reach that state before the animation ends: a view
+       transition releases its snapshots at the end, so making the exact last
+       instant the first fully covered one lets the remaining edge jump from
+       the clipped snapshot to the live page without ever painting the complete
+       circle. */
+    animation: pico-reveal 440ms var(--ease-reveal) both;
+    mix-blend-mode: normal;
+  }
+}
+
+@keyframes pico-reveal {
+  from {
+    clip-path: circle(0 at var(--pico-reveal-x) var(--pico-reveal-y));
+  }
+
+  /* Hold a completely covered viewport for the final 44ms. That gives the
+     compositor a terminal frame to paint before View Transition releases its
+     snapshots; the radius itself remains the exact furthest-corner distance,
+     so this behaves the same at every viewport size and pixel density. */
+  90%,
+  to {
+    clip-path: circle(var(--pico-reveal-radius) at var(--pico-reveal-x) var(--pico-reveal-y));
+  }
+}

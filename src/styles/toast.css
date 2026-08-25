@@ -1,0 +1,74 @@
+/* ---------------------------------------------------------------------------
+   What Pico says when something happened away from the control that caused it.
+
+   The same glass as the dock and the panel, at the same corner radius: a toast
+   drawn as a plain card sat on a screen made of nothing else, and its eight
+   pixels of radius against everything else's sixteen was the part that showed.
+   It floats over the picture exactly the way the dock does, so it is made of
+   what the dock is made of.
+
+   sonner is asked for no styling at all rather than overridden. Its own card
+   rules are two attribute selectors deep and its stylesheet is injected at
+   runtime, which is to say after this one — so every override would have had to
+   outrank a selector that always wins ties. `unstyled` leaves it the stacking,
+   the lift and the swipe, which are the things it is here for, and leaves the
+   surface to us.
+   --------------------------------------------------------------------------- */
+
+.pico-toast {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--pico-glass-edge);
+  border-radius: var(--pico-glass-radius);
+  background: var(--pico-glass-tint);
+  box-shadow: var(--pico-glass-shadow);
+  backdrop-filter: blur(24px) saturate(180%);
+  color: var(--foreground);
+  gap: 0.625rem;
+  font-size: 0.8125rem;
+}
+
+/* The icon is the only colour a toast carries, and it is what says which of
+   the three kinds this is before a word of it has been read. Held just off the
+   pure hues so it belongs to the same muted palette as the rest of the chrome,
+   and it is never the only thing saying so — every toast says it in words. */
+
+.pico-toast-icon {
+  display: flex;
+  flex: none;
+  /* Optically centred on the first line of the title rather than on its box. */
+  margin-top: 0.0625rem;
+  color: var(--muted-foreground);
+}
+
+.pico-toast[data-type="success"] .pico-toast-icon {
+  color: light-dark(oklch(0.55 0.13 155), oklch(0.75 0.15 155));
+}
+
+.pico-toast[data-type="warning"] .pico-toast-icon {
+  color: light-dark(oklch(0.6 0.13 75), oklch(0.8 0.14 80));
+}
+
+.pico-toast[data-type="error"] .pico-toast-icon {
+  color: var(--destructive);
+}
+
+.pico-toast-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.pico-toast-title {
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.pico-toast-description {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}

@@ -1,0 +1,30 @@
+@media (prefers-reduced-motion: reduce) {
+  .pico-shell-canvas,
+  .pico-shell-dock,
+  .pico-shell-canvas .pico-frame,
+  .pico-shell-canvas .pico-frame[data-animate-geometry="true"],
+  .pico-frame[data-animate-geometry="true"] .pico-editor .cm-editor .cm-gutters,
+  .pico-sidebar,
+  .pico-sidebar-scrim,
+  .pico-sidebar-toggle {
+    transition-duration: 1ms;
+    /* The delays exist to hold something on screen for the length of a fade
+       there no longer is. Left in place they would keep the dock and the panel
+       visible for another third of a second after they had gone. */
+    transition-delay: 0s;
+  }
+
+  .pico-split-chevron,
+  .pico-sidebar-close svg,
+  .pico-glass-hover {
+    transition-duration: 1ms;
+  }
+
+  .pico-sidebar-close[data-hovered] svg {
+    rotate: none;
+  }
+
+  .pico-icon-arrives {
+    animation-duration: 1ms;
+  }
+}
