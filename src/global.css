@@ -186,7 +186,11 @@ html[data-pico-reveal] {
   &::view-transition-new(root) {
     /* `both`, so the last frame is held until the pseudo-elements go rather
        than reverting to an unclipped snapshot for whatever is left of the
-       frame. */
+       frame. The keyframes reach that state before the animation ends: a view
+       transition releases its snapshots at the end, so making the exact last
+       instant the first fully covered one lets the remaining edge jump from
+       the clipped snapshot to the live page without ever painting the complete
+       circle. */
     animation: pico-reveal 440ms var(--ease-reveal) both;
     mix-blend-mode: normal;
   }
@@ -197,6 +201,11 @@ html[data-pico-reveal] {
     clip-path: circle(0 at var(--pico-reveal-x) var(--pico-reveal-y));
   }
 
+  /* Hold a completely covered viewport for the final 44ms. That gives the
+     compositor a terminal frame to paint before View Transition releases its
+     snapshots; the radius itself remains the exact furthest-corner distance,
+     so this behaves the same at every viewport size and pixel density. */
+  90%,
   to {
     clip-path: circle(var(--pico-reveal-radius) at var(--pico-reveal-x) var(--pico-reveal-y));
   }
