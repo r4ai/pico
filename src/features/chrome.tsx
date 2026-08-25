@@ -1,28 +1,8 @@
-import type { LanguageId } from "@/features/editor/language";
-import type { ExportFormat, ExportScale } from "@/features/export/export-image";
-import type { ExportTask } from "@/features/export/use-export";
+import { useExportActions, useSettingsControl } from "@/features/chrome-context";
 import { SettingsSidebar } from "@/features/settings/settings-sidebar";
-import type { Settings } from "@/features/settings/settings";
-import type { RevealOrigin } from "@/lib/cross-fade";
 import { SidebarToggle } from "@/features/settings/sidebar-toggle";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
 import { I18nProvider } from "react-aria-components";
-
-export type ChromeProps = {
-  settings: Settings;
-  onSettingsChange: (patch: Partial<Settings>, origin?: RevealOrigin) => void;
-  onLangChange: (lang: LanguageId) => void;
-  sidebarOpen: boolean;
-  onSidebarOpenChange: (open: boolean) => void;
-  scale: ExportScale;
-  onScaleChange: (scale: ExportScale) => void;
-  onCopy: () => void;
-  onSave: (format: ExportFormat) => void;
-  onCopyLink: () => void;
-  running: ExportTask | undefined;
-  copied: boolean;
-  linkCopied: boolean;
-};
 
 /**
  * Everything on screen that is not the picture.
@@ -35,22 +15,17 @@ export type ChromeProps = {
  * animating anyway.
  *
  * Both surfaces are `position: fixed`, so arriving late moves nothing.
+ *
+ * What it needs comes from context rather than from props; see
+ * {@link SettingsControlContext}. This component takes none, which is what
+ * makes it the seam it is: everything below is reached from here, and nothing
+ * above has to name what any of it wants.
  */
-export default function Chrome({
-  settings,
-  onSettingsChange,
-  onLangChange,
-  sidebarOpen,
-  onSidebarOpenChange,
-  scale,
-  onScaleChange,
-  onCopy,
-  onSave,
-  onCopyLink,
-  running,
-  copied,
-  linkCopied,
-}: ChromeProps) {
+export default function Chrome() {
+  const { settings, changeSettings, chooseLanguage, sidebarOpen, setSidebarOpen } =
+    useSettingsControl();
+  const { scale, setScale, copy, save, copyLink, running, copied, linkCopied } = useExportActions();
+
   return (
     /* React Aria names its own controls — the button that opens a picker, what
        a list of options is called — and it names them in the browser's
@@ -65,20 +40,20 @@ export default function Chrome({
           copied={copied}
           lang={settings.lang}
           linkCopied={linkCopied}
-          onCopy={onCopy}
-          onCopyLink={onCopyLink}
-          onLangChange={onLangChange}
-          onSave={onSave}
-          onScaleChange={onScaleChange}
+          onCopy={copy}
+          onCopyLink={copyLink}
+          onLangChange={chooseLanguage}
+          onSave={save}
+          onScaleChange={setScale}
           running={running}
           scale={scale}
         />
       </div>
 
-      <SidebarToggle hidden={sidebarOpen} onOpen={() => onSidebarOpenChange(true)} />
+      <SidebarToggle hidden={sidebarOpen} onOpen={() => setSidebarOpen(true)} />
       <SettingsSidebar
-        onChange={onSettingsChange}
-        onClose={() => onSidebarOpenChange(false)}
+        onChange={changeSettings}
+        onClose={() => setSidebarOpen(false)}
         open={sidebarOpen}
         settings={settings}
       />
