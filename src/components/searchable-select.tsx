@@ -221,8 +221,8 @@ function ElasticField({ adornment, className, placeholder, selectedLabel }: Elas
       )}
       onBlur={() => setFocused(false)}
       onFocus={(event) => {
+        if (!focused) event.target.select();
         setFocused(true);
-        event.target.select();
       }}
       placeholder={placeholder}
       ref={fieldRef}
