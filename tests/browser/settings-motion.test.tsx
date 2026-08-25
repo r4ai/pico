@@ -176,6 +176,35 @@ it("grows light and dark out of the switch that asked for them", async () => {
   expect(Number.parseFloat(reveal?.y ?? "")).toBeCloseTo(box.top + box.height / 2, 0);
 });
 
+it("does not cut a keyboard change in from where a mouse last was", async () => {
+  await setAppearance("Light");
+  reveals = [];
+
+  const group = page.getByRole("radiogroup", { name: "Appearance" });
+  const element = group.element();
+  if (!(element instanceof HTMLElement)) throw new Error("the appearance row is missing");
+  const box = element.getBoundingClientRect();
+
+  // A press that chooses nothing: one dragged off the button before it lands
+  // is a `pointerdown` and then nothing at all, so nothing spends the origin
+  // it left behind.
+  element.dispatchEvent(
+    new PointerEvent("pointerdown", { bubbles: true, clientX: box.left + 4, clientY: box.top + 4 }),
+  );
+
+  const dark = group.getByRole("radio", { name: "Dark" }).element();
+  if (!(dark instanceof HTMLElement)) throw new Error("the dark option is missing");
+  dark.focus();
+
+  const before = exportBackground();
+  await userEvent.keyboard("{Enter}");
+  await settle(before);
+
+  // The middle of the row, and not the corner a mouse was last seen in.
+  expect(reveals.length).toBe(1);
+  expect(Number.parseFloat(reveals[0]?.x ?? "")).toBeCloseTo(box.left + box.width / 2, 0);
+});
+
 it("sizes the circle to the window it is actually crossing", async () => {
   await setAppearance("Light");
   reveals = [];

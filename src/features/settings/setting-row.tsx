@@ -53,53 +53,64 @@ export function PresetToggle<T extends string>({
   onChange,
 }: PresetToggleProps<T>) {
   const row = useRef<HTMLDivElement>(null);
-  // Where the press that is about to choose something landed, because React
-  // Aria reports which option was chosen and not what was pressed to choose
-  // it. Spent on the change it belongs to and put back to nothing, so a change
-  // arriving from the keyboard afterwards is not cut in from the last place a
-  // mouse happened to be.
+  // Where the last press in this row landed, because React Aria reports which
+  // option was chosen and not what was pressed to choose it.
+  //
+  // Not every press chooses something — one dragged off the button before it
+  // lands chooses nothing at all — so spending this on the next change and
+  // putting it back is not enough on its own. A key clears it as well, and
+  // between them a change made from the keyboard can never be cut in from the
+  // last place a mouse happened to be.
   const pressed = useRef<RevealOrigin | null>(null);
 
   return (
     <SettingRow label={label}>
-      <ToggleGroup
-        aria-label={label}
-        disallowEmptySelection
-        // Capture, because the button under the pointer stops the press from
-        // bubbling any further than itself.
+      {/* Watched from here rather than from the group, which is a React Aria
+          component and forwards some DOM events and not others — and in the
+          capture phase, because the button under the pointer stops both from
+          getting any further than itself. */}
+      <div
+        onKeyDownCapture={() => {
+          pressed.current = null;
+        }}
         onPointerDownCapture={(event) => {
           pressed.current = { x: event.clientX, y: event.clientY };
         }}
-        onSelectionChange={(keys) => {
-          const next = keys.values().next().value;
-          if (typeof next !== "string") return;
-          const origin = pressed.current ?? rowCenter(row.current);
-          pressed.current = null;
-          onChange(next as T, origin);
-        }}
-        ref={row}
-        selectedKeys={[value]}
-        size="sm"
-        spacing={0}
-        variant="outline"
       >
-        {options.map((option) => (
-          <ToggleGroupItem
-            aria-label={ariaLabelOf?.(option)}
-            className="pico-preset-item min-w-9 px-2 text-xs"
-            id={option}
-            key={option}
-          >
-            {labelOf?.(option) ?? option}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+        <ToggleGroup
+          aria-label={label}
+          disallowEmptySelection
+          onSelectionChange={(keys) => {
+            const next = keys.values().next().value;
+            if (typeof next !== "string") return;
+            const origin = pressed.current ?? middleOf(row.current);
+            pressed.current = null;
+            onChange(next as T, origin);
+          }}
+          ref={row}
+          selectedKeys={[value]}
+          size="sm"
+          spacing={0}
+          variant="outline"
+        >
+          {options.map((option) => (
+            <ToggleGroupItem
+              aria-label={ariaLabelOf?.(option)}
+              className="pico-preset-item min-w-9 px-2 text-xs"
+              id={option}
+              key={option}
+            >
+              {labelOf?.(option) ?? option}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
     </SettingRow>
   );
 }
 
-/** The middle of a row, for a change nobody pointed at. */
-function rowCenter(row: HTMLElement | null): RevealOrigin | undefined {
+/** The middle of the row of options, for a change nobody pointed at. */
+function middleOf(row: HTMLElement | null): RevealOrigin | undefined {
   const box = row?.getBoundingClientRect();
   return box && { x: box.left + box.width / 2, y: box.top + box.height / 2 };
 }
