@@ -1,0 +1,147 @@
+/* ---------------------------------------------------------------------------
+   The code frame. Shared by the live editor and the hidden export node so both
+   render at exactly the same size; see CodeFrame.
+   --------------------------------------------------------------------------- */
+
+/* The room the canvas keeps around the picture, and the narrowest a frame is
+   ever drawn — one pair of numbers, because the second is derived from the
+   first. A short snippet in a small frame looks cramped, so the frame is held
+   at 28rem; on a phone 28rem is wider than the window, and the picture that
+   came up was clipped at both edges with its corners and its shadow off the
+   screen. `min()` gives way at exactly the width where holding it would cost
+   more than it buys.
+
+   Read by the live frame and by the export node alike, so both are still the
+   same size to the pixel and what you see is what you save. A picture composed
+   on a phone comes out narrower than one composed on a desktop, which is the
+   honest answer: it is the frame that fits the screen it was made on. */
+
+:root {
+  --pico-canvas-pad: 2.5rem;
+  --pico-frame-min-width: min(28rem, calc(100vw - 2 * var(--pico-canvas-pad)));
+}
+
+@media (width < 30rem) {
+  :root {
+    --pico-canvas-pad: 1rem;
+  }
+}
+
+/* Room below for the dock, which floats over the canvas rather than in it. */
+
+.pico-canvas-stage {
+  padding: var(--pico-canvas-pad);
+  padding-bottom: 8rem;
+}
+
+.pico-frame {
+  --pico-gutter-width: max(
+    var(--pico-gutter-min-width),
+    calc(var(--pico-line-number-digits) * 1ch + var(--pico-gutter-gap))
+  );
+
+  width: max-content;
+  min-width: var(--pico-frame-min-width);
+  padding: var(--pico-pad);
+  border-radius: var(--pico-radius);
+  background: var(--pico-bg);
+  color: var(--pico-fg);
+  box-shadow: var(--pico-shadow);
+  font-family: var(--pico-font-family);
+  font-size: var(--pico-font-size);
+  line-height: var(--pico-line-height);
+  font-variant-ligatures: none;
+  tab-size: 2;
+}
+
+/* Corners and shadow always ease between presets. Geometry joins that motion
+   only while a settings action is changing the live preview: the export node
+   stays at the final computed values so a capture can never contain an
+   intermediate frame. */
+
+.pico-shell-canvas .pico-frame {
+  transition:
+    opacity 260ms var(--ease-glass),
+    border-radius 260ms var(--ease-glass),
+    box-shadow 260ms var(--ease-glass);
+}
+
+.pico-shell-canvas .pico-frame[data-animate-geometry="true"] {
+  overflow: clip;
+  transition:
+    opacity 260ms var(--ease-glass),
+    width var(--pico-geometry-duration) var(--ease-glass),
+    padding var(--pico-geometry-duration) var(--ease-glass),
+    font-size var(--pico-geometry-duration) var(--ease-glass),
+    border-radius var(--pico-geometry-duration) var(--ease-glass),
+    box-shadow var(--pico-geometry-duration) var(--ease-glass);
+}
+
+/* Held back until the code can be painted in its own font. A frame that comes
+   up in the system's monospace and then reflows into Geist Mono moves the box,
+   the code and the shadow all at once, under someone who has just arrived;
+   waiting a tenth of a second and fading in costs nothing anyone can perceive.
+   If the font misses the deadline the frame appears in the fallback anyway and
+   eases into the real metrics when they land. See useFontReady. */
+
+.pico-shell[data-font-phase="held"] .pico-shell-canvas .pico-frame {
+  opacity: 0;
+}
+
+/* The static rendering used for export. */
+
+.pico-code {
+  display: flex;
+  align-items: flex-start;
+}
+
+.pico-gutter {
+  flex: none;
+  width: var(--pico-gutter-width);
+  padding-right: var(--pico-gutter-gap);
+  color: var(--pico-line-number);
+  text-align: right;
+}
+
+.pico-lines {
+  white-space: pre;
+}
+
+.pico-line {
+  min-height: 1lh;
+}
+
+/* What an empty frame says before there is anything in it. The same wash of
+   the frame's foreground the editor's own placeholder uses, so the swap from
+   one to the other is invisible; see createEditorTheme for why it is 70%.
+
+   `pointer-events: none` for the same reason CodeMirror's has it: the words
+   are an invitation, not something to select. */
+
+.pico-placeholder {
+  color: color-mix(in srgb, var(--pico-fg) 70%, transparent);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Laid out inside a zero-size clip: html-to-image needs real computed styles,
+   while the browser must never count this second copy toward page overflow.
+   Only the stage clips — the captured node stays in normal flow, because a
+   node positioned or clipped itself is also positioned or clipped in the SVG. */
+
+.pico-export-stage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: clip;
+  pointer-events: none;
+}
+
+/* The padding gives the drop shadow room so the image does not clip it. */
+
+.pico-export-host {
+  width: max-content;
+  padding: var(--pico-shadow-room);
+}

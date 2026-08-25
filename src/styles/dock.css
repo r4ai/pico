@@ -1,0 +1,56 @@
+/* ---------------------------------------------------------------------------
+   The split button. Save and the menu beside it are two buttons and one
+   control, and among the dock's ghost buttons they did not look like it — the
+   chevron read as a fourth action floating next to a word. A tinted surface
+   under both halves and a hairline where they meet is what says they belong
+   together; hover still lights only the half the pointer is over, so which of
+   the two is about to be pressed is never in doubt.
+
+   The radius is the one the buttons themselves take inside a group, so the
+   surface ends exactly where they do.
+   --------------------------------------------------------------------------- */
+
+/* Save and its chevron. Nothing is drawn here at all: the two halves are the
+   dock's own ghost buttons, and what says they are one control is that they
+   touch, in a row where everything else is a gap apart.
+
+   They used to sit on a tinted surface with a hairline down the middle, which
+   in a row of four transparent buttons made Save the only one with a
+   background — a frame around the one action nobody needs pointing out, and
+   the only thing in the dock drawn to a different recipe than the rest. */
+
+.pico-split {
+  display: flex;
+  align-items: center;
+}
+
+/* Turned over rather than swapped. The menu opens upwards, and a chevron still
+   pointing up while the list is above it is pointing at nothing. */
+
+.pico-split-chevron {
+  transition: rotate 200ms var(--ease-glass);
+}
+
+.pico-split [aria-expanded="true"] .pico-split-chevron {
+  rotate: 180deg;
+}
+
+/* The tick a dock button wears for a moment after it did what it was asked. It
+   arrives rather than appearing: at sixteen pixels, a swap with no movement at
+   all reads as a rendering glitch. */
+
+@keyframes pico-icon-arrives {
+  from {
+    scale: 0.55;
+    opacity: 0;
+  }
+
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+.pico-icon-arrives {
+  animation: pico-icon-arrives 240ms var(--ease-glass) both;
+}

@@ -1,0 +1,47 @@
+/* ---------------------------------------------------------------------------
+   Liquid glass. Blur behind the surface, a hairline highlight along the top
+   inside edge where light would catch, and a soft shadow to lift it off the
+   canvas.
+   --------------------------------------------------------------------------- */
+
+/* On the root rather than on the class, because the toaster is glass too and
+   is not a `.pico-glass` — sonner owns that element's position, its width and
+   the transform it arrives on, and a class that also declares those would be
+   fighting it. Sharing the tokens is what keeps the surfaces one material. */
+
+:root {
+  /* Opaque enough to read against a picture. The dock floats over the code
+     itself, and at the tint this started on the snippet showed through the
+     labels and competed with them. Enough light still passes for the surface
+     to read as glass rather than as a card. */
+  --pico-glass-tint: light-dark(oklch(1 0 0 / 82%), oklch(0.3 0 0 / 80%));
+  --pico-glass-edge: light-dark(oklch(0 0 0 / 8%), oklch(1 0 0 / 10%));
+  --pico-glass-sheen: light-dark(oklch(1 0 0 / 70%), oklch(1 0 0 / 12%));
+  --pico-glass-radius: 1rem;
+  --pico-glass-shadow:
+    inset 0 1px 0 0 var(--pico-glass-sheen), 0 1px 2px oklch(0 0 0 / 10%),
+    0 12px 32px oklch(0 0 0 / 18%);
+}
+
+.pico-glass {
+  position: relative;
+  border: 1px solid var(--pico-glass-edge);
+  border-radius: var(--pico-glass-radius);
+  background: var(--pico-glass-tint);
+  box-shadow: var(--pico-glass-shadow);
+  /* Unprefixed only. Written with `-webkit-backdrop-filter` after it, the
+     prefixed declaration won the cascade and the minifier collapsed the pair
+     onto it — and Chrome and Firefox do not implement that spelling, so the
+     glass had no blur in either of them and the code underneath the dock read
+     straight through the labels. The build adds whatever prefixes its targets
+     actually need. */
+  backdrop-filter: blur(24px) saturate(180%);
+}
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}

@@ -1,0 +1,145 @@
+.pico-sidebar {
+  position: fixed;
+  top: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 30;
+  display: flex;
+  width: var(--pico-sidebar-width);
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateX(calc(-100% - 1.5rem));
+  opacity: 0;
+  transition:
+    transform 380ms var(--ease-glass),
+    opacity 220ms var(--ease-glass);
+}
+
+.pico-sidebar[data-open="true"] {
+  transform: translateX(var(--pico-drawer-offset, 0px));
+  opacity: 1;
+}
+
+/* Under a finger the panel is written to directly rather than transitioned to,
+   which is what makes it a sheet being pushed instead of a box being sent
+   somewhere. The offset the drag leaves behind is the same one the closed
+   state uses, so when a drag ends in a dismissal the transform React writes is
+   the one already running and the panel simply keeps going.
+
+   See useSwipeDismiss. */
+
+.pico-sidebar[data-dragging="true"],
+.pico-sidebar-scrim[data-dragging="true"] {
+  transition: none;
+}
+
+/* pan-y and not `preventDefault`: the browser keeps the vertical scrolling the
+   settings column needs and hands over the horizontal pans, which is what lets
+   a drag start inside a list of settings without either gesture having to
+   guess. Only where the panel is a drawer — in its own column there is nothing
+   to push it off. */
+
+@media (width < 56rem) {
+  .pico-sidebar {
+    touch-action: pan-y;
+  }
+}
+
+/* Everything the panel holds, in one box so that `inert` can go on it rather
+   than on the panel. React Aria hides everything outside an open popover and
+   puts back what it found on close — and what it puts back is not what React
+   last rendered, so an `inert` written to the panel came off the first time
+   the language picker closed and Tab walked into a panel that was still shut.
+   It never reaches this far down; the canvas keeps its own `inert` one level
+   in for the same reason. */
+
+.pico-sidebar-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+/* Only ever seen in drawer mode: where the sidebar has its own column there is
+   nothing behind it to dismiss. */
+
+.pico-sidebar-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: oklch(0 0 0 / 52%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms var(--ease-glass);
+}
+
+/* The scrim thins out with the drag, so what is behind the panel comes back as
+   it goes rather than all at once when it has gone. */
+
+.pico-sidebar-scrim[data-open="true"] {
+  opacity: var(--pico-drawer-progress, 1);
+  pointer-events: auto;
+}
+
+@media (width >= 56rem) {
+  .pico-sidebar-scrim {
+    display: none;
+  }
+}
+
+/* As a drawer the panel lies on top of the picture rather than beside it, and
+   a snippet reading through a column of settings is not glass, it is a mess.
+   It gives up most of its translucency for the widths where it overlaps. */
+
+@media (width < 56rem) {
+  .pico-sidebar {
+    --pico-glass-tint: light-dark(oklch(1 0 0 / 94%), oklch(0.26 0 0 / 94%));
+  }
+}
+
+.pico-sidebar-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 20;
+  transition:
+    transform 380ms var(--ease-glass),
+    opacity 220ms var(--ease-glass),
+    visibility 0s;
+}
+
+/* Faded out and out of the tab order, the same way the dock goes: an invisible
+   button that Tab still lands on is a stop that leads nowhere, and pressing it
+   asks for settings that are already open.
+
+   visibility rather than `inert`, which React Aria writes to the top of the
+   page itself while a popover is open and restores on close — restoring
+   whatever it found, which is not what React last rendered. CSS is the one
+   mechanism nothing else here reaches for. */
+
+.pico-sidebar-toggle[data-hidden="true"] {
+  visibility: hidden;
+  transform: translateX(-0.5rem);
+  opacity: 0;
+  transition:
+    transform 380ms var(--ease-glass),
+    opacity 220ms var(--ease-glass),
+    visibility 0s 380ms;
+}
+
+/* The chrome rises into place on load. Only the chrome: the picture is what
+   someone came for and is already the right size, so it is simply there.
+   @starting-style rather than a keyframe animation, so the same transition
+   carries both the arrival and every later move, and nothing is left holding
+   an animated value that would fight the sidebar's open and closed states. */
+
+@starting-style {
+  .pico-shell-dock {
+    translate: 0 0.75rem;
+    opacity: 0;
+  }
+
+  .pico-sidebar-toggle {
+    opacity: 0;
+  }
+}

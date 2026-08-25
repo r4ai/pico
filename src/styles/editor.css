@@ -1,0 +1,77 @@
+/* The live editor, matched to the static rendering above.
+
+   Every metric here is deliberately CSS rather than a CodeMirror theme: the
+   theme cannot be applied until Shiki has loaded, and a font, size or line
+   height arriving that late relayouts every line the reader is already
+   looking at. The theme is left with nothing but colors.
+
+   The extra .cm-editor in each selector is what outranks CodeMirror's own
+   base theme, which sets a monospace family and a 1.4 line height of its own. */
+
+:where(.pico-editor .cm-editor) {
+  --pico-cursor-color: var(--pico-fg);
+}
+
+.pico-editor .cm-editor {
+  width: max-content;
+  min-width: 100%;
+  background: transparent;
+  color: var(--pico-fg);
+  font-family: var(--pico-font-family);
+  font-size: inherit;
+}
+
+.pico-editor .cm-editor .cm-scroller {
+  overflow: visible;
+  font-family: inherit;
+  line-height: var(--pico-line-height);
+}
+
+.pico-editor .cm-editor .cm-content,
+.pico-editor .cm-editor .cm-line {
+  padding: 0;
+}
+
+.pico-editor .cm-editor .cm-content {
+  caret-color: var(--pico-cursor-color);
+}
+
+.pico-editor .cm-editor .cm-cursor,
+.pico-editor .cm-editor .cm-dropCursor {
+  border-left-color: var(--pico-cursor-color);
+}
+
+.pico-editor .cm-editor .cm-gutters {
+  box-sizing: border-box;
+  width: var(--pico-gutter-width);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pico-line-number);
+  overflow: clip;
+  opacity: 1;
+  flex: none;
+}
+
+.pico-editor[data-line-numbers="false"] .cm-editor .cm-gutters {
+  width: 0;
+  opacity: 0;
+}
+
+.pico-frame[data-animate-geometry="true"] .pico-editor .cm-editor .cm-gutters {
+  transition:
+    width var(--pico-geometry-duration) var(--ease-glass),
+    opacity var(--pico-geometry-duration) var(--ease-glass);
+}
+
+.pico-editor .cm-editor .cm-lineNumbers {
+  width: var(--pico-gutter-width);
+}
+
+.pico-editor .cm-editor .cm-lineNumbers .cm-gutterElement {
+  width: 100%;
+  min-width: 0;
+  padding: 0 var(--pico-gutter-gap) 0 0;
+  text-align: right;
+}

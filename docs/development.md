@@ -260,15 +260,37 @@ block CI.
 
 ## Architecture
 
-| Path                     | Responsibility                                   |
-| ------------------------ | ------------------------------------------------ |
-| `src/features/editor/`   | Editing, language detection, and highlighting    |
-| `src/features/preview/`  | The visible code frame and export rendering      |
-| `src/features/settings/` | Appearance settings and URL synchronization      |
-| `src/features/export/`   | PNG/SVG generation and font embedding            |
-| `src/features/toolbar/`  | Language selection, copy, save, and link actions |
-| `src/components/`        | UI components shared across features             |
-| `public/fonts/`          | The UDEV Gothic subset and its license           |
+| Path                      | Responsibility                                   |
+| ------------------------- | ------------------------------------------------ |
+| `src/app.tsx`             | Wiring, and nothing else                         |
+| `src/features/canvas.tsx` | The picture and the room it hangs in             |
+| `src/features/chrome.tsx` | Everything on screen that is not the picture     |
+| `src/features/editor/`    | Editing, language detection, and highlighting    |
+| `src/features/preview/`   | The visible code frame and export rendering      |
+| `src/features/settings/`  | Appearance settings and URL synchronization      |
+| `src/features/export/`    | PNG/SVG generation and font embedding            |
+| `src/features/toolbar/`   | Language selection, copy, save, and link actions |
+| `src/components/`         | UI components shared across features             |
+| `src/styles/`             | The stylesheet, one file per surface             |
+| `public/fonts/`           | The UDEV Gothic subset and its license           |
+
+Every rule about what happens when something changes belongs to the hook that
+owns it — `useSettingsTransition` for how a settings change reaches the screen,
+`useLanguageChoice` for who decides the language, `useFrameColors` for what the
+frame is painted with. `app.tsx` says which of them are on and nothing more, so
+a new rule is a new file rather than another branch in the one everything meets
+in.
+
+`Chrome` takes what it needs from context rather than from props; see
+`chrome-context.ts`. Two contexts, because the export actions close over the
+code and are new on every keystroke while the settings are not, and nothing
+that only reads the settings should re-render for typing. They stop at the
+chrome: the picture is handed its props, being one component with one caller.
+
+`global.css` is imports alone. Each part of the stylesheet is a file under
+`src/styles/` named for the surface it dresses, and the import order is the
+order the cascade reads them in — `reduced-motion.css` names selectors from
+nearly every file above it and therefore comes last.
 
 Pico synchronizes the code and appearance settings to URL query parameters.
 Shared links compress the code into the URL, so the application does not need server-side storage.
