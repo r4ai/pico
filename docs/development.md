@@ -132,7 +132,10 @@ Preview geometry has eight invariants:
   placeholder, and it replaces the single empty line rather than joining it.
 - The off-screen export node is always at the final settings. Its frame is
   synchronously measured as a border box before paint; `ResizeObserver` follows
-  later font or content changes.
+  later font or content changes. The node is laid out inside a fixed zero-size
+  clip rather than moved a fixed distance off-screen, so code of any width or
+  height cannot grow the page back around it. The page stays fixed to the
+  viewport and the canvas owns both scroll axes.
 - The CodeMirror gutter stays mounted. Its width is shared with the export
   gutter and derives from the document's line-number digit count, including the
   9/10 and 99/100 boundaries. It scrolls horizontally with the frame instead
