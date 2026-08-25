@@ -57,6 +57,23 @@ function describe(entry: LayoutShiftEntry): string[] {
   });
 }
 
+/**
+ * Whether a shift is nothing but a popover keeping itself on screen.
+ *
+ * An open list is `position: absolute` over the page and gets shorter as it is
+ * filtered, so React Aria moves it to keep it against the field it belongs to.
+ * The browser scores that as a shift because the box did move, and it is the
+ * one kind that moves nothing else: what these tests are about is whether the
+ * page underneath it moved, which is a different question.
+ */
+function isPopoverKeepingUp(entry: LayoutShiftEntry): boolean {
+  const nodes = entry.sources.map((source) => source.node);
+  return (
+    nodes.length > 0 &&
+    nodes.every((node) => node instanceof Element && node.closest('[data-slot="combobox-content"]'))
+  );
+}
+
 /** What moved, for a failure that has to be actionable. */
 function report(): string {
   return shifts.map((shift) => `${shift.value.toFixed(4)} ${shift.sources.join(", ")}`).join("\n");
@@ -83,6 +100,7 @@ beforeEach(async () => {
   observer = new PerformanceObserver((list) => {
     for (const entry of list.getEntries() as LayoutShiftEntry[]) {
       if (entry.hadRecentInput || entry.value < NOISE) continue;
+      if (isPopoverKeepingUp(entry)) continue;
       shifts.push({ value: entry.value, sources: describe(entry) });
     }
   });
@@ -184,5 +202,9 @@ it("does not move the dock while a language is picked", async () => {
   await expect.poll(() => new URLSearchParams(window.location.search).get("lang")).toBe("rust");
   await new Promise((resolve) => setTimeout(resolve, 500));
 
+  // The dock itself does re-centre: the language field is as wide as the text
+  // it shows, "Rust" is not "TSX", and the dock is centred on the canvas. That
+  // is the design, it is `position: fixed`, and it moves nothing else — which
+  // is what this is watching for.
   expect(report()).toBe("");
 });

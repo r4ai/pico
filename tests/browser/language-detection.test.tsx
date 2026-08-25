@@ -14,6 +14,9 @@ import { cleanup, render } from "vitest-browser-react/pure";
  */
 
 let unmount: (() => Promise<void>) | undefined;
+/** Every worker built since this test started, by the URL it was built from. */
+let workers: string[];
+let realWorker: typeof Worker | undefined;
 
 /** Long enough to cover the settle, the worker starting, and the guess itself. */
 const DETECTION_WINDOW_MS = 4000;
@@ -39,6 +42,17 @@ class Circle:
 beforeEach(async () => {
   window.history.replaceState(null, "", window.location.pathname);
   window.localStorage.clear();
+
+  // Before the first render, because the detector builds its worker once for
+  // the lifetime of the page and every test here shares one.
+  workers = [];
+  realWorker = window.Worker;
+  window.Worker = class extends realWorker {
+    constructor(url: string | URL, options?: WorkerOptions) {
+      workers.push(String(url));
+      super(url, options);
+    }
+  };
   const rendered = await render(
     <NuqsAdapter>
       <App />
@@ -49,6 +63,8 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  if (realWorker) window.Worker = realWorker;
+  realWorker = undefined;
   await unmount?.();
   unmount = undefined;
   await cleanup();
@@ -69,28 +85,21 @@ function language(): string | null {
   return new URLSearchParams(window.location.search).get("lang");
 }
 
-it("guesses the language from a pasted snippet", async () => {
+it("guesses the language from a pasted snippet, in a worker", async () => {
   await paste(PYTHON);
   await expect.poll(language, { timeout: DETECTION_WINDOW_MS }).toBe("python");
-});
 
-it("blocks nothing on the thread that draws while it guesses", async () => {
-  const tasks: number[] = [];
-  const observer = new PerformanceObserver((list) => {
-    for (const entry of list.getEntries()) tasks.push(Math.round(entry.startTime));
-  });
-  observer.observe({ type: "longtask" });
-
-  const pastedAt = performance.now();
-  await paste(PYTHON);
-  await expect.poll(language, { timeout: DETECTION_WINDOW_MS }).toBe("python");
-  observer.disconnect();
-
-  // The paste itself is a long task and always was: a hundred lines are
-  // tokenized and rendered under it. The guess is the one that used to follow
-  // it, alone, a beat later, with nothing else happening — 223ms of it here
-  // before this moved off the thread.
-  const settleWindow = 250;
-  const afterTheSettle = tasks.filter((startedAt) => startedAt > pastedAt + settleWindow);
-  expect(afterTheSettle).toEqual([]);
+  // One test rather than two, because the detector builds its worker on the
+  // first guess and keeps it: a second test could only ever watch a worker
+  // that already existed.
+  //
+  // The mechanism rather than the milliseconds. `highlightAuto` scores a
+  // document against twenty grammars in one synchronous pass, and on the main
+  // thread it was the longest task Pico ever ran — 223ms on a hundred-line
+  // snippet, landing 1.1s after the paste, measured on a production build.
+  // What a test can hold is that the pass happens off this thread at all: a
+  // long-task count says as much about the machine reading it as about the
+  // code, and a runner under load reports the paste's own tokenizing as one
+  // task or as three. See `docs/development.md`.
+  expect(workers.filter((url) => url.includes("detect-language-worker"))).toHaveLength(1);
 });
