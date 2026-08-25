@@ -220,6 +220,7 @@ html[data-pico-reveal] {
   body,
   #root {
     height: 100%;
+    overflow: hidden;
   }
 
   body {
@@ -353,14 +354,18 @@ html[data-pico-reveal] {
   user-select: none;
 }
 
-/* Off-screen, but still laid out: html-to-image needs real computed styles.
-   Only the stage is moved out of sight — the captured node must stay in normal
-   flow, or the capture paints it off-screen inside the SVG too. */
+/* Laid out inside a zero-size clip: html-to-image needs real computed styles,
+   while the browser must never count this second copy toward page overflow.
+   Only the stage clips — the captured node stays in normal flow, because a
+   node positioned or clipped itself is also positioned or clipped in the SVG. */
 
 .pico-export-stage {
   position: fixed;
   top: 0;
-  left: -200vw;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: clip;
   pointer-events: none;
 }
 
