@@ -2,17 +2,12 @@ import type { LanguageId } from "@/features/editor/language";
 import type { ExportFormat, ExportScale } from "@/features/export/export-image";
 import type { ExportTask } from "@/features/export/use-export";
 import type { Settings } from "@/features/settings/settings";
-import type { RevealOrigin } from "@/lib/cross-fade";
 import { createContext, use } from "react";
 
 /** What the picture is, and the two ways of changing it. */
 export type SettingsControl = {
   readonly settings: Settings;
-  /**
-   * @param origin where the change was asked for, when that is a place. Light
-   * and dark grow out of the switch that asked for them; see {@link crossFade}.
-   */
-  readonly changeSettings: (patch: Partial<Settings>, origin?: RevealOrigin) => void;
+  readonly changeSettings: (patch: Partial<Settings>) => void;
   /** Naming the language by hand, which also stops Pico guessing at it. */
   readonly chooseLanguage: (lang: LanguageId) => void;
   readonly sidebarOpen: boolean;

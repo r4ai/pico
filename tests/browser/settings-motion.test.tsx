@@ -6,12 +6,17 @@ import { afterEach, beforeEach, expect, it } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";
 import { cleanup, render } from "vitest-browser-react/pure";
 
+type TransitionSnapshot = {
+  keyframes: ComputedKeyframe[];
+  oldMixBlendMode: string;
+  newMixBlendMode: string;
+};
+
 let unmount: (() => Promise<void>) | undefined;
 let started: number;
-/** What the root was carrying at the moment each transition began. */
-let reveals: { marked: string | undefined; x: string; y: string; radius: string }[];
 /** The root's classes the instant each transition's callback returned. */
 let captured: string[];
+let latestTransitionSnapshot: Promise<TransitionSnapshot | undefined> | undefined;
 let restore: (() => void) | undefined;
 
 beforeEach(async () => {
@@ -25,25 +30,13 @@ beforeEach(async () => {
   document.head.append(fonts);
 
   started = 0;
-  reveals = [];
   captured = [];
+  latestTransitionSnapshot = undefined;
   const original = document.startViewTransition.bind(document);
   document.startViewTransition = (callback) => {
     started++;
-    // Read here rather than after: the marker comes off as the transition
-    // finishes, which is well before an assertion could look for it. The
-    // radius is asked of the cascade rather than of the inline style, because
-    // that is where it is worked out; registering the property is what makes
-    // the answer a resolved length instead of the expression that produced it.
     const root = document.documentElement;
-    const style = getComputedStyle(root);
-    reveals.push({
-      marked: root.dataset.picoReveal,
-      x: style.getPropertyValue("--pico-reveal-x"),
-      y: style.getPropertyValue("--pico-reveal-y"),
-      radius: style.getPropertyValue("--pico-reveal-radius"),
-    });
-    return original(() => {
+    const transition = original(() => {
       const result = typeof callback === "function" ? callback() : undefined;
       // The browser takes the second snapshot the moment this settles, so
       // whatever the page is not wearing yet is not in the picture the reveal
@@ -51,6 +44,21 @@ beforeEach(async () => {
       captured.push(root.className);
       return result;
     });
+    latestTransitionSnapshot = transition.ready
+      .then(() => ({
+        keyframes: document.getAnimations().flatMap((animation) => {
+          const effect = animation.effect;
+          return effect instanceof KeyframeEffect && effect.target === root
+            ? effect.getKeyframes()
+            : [];
+        }),
+        oldMixBlendMode: getComputedStyle(root, "::view-transition-old(root)").mixBlendMode,
+        newMixBlendMode: getComputedStyle(root, "::view-transition-new(root)").mixBlendMode,
+      }))
+      // An interrupted transition can reject `ready`; later transitions remain
+      // independently observable and must not leave an unhandled rejection.
+      .catch(() => undefined);
+    return transition;
   };
   restore = () => {
     document.startViewTransition = original;
@@ -127,6 +135,22 @@ it("dissolves once the colours can move with it", async () => {
   expect(document.documentElement.classList.contains("dark")).toBe(true);
 });
 
+it("cross-fades the whole viewport without clipping either snapshot", async () => {
+  await setAppearance("Light");
+
+  // Capture at `ready`: this is the browser-defined point when the transition
+  // pseudo-elements exist. Inspecting the live animation list after the colour
+  // settles races the finite animation on a loaded runner.
+  const snapshot = await latestTransitionSnapshot;
+  expect(snapshot).toBeDefined();
+  if (!snapshot) throw new Error("the theme transition was skipped");
+
+  expect(snapshot.keyframes.some((keyframe) => "opacity" in keyframe)).toBe(true);
+  expect(snapshot.keyframes.some((keyframe) => "clipPath" in keyframe)).toBe(false);
+  expect(snapshot.oldMixBlendMode).toBe("plus-lighter");
+  expect(snapshot.newMixBlendMode).toBe("plus-lighter");
+});
+
 it("leaves a change that moves something to its own easing", async () => {
   await page
     .getByRole("radiogroup", { name: "Padding" })
@@ -151,112 +175,6 @@ it("puts the export node at its new colours, never between two", async () => {
   expect(exportBackground()).toBe("rgb(18, 18, 18)");
 });
 
-it("grows light and dark out of the switch that asked for them", async () => {
-  await setAppearance("Light");
-  started = 0;
-  reveals = [];
-
-  const button = page
-    .getByRole("radiogroup", { name: "Appearance" })
-    .getByRole("radio", { name: "Dark" })
-    .element();
-  if (!(button instanceof HTMLElement)) throw new Error("the appearance row is missing");
-  // Where the click below lands.
-  const box = button.getBoundingClientRect();
-
-  await setAppearance("Dark");
-
-  // A change somebody pointed at has somewhere to come from, and arriving from
-  // under the very spot that asked for it is a thing that happened rather than
-  // a thing that faded.
-  expect(started).toBe(1);
-  const reveal = reveals[0];
-  expect(reveal?.marked).toBe("true");
-  expect(Number.parseFloat(reveal?.x ?? "")).toBeCloseTo(box.left + box.width / 2, 0);
-  expect(Number.parseFloat(reveal?.y ?? "")).toBeCloseTo(box.top + box.height / 2, 0);
-});
-
-it("does not cut a keyboard change in from where a mouse last was", async () => {
-  await setAppearance("Light");
-  reveals = [];
-
-  const group = page.getByRole("radiogroup", { name: "Appearance" });
-  const element = group.element();
-  if (!(element instanceof HTMLElement)) throw new Error("the appearance row is missing");
-  const box = element.getBoundingClientRect();
-
-  // A press that chooses nothing: one dragged off the button before it lands
-  // is a `pointerdown` and then nothing at all, so nothing spends the origin
-  // it left behind.
-  element.dispatchEvent(
-    new PointerEvent("pointerdown", { bubbles: true, clientX: box.left + 4, clientY: box.top + 4 }),
-  );
-
-  const dark = group.getByRole("radio", { name: "Dark" }).element();
-  if (!(dark instanceof HTMLElement)) throw new Error("the dark option is missing");
-  dark.focus();
-
-  const before = exportBackground();
-  await userEvent.keyboard("{Enter}");
-  await settle(before);
-
-  // The middle of the row, and not the corner a mouse was last seen in.
-  expect(reveals.length).toBe(1);
-  expect(Number.parseFloat(reveals[0]?.x ?? "")).toBeCloseTo(box.left + box.width / 2, 0);
-});
-
-it("sizes the circle to the window it is actually crossing", async () => {
-  await setAppearance("Light");
-  reveals = [];
-  await setAppearance("Dark");
-
-  // Far enough to cover the furthest corner, or the last frame of the reveal
-  // is a circle with a ring of the old page still around it.
-  const reveal = reveals[0];
-  if (!reveal) throw new Error("nothing was revealed");
-  const x = Number.parseFloat(reveal.x);
-  const y = Number.parseFloat(reveal.y);
-  const furthest = Math.hypot(
-    Math.max(x, window.innerWidth - x),
-    Math.max(y, window.innerHeight - y),
-  );
-  expect(Number.parseFloat(reveal.radius)).toBeGreaterThanOrEqual(furthest - 1);
-});
-
-it("covers every corner before the transition snapshot is released", async () => {
-  await setAppearance("Light");
-
-  const animation = document
-    .getAnimations()
-    .find((candidate) =>
-      candidate.effect instanceof KeyframeEffect
-        ? candidate.effect.getKeyframes().some((keyframe) => "clipPath" in keyframe)
-        : false,
-    );
-  expect(animation).toBeDefined();
-  if (!animation) throw new Error("the reveal animation is missing");
-
-  animation.pause();
-  animation.currentTime = Number(animation.effect?.getComputedTiming().duration) * 0.9;
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-
-  const clipPath = getComputedStyle(
-    document.documentElement,
-    "::view-transition-new(root)",
-  ).clipPath;
-  const radius = Number.parseFloat(clipPath.match(/^circle\(([-\d.]+)px/)?.[1] ?? "");
-  const reveal = reveals.at(-1);
-  const x = Number.parseFloat(reveal?.x ?? "");
-  const y = Number.parseFloat(reveal?.y ?? "");
-  const furthest = Math.hypot(
-    Math.max(x, window.innerWidth - x),
-    Math.max(y, window.innerHeight - y),
-  );
-
-  animation.finish();
-  expect(radius).toBeGreaterThanOrEqual(furthest - 1);
-});
-
 it("puts the page in its new mode before the picture of it is taken", async () => {
   await setAppearance("Light");
   captured = [];
@@ -264,33 +182,20 @@ it("puts the page in its new mode before the picture of it is taken", async () =
 
   // The class the whole page is coloured through. Applied a beat late — from a
   // passive effect, say, which `flushSync` does not reach — the new snapshot
-  // is a picture of the old room, and the reveal sweeps a circle of nothing
-  // across a page that then changes in one frame on its own. Which reads as an
-  // animation that stopped before it got to the edges.
+  // is a picture of the old room, and the page changes in one frame underneath
+  // a dissolve of two identical snapshots.
   expect(captured).toEqual(["dark"]);
 });
 
-it("takes the marker off again, so the next dissolve is a dissolve", async () => {
-  await setAppearance("Light");
-  await expect.poll(() => document.documentElement.dataset.picoReveal).toBeUndefined();
-});
-
 it("survives a change that interrupts another", async () => {
-  // A change inside a fade skips the one it interrupts, whose `finished` then
-  // rejects rather than resolving. What is held here is that the interrupted
-  // transition's tidying up does not land on the one that replaced it; see the
-  // ticket in `crossFade`, which is what makes that true in the case this
-  // cannot reach — a dissolve interrupted by a reveal, where the marker the
-  // second one just wrote is the thing at stake.
+  await setAppearance("Light");
+  started = 0;
   const group = page.getByRole("radiogroup", { name: "Appearance" });
-  await group.getByRole("radio", { name: "Light" }).click();
   await group.getByRole("radio", { name: "Dark" }).click();
+  await group.getByRole("radio", { name: "Light" }).click();
 
-  await expect.poll(() => reveals.length).toBeGreaterThanOrEqual(1);
-  expect(reveals.at(-1)?.marked).toBe("true");
-  expect(document.documentElement.dataset.picoReveal).toBe("true");
-
-  await expect.poll(() => document.documentElement.dataset.picoReveal).toBeUndefined();
+  expect(started).toBe(2);
+  await expect.poll(() => document.documentElement.classList.contains("dark")).toBe(false);
 });
 
 /**
@@ -349,43 +254,15 @@ async function pickTheme(name: string): Promise<void> {
   await userEvent.keyboard("{Enter}");
 }
 
-it("dissolves a theme rather than growing it from a list", async () => {
+it("dissolves a warm theme", async () => {
   const before = exportBackground();
   await pickTheme(WARMED_BY_THIS_TEST);
   await settle(before);
 
   started = 0;
-  reveals = [];
   const warm = exportBackground();
   await pickTheme("Vitesse");
   await settle(warm);
 
-  // A name in a list of names has nowhere to grow from, and a circle out of the
-  // middle of the window is a transition with an opinion about where you were
-  // looking.
   expect(started).toBe(1);
-  expect(reveals[0]?.marked).toBeUndefined();
-});
-
-it("does not inherit a reveal's origin for a change that has none", async () => {
-  // Warm the theme, so the switch back to it is a dissolve rather than a snap.
-  const cold = exportBackground();
-  await pickTheme(WARMED_BY_THIS_TEST);
-  await settle(cold);
-
-  // A reveal first, which leaves a marker on the root for as long as it runs.
-  await setAppearance("Light");
-  started = 0;
-  reveals = [];
-
-  const warm = exportBackground();
-  await pickTheme("Vitesse");
-  await settle(warm);
-
-  // Interrupt one and the browser skips it, marker and all still on the root:
-  // a dissolve that never asked for an origin would be cut in from wherever
-  // the reveal it interrupted had started. The marker says what the current
-  // change is, not what the last one was.
-  expect(started).toBe(1);
-  expect(reveals[0]?.marked).toBeUndefined();
 });
