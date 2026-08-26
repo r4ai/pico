@@ -6,10 +6,17 @@ import { afterEach, beforeEach, expect, it } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";
 import { cleanup, render } from "vitest-browser-react/pure";
 
+type TransitionSnapshot = {
+  keyframes: ComputedKeyframe[];
+  oldMixBlendMode: string;
+  newMixBlendMode: string;
+};
+
 let unmount: (() => Promise<void>) | undefined;
 let started: number;
 /** The root's classes the instant each transition's callback returned. */
 let captured: string[];
+let latestTransitionSnapshot: Promise<TransitionSnapshot | undefined> | undefined;
 let restore: (() => void) | undefined;
 
 beforeEach(async () => {
@@ -24,11 +31,12 @@ beforeEach(async () => {
 
   started = 0;
   captured = [];
+  latestTransitionSnapshot = undefined;
   const original = document.startViewTransition.bind(document);
   document.startViewTransition = (callback) => {
     started++;
     const root = document.documentElement;
-    return original(() => {
+    const transition = original(() => {
       const result = typeof callback === "function" ? callback() : undefined;
       // The browser takes the second snapshot the moment this settles, so
       // whatever the page is not wearing yet is not in the picture the reveal
@@ -36,6 +44,21 @@ beforeEach(async () => {
       captured.push(root.className);
       return result;
     });
+    latestTransitionSnapshot = transition.ready
+      .then(() => ({
+        keyframes: document.getAnimations().flatMap((animation) => {
+          const effect = animation.effect;
+          return effect instanceof KeyframeEffect && effect.target === root
+            ? effect.getKeyframes()
+            : [];
+        }),
+        oldMixBlendMode: getComputedStyle(root, "::view-transition-old(root)").mixBlendMode,
+        newMixBlendMode: getComputedStyle(root, "::view-transition-new(root)").mixBlendMode,
+      }))
+      // An interrupted transition can reject `ready`; later transitions remain
+      // independently observable and must not leave an unhandled rejection.
+      .catch(() => undefined);
+    return transition;
   };
   restore = () => {
     document.startViewTransition = original;
@@ -115,21 +138,17 @@ it("dissolves once the colours can move with it", async () => {
 it("cross-fades the whole viewport without clipping either snapshot", async () => {
   await setAppearance("Light");
 
-  const keyframes = document.getAnimations().flatMap((animation) => {
-    const effect = animation.effect;
-    return effect instanceof KeyframeEffect && effect.target === document.documentElement
-      ? effect.getKeyframes()
-      : [];
-  });
+  // Capture at `ready`: this is the browser-defined point when the transition
+  // pseudo-elements exist. Inspecting the live animation list after the colour
+  // settles races the finite animation on a loaded runner.
+  const snapshot = await latestTransitionSnapshot;
+  expect(snapshot).toBeDefined();
+  if (!snapshot) throw new Error("the theme transition was skipped");
 
-  expect(keyframes.some((keyframe) => "opacity" in keyframe)).toBe(true);
-  expect(keyframes.some((keyframe) => "clipPath" in keyframe)).toBe(false);
-  expect(
-    getComputedStyle(document.documentElement, "::view-transition-old(root)").mixBlendMode,
-  ).toBe("plus-lighter");
-  expect(
-    getComputedStyle(document.documentElement, "::view-transition-new(root)").mixBlendMode,
-  ).toBe("plus-lighter");
+  expect(snapshot.keyframes.some((keyframe) => "opacity" in keyframe)).toBe(true);
+  expect(snapshot.keyframes.some((keyframe) => "clipPath" in keyframe)).toBe(false);
+  expect(snapshot.oldMixBlendMode).toBe("plus-lighter");
+  expect(snapshot.newMixBlendMode).toBe("plus-lighter");
 });
 
 it("leaves a change that moves something to its own easing", async () => {
