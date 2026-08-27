@@ -4,7 +4,7 @@ import { frameColorsOf } from "@/features/preview/frame-colors";
 import { themeAccentsOf } from "@/features/settings/theme-accents";
 import { THEME_IDS, THEMES } from "@/features/settings/theme";
 import type { ShikiThemeName } from "@/features/settings/theme";
-import { ensureHighlighter } from "@/lib/shiki";
+import { ensureHighlighter, isThemeLoaded, warmTheme } from "@/lib/shiki";
 import { describe, expect, it } from "vite-plus/test";
 
 /** Representative snippets whose grammars should produce several token colors. */
@@ -23,6 +23,13 @@ const SAMPLES = {
 const ALL_THEME_NAMES = THEME_IDS.flatMap((id) => [THEMES[id].light, THEMES[id].dark]);
 
 describe("shiki registry", () => {
+  it("warms a cold theme and reports when it is ready", async () => {
+    expect(isThemeLoaded("vitesse-light")).toBe(false);
+    warmTheme("vitesse-light");
+    await ensureHighlighter("ts", "vitesse-light");
+    expect(isThemeLoaded("vitesse-light")).toBe(true);
+  });
+
   it.each(LANGUAGE_IDS)("loads and tokenizes %s", async (lang) => {
     const { highlighter, shikiLang } = await ensureHighlighter(lang, "vitesse-dark");
     const { tokens } = highlighter.codeToTokens("sample 123 {}", {
