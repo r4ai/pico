@@ -64,7 +64,7 @@ jobs:
           - name: Check
             script: check
           - name: Test
-            script: test
+            script: test:coverage
           - name: Browser
             script: test:browser
             browser: true
