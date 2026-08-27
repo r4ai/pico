@@ -14,7 +14,7 @@
     "security:audit": "pnpm audit --audit-level moderate",
     "test": "vp test --run --config vite.unit.config.ts",
     "test:browser": "vp test --run --config vite.browser.config.ts",
-    "test:coverage": "vp test --run --coverage --config vite.unit.config.ts",
+    "test:coverage": "node --test scripts/coverage-contract.test.mjs && vp test --run --coverage --config vite.unit.config.ts",
     "test:lighthouse": "node --test scripts/lighthouse-budget.test.mjs && vp build && node scripts/lighthouse.mjs",
     "test:watch": "vp test --config vite.unit.config.ts",
     "storybook": "storybook dev -p 6006",

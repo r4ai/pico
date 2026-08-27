@@ -36,7 +36,7 @@ after installing dependencies or changing either MCP configuration.
 | `pnpm run doctor`      | Scan the React codebase                          |
 | `pnpm test`            | Run the unit tests once                          |
 | `pnpm test:browser`    | Run geometry regressions in Chromium             |
-| `pnpm test:coverage`   | Run the unit tests with coverage                 |
+| `pnpm test:coverage`   | Run unit tests and enforce 100% coverage         |
 | `pnpm test:lighthouse` | Build and measure production performance         |
 | `pnpm build`           | Build the production assets                      |
 | `pnpm preview`         | Serve the production build                       |
@@ -55,6 +55,13 @@ pnpm build
 pnpm build-storybook
 pnpm security:audit
 ```
+
+Unit-test coverage is held at 100% for statements, branches, functions, and lines.
+Add behavior-focused tests for new contracts and failure paths rather than excluding files or
+lowering the thresholds.
+The source list in `vite.unit.config.ts` fixes this measurement to non-React logic modules whose
+contracts can be tested without a browser. Components and hooks are exercised by
+`pnpm test:browser` instead.
 
 ## Performance
 

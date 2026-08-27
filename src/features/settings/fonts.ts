@@ -141,7 +141,7 @@ export const DEFAULT_FONT: FontId = "geist-mono";
 
 /** The family name inside a font's stack, as it appears in its `@font-face` rules. */
 export function familyNameOf(font: Font): string {
-  const first = font.stack.split(",")[0] ?? "";
+  const first = font.stack.split(",", 1).join("");
   return first.trim().replaceAll('"', "");
 }
 

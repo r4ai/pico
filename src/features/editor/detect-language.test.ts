@@ -298,6 +298,10 @@ describe("detectLanguage", () => {
     expect(await detectLanguage(code)).toBe(expected);
   });
 
+  it("keeps generic markup without HTML markers as XML", async () => {
+    expect(await detectLanguage("<catalog><book><name>Pico</name></book></catalog>")).toBe("xml");
+  });
+
   it.each([
     [
       "C# classes",
