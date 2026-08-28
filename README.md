@@ -11,6 +11,12 @@
   Turn a snippet into a picture.
 </p>
 
+<p align="center">
+  <a href="https://codecov.io/gh/r4ai/pico">
+    <img src="https://codecov.io/gh/r4ai/pico/graph/badge.svg" alt="Codecov coverage" />
+  </a>
+</p>
+
 ![Editing and exporting a TypeScript snippet in Pico](./assets/pico-overview.png)
 
 ## Quickstart
