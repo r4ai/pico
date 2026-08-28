@@ -59,6 +59,8 @@ pnpm security:audit
 Unit-test coverage is held at 100% for statements, branches, functions, and lines.
 Add behavior-focused tests for new contracts and failure paths rather than excluding files or
 lowering the thresholds.
+Do not read source or configuration files in tests and assert against their text; exercise the
+resulting behavior or validate configuration with the tool that consumes it.
 The source list in `vite.unit.config.ts` fixes this measurement to non-React logic modules whose
 contracts can be tested without a browser. Components and hooks are exercised by
 `pnpm test:browser` instead.
