@@ -94,9 +94,10 @@ export function useSwipeDismiss({ panel, scrim, enabled, onDismiss }: SwipeDismi
     let startX = 0;
     let startY = 0;
     let dragging = false;
+    let previousX = 0;
+    let previousAt = 0;
     let lastX = 0;
     let lastAt = 0;
-    let velocity = 0;
 
     const draw = (offset: number) => {
       element.style.setProperty("--pico-drawer-offset", `${offset}px`);
@@ -112,7 +113,7 @@ export function useSwipeDismiss({ panel, scrim, enabled, onDismiss }: SwipeDismi
       if (scrim.current) delete scrim.current.dataset.dragging;
     };
 
-    const settle = (offset: number) => {
+    const settle = (offset: number, velocity: number) => {
       const width = element.getBoundingClientRect().width || 1;
       const far = -offset > width * DISMISS_DISTANCE;
       const flicked = velocity < -DISMISS_VELOCITY && -offset > AXIS_THRESHOLD_PX;
@@ -138,9 +139,10 @@ export function useSwipeDismiss({ panel, scrim, enabled, onDismiss }: SwipeDismi
       pointer = event.pointerId;
       startX = event.clientX;
       startY = event.clientY;
+      previousX = event.clientX;
+      previousAt = event.timeStamp;
       lastX = event.clientX;
       lastAt = event.timeStamp;
-      velocity = 0;
     };
 
     const onPointerMove = (event: PointerEvent) => {
@@ -170,8 +172,8 @@ export function useSwipeDismiss({ panel, scrim, enabled, onDismiss }: SwipeDismi
         if (scrim.current) scrim.current.dataset.dragging = "true";
       }
 
-      const elapsed = event.timeStamp - lastAt;
-      if (elapsed > 0) velocity = (event.clientX - lastX) / elapsed;
+      previousX = lastX;
+      previousAt = lastAt;
       lastX = event.clientX;
       lastAt = event.timeStamp;
 
@@ -187,7 +189,9 @@ export function useSwipeDismiss({ panel, scrim, enabled, onDismiss }: SwipeDismi
         pointer = undefined;
         return;
       }
-      settle(Math.min(0, event.clientX - startX));
+      const elapsed = event.timeStamp - previousAt;
+      const velocity = elapsed > 0 ? (event.clientX - previousX) / elapsed : 0;
+      settle(Math.min(0, event.clientX - startX), velocity);
     };
 
     const onPointerCancel = (event: PointerEvent) => {

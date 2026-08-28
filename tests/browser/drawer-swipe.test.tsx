@@ -44,9 +44,15 @@ function panel(): HTMLElement {
 async function openSettings(): Promise<void> {
   await page.getByRole("button", { name: "Open settings" }).click();
   await expect.element(page.getByRole("button", { name: "Close settings" })).toBeInTheDocument();
-  // It slides in from off the left edge, and a panel still on its way is not
-  // one anybody is dragging yet.
-  await expect.poll(() => panel().getBoundingClientRect().left).toBeGreaterThan(0);
+  // It slides in from off the left edge. Wait for that actual transition: a
+  // merely positive sub-pixel position can still be the first frame, which
+  // leaves the gesture tests racing the rest of the opening movement.
+  await Promise.all(
+    panel()
+      .getAnimations()
+      .map((animation) => animation.finished),
+  );
+  expect(Math.round(panel().getBoundingClientRect().left)).toBeGreaterThan(0);
 }
 
 let nextPointer = 1;
@@ -59,12 +65,12 @@ type Drag = {
   /**
    * How many moves it is made of.
    *
-   * Velocity is read from the last pair of moves, so this is what decides how
-   * much slack a flick has: the same distance in fewer, larger steps is the
-   * same gesture at the same speed, and stays a flick for longer once the
-   * machine running it starts overshooting its own timers.
+   * Release velocity starts at the penultimate point, so this decides how much
+   * distance that sample spans without hiding a pause before pointerup.
    */
   steps?: number;
+  /** Milliseconds the finger stays still after its last move. */
+  releaseAfter?: number;
   dy?: number;
   /** Left mid-drag rather than let go of, the way a browser cancels one. */
   cancel?: boolean;
@@ -78,7 +84,14 @@ type Drag = {
  * commits, and how fast it was going when it was let go — is all in the event
  * stream, and all of it is here.
  */
-async function drag({ dx, over = 200, steps = 8, dy = 0, cancel = false }: Drag): Promise<void> {
+async function drag({
+  dx,
+  over = 200,
+  steps = 8,
+  releaseAfter = 0,
+  dy = 0,
+  cancel = false,
+}: Drag): Promise<void> {
   const element = panel();
   const box = element.getBoundingClientRect();
   const startX = box.left + box.width / 2;
@@ -102,6 +115,7 @@ async function drag({ dx, over = 200, steps = 8, dy = 0, cancel = false }: Drag)
     send("pointermove", startX + (dx * step) / steps, startY + (dy * step) / steps);
     await new Promise((resolve) => setTimeout(resolve, over / steps));
   }
+  await new Promise((resolve) => setTimeout(resolve, releaseAfter));
   if (cancel) send("pointercancel", startX + dx, startY + dy);
   else send("pointerup", startX + dx, startY + dy);
 }
@@ -162,12 +176,20 @@ it("lets go for a flick that never travelled far", async () => {
   await openSettings();
   // Well short of the four tenths of its width that would let go on distance
   // alone, and fast: two moves of thirty pixels about ten milliseconds apart.
-  // Written as few large steps rather than many small ones because velocity is
-  // read from the last pair — a machine that overshoots a 5ms timer by 30ms
-  // turns eight small steps into a slow push and the flick into a spring-back.
+  // Written as few large steps rather than many small ones so the final sample
+  // keeps enough distance to remain a flick on a loaded machine.
   await drag({ dx: -60, over: 20, steps: 2 });
 
   await expect.poll(() => panel().dataset.open).toBe("false");
+});
+
+it("springs back when a short flick stops before release", async () => {
+  await openSettings();
+  await drag({ dx: -60, over: 20, steps: 2, releaseAfter: 500 });
+
+  expect(panel().dataset.open).toBe("true");
+  expect(offset()).toBe("0px");
+  expect(panel().dataset.dragging).toBeUndefined();
 });
 
 it("springs back from a push that stopped short", async () => {
