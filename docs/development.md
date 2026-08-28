@@ -367,6 +367,9 @@ Automatic detection covers these 30 languages:
 
 TSX, TypeScript, JSX, JavaScript, C, C++, CUDA, Rust, LLVM IR, Python, Java, Go, C#, Kotlin, Swift, Dart, Scala, Ruby, PHP, Shell, PowerShell, SQL, JSON, YAML, HTML, XML, CSS, Lua, R, and Elixir.
 
+Detection stops only when `lang` parses as a supported language or the reader
+chooses one. A missing, empty, or invalid query value leaves detection enabled.
+
 ## Fonts
 
 Pico bundles eight coding fonts, including a subset of UDEV Gothic for Japanese text.

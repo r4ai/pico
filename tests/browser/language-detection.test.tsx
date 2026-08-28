@@ -40,7 +40,7 @@ class Circle:
 `;
 
 beforeEach(async () => {
-  window.history.replaceState(null, "", window.location.pathname);
+  window.history.replaceState(null, "", "?lang=not-a-language");
   window.localStorage.clear();
 
   // Before the first render, because the detector builds its worker once for
@@ -85,7 +85,7 @@ function language(): string | null {
   return new URLSearchParams(window.location.search).get("lang");
 }
 
-it("guesses the language from a pasted snippet, in a worker", async () => {
+it("guesses the language when an invalid query value was rejected", async () => {
   await paste(PYTHON);
   await expect.poll(language, { timeout: DETECTION_WINDOW_MS }).toBe("python");
 
