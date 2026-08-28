@@ -3,7 +3,7 @@ import "@/global.css";
 import { SIDEBAR_INSET_QUERY } from "@/features/settings/use-sidebar-mode";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, beforeEach, expect, it } from "vite-plus/test";
-import { page } from "vite-plus/test/browser";
+import { page, userEvent } from "vite-plus/test/browser";
 import { cleanup, render } from "vitest-browser-react/pure";
 
 let unmount: (() => Promise<void>) | undefined;
@@ -58,11 +58,17 @@ it("leaves outside focus alone when a closed panel changes mode", async () => {
 
 it("takes outside focus into an open panel when it becomes modal", async () => {
   await openSettings();
-  await page.getByRole("textbox", { name: "Code" }).click();
+  const editor = page.getByRole("textbox", { name: "Code" });
+  await editor.click();
 
   await resizeTo(420, "dialog");
 
-  await expect.element(page.getByRole("button", { name: "Close settings" })).toHaveFocus();
+  const close = page.getByRole("button", { name: "Close settings" });
+  await expect.element(close).toHaveFocus();
+
+  await userEvent.keyboard("{Escape}");
+
+  await expect.element(editor).toHaveFocus();
 });
 
 it("keeps focus in place when an open panel becomes modal around it", async () => {

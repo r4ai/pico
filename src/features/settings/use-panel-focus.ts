@@ -7,6 +7,10 @@ function focusFirst(panel: HTMLDivElement | null): void {
   panel?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
 }
 
+function activeHTMLElement(): HTMLElement | null {
+  return document.activeElement instanceof HTMLElement ? document.activeElement : null;
+}
+
 /**
  * Keeps the keyboard in step with a panel's open and modal transitions.
  *
@@ -41,8 +45,7 @@ export function usePanelFocus(open: boolean, modal: boolean): RefObject<HTMLDivE
     wasOpen.current = open;
 
     if (open) {
-      opener.current =
-        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      opener.current = activeHTMLElement();
       focusFirst(panel.current);
       return;
     }
@@ -56,6 +59,7 @@ export function usePanelFocus(open: boolean, modal: boolean): RefObject<HTMLDivE
     if (modal === wasModal.current) return;
     wasModal.current = modal;
     if (!open || !modal || panel.current?.contains(document.activeElement)) return;
+    opener.current = activeHTMLElement();
     focusFirst(panel.current);
   }, [modal, open]);
 
