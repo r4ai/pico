@@ -19,8 +19,10 @@ import {
  * nuqs drops params that still hold their default, which is what keeps the URL
  * short for the common case of "I changed nothing".
  */
+const languageParser = parseAsStringLiteral(LANGUAGE_IDS);
+
 const settingsParsers = {
-  lang: parseAsStringLiteral(LANGUAGE_IDS).withDefault(DEFAULT_SETTINGS.lang),
+  lang: languageParser.withDefault(DEFAULT_SETTINGS.lang),
   theme: parseAsStringLiteral(THEME_IDS).withDefault(DEFAULT_SETTINGS.theme),
   mode: parseAsStringLiteral(COLOR_MODES).withDefault(DEFAULT_SETTINGS.mode),
   padding: parseAsStringLiteral(PADDING_IDS).withDefault(DEFAULT_SETTINGS.padding),
@@ -88,7 +90,8 @@ const serializeShareUrl = createSerializer({
 
 /** Whether the reader arrived with a language already chosen for them. */
 export function hasExplicitLanguage(search: string): boolean {
-  return new URLSearchParams(search).has("lang");
+  const language = new URLSearchParams(search).get("lang");
+  return language !== null && languageParser.parse(language) !== null;
 }
 
 export type ShareUrl = {
