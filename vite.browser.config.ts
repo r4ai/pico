@@ -41,6 +41,7 @@ export default mergeConfig(baseConfig, {
             "tests/browser/language-detection.test.tsx",
             "tests/browser/layout-shift.test.tsx",
             "tests/browser/large-code.test.tsx",
+            "tests/browser/export-snapshot.test.ts",
           ],
           name: "chromium",
           // Deliberately not English. React Aria names the controls it adds in
