@@ -109,6 +109,29 @@ it("puts the keyboard on the first match as you type, so Enter takes it", async 
   await expect.poll(lang).toBe("rust");
 });
 
+it.each([
+  ["Language", "rust", "lang", "rust"],
+  ["Theme", "Kanagawa", "theme", "kanagawa"],
+  ["Font", "Fira Code", "font", "fira-code"],
+] as const)(
+  "lets the %s picker take its first match when Enter immediately follows the query",
+  async (label, query, parameter, expected) => {
+    if (label !== "Language") {
+      await page.getByRole("button", { name: "Open settings" }).click();
+    }
+    const field = page.getByRole("combobox", { name: label });
+    await field.click();
+    await field.fill(query);
+    document
+      .querySelector<HTMLInputElement>(`input[aria-label="${label}"]`)
+      ?.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Enter" }));
+
+    await expect
+      .poll(() => new URLSearchParams(window.location.search).get(parameter))
+      .toBe(expected);
+  },
+);
+
 it("keeps typed characters instead of selecting the query again", async () => {
   await openPicker();
 

@@ -31,6 +31,7 @@ export default mergeConfig(baseConfig, {
             "tests/browser/preview-geometry.test.tsx",
             "tests/browser/editor-keyboard.test.tsx",
             "tests/browser/chrome-keyboard.test.tsx",
+            "tests/browser/combobox-focus.test.tsx",
             "tests/browser/language-picker.test.tsx",
             "tests/browser/settings-motion.test.tsx",
             "tests/browser/sidebar-memory.test.tsx",

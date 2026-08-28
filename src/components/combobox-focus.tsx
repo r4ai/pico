@@ -1,4 +1,4 @@
-import { type RefObject, useContext, useEffect } from "react";
+import { type RefObject, useContext, useEffect, useLayoutEffect } from "react";
 import { ComboBoxStateContext } from "react-aria-components";
 
 export type ComboboxFocusProps = {
@@ -38,8 +38,10 @@ export function ComboboxFocus({ popover }: ComboboxFocusProps) {
 
   // No dependencies: this is an invariant about every render, not a reaction
   // to one value. It settles in a single pass — once the keyboard is on an
-  // option that exists, the next run has nothing to do.
-  useEffect(() => {
+  // option that exists, the next run has nothing to do. This must run during
+  // layout: Enter can be the first browser event after filtering commits, so a
+  // passive effect would leave that event with no option to take.
+  useLayoutEffect(() => {
     if (!state?.isOpen) return;
     const { collection, selectionManager } = state;
     const focused = selectionManager.focusedKey;
