@@ -43,7 +43,7 @@ void test("the CI test job uploads coverage only for trusted events", async () =
 
   assert.match(
     workflow,
-    /if: >-\n\s+matrix\.script == 'test:coverage' &&\n\s+\(github\.event_name == 'push' \|\|\n\s+\(github\.actor != 'dependabot\[bot\]' &&\n\s+github\.event\.pull_request\.head\.repo\.full_name == github\.repository\)\)/,
+    /if: >-\n\s+matrix\.script == 'test:coverage' &&\n\s+github\.repository == 'r4ai\/pico' &&\n\s+github\.actor != 'dependabot\[bot\]' &&\n\s+\(github\.event_name == 'push' \|\|\n\s+github\.event\.pull_request\.head\.repo\.full_name == github\.repository\)/,
   );
 });
 
