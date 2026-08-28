@@ -62,7 +62,7 @@ lowering the thresholds.
 The source list in `vite.unit.config.ts` fixes this measurement to non-React logic modules whose
 contracts can be tested without a browser. Components and hooks are exercised by
 `pnpm test:browser` instead.
-CI uploads the Clover report to [Codecov](https://codecov.io/gh/r4ai/pico) for pushes to `main`
+CI uploads the Clover report to [Codecov](https://codecov.io/gh/r4ai/pico) for pushes to any branch
 and pull requests from branches in this repository. Fork and Dependabot pull requests skip the
 upload because GitHub does not provide them with `CODECOV_TOKEN`.
 
@@ -266,7 +266,7 @@ until they were written another way. `pnpm build` should print no
 React Doctor runs its full-project lint, dead-code, security, dependency, and health-score
 diagnostics through `pnpm run doctor`. To inspect only issues introduced by the current branch, run
 `pnpm run doctor --verbose --scope changed`. Pull requests receive advisory summaries and inline
-review comments, while pushes to `main` record the full-project health score; these reports do not
+review comments, while pushes to any branch record the full-project health score; these reports do not
 block CI.
 
 ## Architecture

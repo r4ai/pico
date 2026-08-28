@@ -2,6 +2,36 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+void test("every pushed commit triggers the non-deployment CI workflows", async () => {
+  const ciWorkflow = await readFile(
+    new URL("../.github/workflows/ci.yml", import.meta.url),
+    "utf8",
+  );
+  const doctorWorkflow = await readFile(
+    new URL("../.github/workflows/react-doctor.yml", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(ciWorkflow, /on:\n  push:\n  pull_request:/);
+  assert.match(
+    doctorWorkflow,
+    /on:\n  pull_request:\n    types: \[opened, synchronize, reopened, ready_for_review\]\n  push:/,
+  );
+});
+
+void test("deployment jobs remain restricted to their intended events", async () => {
+  const workflow = await readFile(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
+
+  assert.match(
+    workflow,
+    /preview:\n    name: Deploy preview\n    if: github\.event_name == 'pull_request' && github\.event\.pull_request\.head\.repo\.full_name == github\.repository/,
+  );
+  assert.match(
+    workflow,
+    /production:\n    name: Deploy production\n    if: github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'/,
+  );
+});
+
 void test("the CI test job enforces the coverage thresholds", async () => {
   const workflow = await readFile(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
 
