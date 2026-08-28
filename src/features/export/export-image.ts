@@ -45,30 +45,40 @@ export type RenderRequest = {
  * outside the rounded corners stays transparent.
  */
 export async function renderImage({ node, settings, format, scale }: RenderRequest): Promise<Blob> {
-  // Downloaded here rather than with the app: nothing can be exported before
-  // there is something to export, and the request goes out alongside the font
-  // and the fonts.ready wait that the capture needs anyway.
-  const [{ toBlob, toSvg }, fontEmbedCSS] = await Promise.all([
-    import("html-to-image"),
-    fontEmbedCss(FONTS[settings.font]),
-    // Webfonts the page has not finished loading would be captured as fallbacks.
-    document.fonts.ready,
-  ]);
-  const options = { fontEmbedCSS, pixelRatio: scale, cacheBust: false };
+  // html-to-image reads the source after its imports, font downloads, and
+  // fonts.ready have settled. Keep an attached clone from this synchronous
+  // point so edits made while those waits are in flight cannot enter the file.
+  const snapshot = node.cloneNode(true) as HTMLElement;
+  node.after(snapshot);
 
-  if (format === "svg") {
-    const dataUrl = await withTimeout(toSvg(node, options));
-    // A data: URL, so a failure here is the browser refusing to parse what the
-    // capture produced rather than a network error — but `fetch` reports that
-    // by resolving, and an unchecked read would hand back an empty file.
-    const response = await fetch(dataUrl);
-    if (!response.ok) throw new Error("The browser could not read the captured SVG");
-    return await response.blob();
+  try {
+    // Downloaded here rather than with the app: nothing can be exported before
+    // there is something to export, and the request goes out alongside the font
+    // and the fonts.ready wait that the capture needs anyway.
+    const [{ toBlob, toSvg }, fontEmbedCSS] = await Promise.all([
+      import("html-to-image"),
+      fontEmbedCss(FONTS[settings.font]),
+      // Webfonts the page has not finished loading would be captured as fallbacks.
+      document.fonts.ready,
+    ]);
+    const options = { fontEmbedCSS, pixelRatio: scale, cacheBust: false };
+
+    if (format === "svg") {
+      const dataUrl = await withTimeout(toSvg(snapshot, options));
+      // A data: URL, so a failure here is the browser refusing to parse what the
+      // capture produced rather than a network error — but `fetch` reports that
+      // by resolving, and an unchecked read would hand back an empty file.
+      const response = await fetch(dataUrl);
+      if (!response.ok) throw new Error("The browser could not read the captured SVG");
+      return await response.blob();
+    }
+
+    const blob = await withTimeout(toBlob(snapshot, options));
+    if (!blob) throw new Error("The browser produced an empty image");
+    return blob;
+  } finally {
+    snapshot.remove();
   }
-
-  const blob = await withTimeout(toBlob(node, options));
-  if (!blob) throw new Error("The browser produced an empty image");
-  return blob;
 }
 
 /** A sortable, collision-free name like `pico-20260823-114233.png`. */

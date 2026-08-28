@@ -142,7 +142,10 @@ Preview geometry has eight invariants:
   later font or content changes. The node is laid out inside a fixed zero-size
   clip rather than moved a fixed distance off-screen, so code of any width or
   height cannot grow the page back around it. The page stays fixed to the
-  viewport and the canvas owns both scroll axes.
+  viewport and the canvas owns both scroll axes. A capture synchronously clones
+  this node into the same clip before it waits for imports or fonts, then removes
+  the clone whether rendering succeeds or fails. Code and settings changed while
+  a capture is in flight therefore apply only to the next capture.
 - The CodeMirror gutter stays mounted. Its width is shared with the export
   gutter and derives from the document's line-number digit count, including the
   9/10 and 99/100 boundaries. It scrolls horizontally with the frame instead
@@ -192,7 +195,7 @@ of them. What the last of the three catches is the move after the move: a frame
 holding a stale height and then collapsing into the right one in a single frame.
 
 `pnpm test:browser` covers intermediate frames, rapid retargeting, export/live
-agreement, height tracking while shrinking, the keyboard's way out of the
+agreement, capture-time export snapshots, height tracking while shrinking, the keyboard's way out of the
 editor, the picker, the settings as a dialog and as a remembered layout, the
 static rendering that stands in for the editor, and the dissolve. It runs three
 Chromium instances: one at 1280px, where the settings sit beside the picture
