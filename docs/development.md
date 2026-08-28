@@ -239,7 +239,9 @@ them, and reloading the page underneath whatever was already running. In a
 browser test that is a reload in the middle of a render, and it surfaces as a
 null dispatcher in an unrelated component — `rm -rf node_modules/.vite` is what
 reproduces it, because a warm optimizer cache hides it completely. The list is
-derived from the detector's own grammar map; see `HLJS_MODULES`.
+derived from the detector's own grammar map; see `HLJS_MODULES`. Each document
+gets one completed attempt even when no language scores highly enough; clearing
+the editor is the transition that arms detection for a new document.
 
 `highlightAuto` scores a document
 against twenty grammars in one synchronous pass, and it was the longest task on

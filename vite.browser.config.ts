@@ -39,6 +39,7 @@ export default mergeConfig(baseConfig, {
             "tests/browser/code-surface.test.tsx",
             "tests/browser/toast.test.tsx",
             "tests/browser/glass-hover.test.tsx",
+            "tests/browser/language-detection-attempt.test.tsx",
             "tests/browser/language-detection.test.tsx",
             "tests/browser/layout-shift.test.tsx",
             "tests/browser/large-code.test.tsx",
