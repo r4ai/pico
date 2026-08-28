@@ -60,10 +60,10 @@ export type SettingsSidebarProps = {
  * a scrim that swallows every click, it is a dialog. See {@link useSidebarMode}.
  */
 export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsSidebarProps) {
-  const panel = usePanelFocus(open);
   const scrim = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const drawer = useSidebarMode() === "drawer";
+  const panel = usePanelFocus(open, drawer);
 
   // Only where it is a drawer. Beside the picture the panel is a column of the
   // page, and a column that can be shoved off the side of the window is not a

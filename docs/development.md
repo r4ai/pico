@@ -323,7 +323,11 @@ undo:
 - Below 56rem the settings are a drawer over the picture behind a scrim, which
   makes them modal: `dialog`, `aria-modal`, and the canvas `inert` underneath.
   `useSidebarMode` is the single answer to which arrangement they are in, and a
-  test holds the width it names to the one the stylesheet uses.
+  test holds the width it names to the one the stylesheet uses. If an open
+  inset panel becomes that modal drawer, `usePanelFocus` brings focus in from
+  the newly inert canvas without moving someone who is already using a setting;
+  closing returns it to the element that transition displaced, while becoming
+  inset again does not move it.
 - As a drawer it can be pushed off the side with a finger; see
   `useSwipeDismiss`. Three things are easy to undo. The panel is written to
   directly rather than through state — a React render per pointer move would
