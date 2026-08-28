@@ -44,9 +44,15 @@ function panel(): HTMLElement {
 async function openSettings(): Promise<void> {
   await page.getByRole("button", { name: "Open settings" }).click();
   await expect.element(page.getByRole("button", { name: "Close settings" })).toBeInTheDocument();
-  // It slides in from off the left edge, and a panel still on its way is not
-  // one anybody is dragging yet.
-  await expect.poll(() => panel().getBoundingClientRect().left).toBeGreaterThan(0);
+  // It slides in from off the left edge. Wait for that actual transition: a
+  // merely positive sub-pixel position can still be the first frame, which
+  // leaves the gesture tests racing the rest of the opening movement.
+  await Promise.all(
+    panel()
+      .getAnimations()
+      .map((animation) => animation.finished),
+  );
+  expect(Math.round(panel().getBoundingClientRect().left)).toBeGreaterThan(0);
 }
 
 let nextPointer = 1;
