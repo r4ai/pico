@@ -43,8 +43,9 @@ export function useLanguageDetection({ code, enabled, onDetect }: UseLanguageDet
     const timer = setTimeout(() => {
       detectLanguageOffThread(code).then(
         (lang) => {
-          if (cancelled || !lang) return;
+          if (cancelled) return;
           armed.current = false;
+          if (!lang) return;
           latestOnDetect.current(lang);
         },
         // Detection is a convenience. If the detector cannot load, leaving the
