@@ -62,6 +62,9 @@ lowering the thresholds.
 The source list in `vite.unit.config.ts` fixes this measurement to non-React logic modules whose
 contracts can be tested without a browser. Components and hooks are exercised by
 `pnpm test:browser` instead.
+CI uploads the Clover report to [Codecov](https://codecov.io/gh/r4ai/pico) for pushes to `main`
+and pull requests from branches in this repository. Fork and Dependabot pull requests skip the
+upload because GitHub does not provide them with `CODECOV_TOKEN`.
 
 ## Performance
 
