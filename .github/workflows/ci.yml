@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [main]
   pull_request:
 
 permissions:
@@ -107,9 +106,10 @@ jobs:
       - name: Upload coverage to Codecov
         if: >-
           matrix.script == 'test:coverage' &&
+          github.repository == 'r4ai/pico' &&
+          github.actor != 'dependabot[bot]' &&
           (github.event_name == 'push' ||
-          (github.actor != 'dependabot[bot]' &&
-          github.event.pull_request.head.repo.full_name == github.repository))
+          github.event.pull_request.head.repo.full_name == github.repository)
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -129,7 +129,7 @@ jobs:
 
   preview:
     name: Deploy preview
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     needs: [actions, dependency-review, audit, verify]
     permissions:
       contents: read
@@ -176,7 +176,7 @@ jobs:
 
   production:
     name: Deploy production
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [actions, audit, verify]
     permissions:
       contents: read

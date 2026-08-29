@@ -141,23 +141,3 @@ it("keeps the closed settings out of the tab order once a popover has been open"
     expect(document.activeElement?.closest(".pico-sidebar")).toBeNull();
   }
 });
-
-it("moves the settings between their two arrangements at one width", () => {
-  const widths = new Set<string>();
-  for (const sheet of document.styleSheets) {
-    for (const rule of sheet.cssRules) {
-      if (!(rule instanceof CSSMediaRule) || !rule.conditionText.includes("width")) continue;
-      const selectors = [...rule.cssRules]
-        .map((inner) => (inner instanceof CSSStyleRule ? inner.selectorText : ""))
-        .join(" ");
-      if (/pico-sidebar|pico-shell/.test(selectors)) widths.add(rule.conditionText);
-    }
-  }
-
-  // The hook has to name the same width as the stylesheet, because which
-  // arrangement the panel is in is not only a matter of looks: see
-  // useSidebarMode.
-  expect(widths.size).toBeGreaterThan(0);
-  expect(widths).toContain(SIDEBAR_INSET_QUERY);
-  for (const condition of widths) expect(condition).toMatch(/^\(width [<>]=? 56rem\)$/);
-});

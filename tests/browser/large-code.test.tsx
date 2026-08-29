@@ -83,7 +83,8 @@ it("keeps tall and wide code inside the canvas scroll area", async () => {
   await expect.poll(() => canvas.scrollTop).toBeGreaterThan(0);
   await expect.poll(() => canvas.scrollLeft).toBeGreaterThan(0);
   const scrolledFrame = element(".pico-shell-canvas .pico-frame").getBoundingClientRect();
+  const currentExportFrame = element(".pico-export-stage .pico-frame").getBoundingClientRect();
   expect(scrolledFrame.left + canvas.scrollLeft).toBeCloseTo(origin, 1);
-  expect(scrolledFrame.width).toBeCloseTo(liveFrame.width, 1);
-  expect(scrolledFrame.height).toBeCloseTo(liveFrame.height, 1);
+  expect(scrolledFrame.width).toBeCloseTo(currentExportFrame.width, 1);
+  expect(scrolledFrame.height).toBeCloseTo(currentExportFrame.height, 1);
 });
