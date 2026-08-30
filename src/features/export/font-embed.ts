@@ -11,8 +11,14 @@ function toBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-async function faceRule(family: string, url: string, weight: number, style: string) {
-  const response = await fetch(url);
+async function faceRule(
+  family: string,
+  url: string,
+  weight: number,
+  style: string,
+  signal: AbortSignal,
+) {
+  const response = await fetch(url, { signal });
   if (!response.ok) throw new Error(`Could not read the font at ${url} (${response.status})`);
   const data = `data:font/woff2;base64,${toBase64(await response.arrayBuffer())}`;
   return (
@@ -33,14 +39,15 @@ const cache = new Map<FontId, Promise<string>>();
  * Only the font in use is inlined. Embedding all of them would put hundreds of
  * kilobytes into every capture for no benefit.
  */
-export function fontEmbedCss(font: Font): Promise<string> {
+export function fontEmbedCss(font: Font, signal: AbortSignal): Promise<string> {
   let pending = cache.get(font.id);
   if (!pending) {
     const family = familyNameOf(font);
     pending = Promise.all(
-      font.faces.map((face) => faceRule(family, face.url, face.weight, face.style)),
+      font.faces.map((face) => faceRule(family, face.url, face.weight, face.style, signal)),
     ).then((rules) => rules.join("\n"));
     cache.set(font.id, pending);
+    void pending.catch(() => cache.delete(font.id));
   }
   return pending;
 }
