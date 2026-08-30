@@ -122,7 +122,8 @@ undo:
 - `toast` imports sonner on the first call rather than on load, and `<Toaster>`
   mounts on the same call. Nothing on the first screen has anything to
   announce. Importing `sonner` directly anywhere puts it back in the entry
-  chunk.
+  chunk. If that optional chunk cannot load, its promise resolves to a built-in
+  alert so a failed notification cannot unmount the application.
 
 Preview geometry has eight invariants:
 
@@ -342,7 +343,8 @@ undo:
   exactly where the closed state puts it, so the transform React writes a moment
   later is the one already running and the panel keeps going instead of restarting.
   Touch and pen only: a pointer with a cursor has the close button, the scrim,
-  and Escape.
+  and Escape. An open picker owns the first Escape; only a later Escape closes
+  the settings drawer.
 - That `inert` goes on the canvas div rather than on `<main>`, and the button
   that opens the settings leaves the tab order through `visibility` rather than
   `inert`. React Aria marks the top of the page inert while a popover is open

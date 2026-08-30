@@ -100,6 +100,7 @@ export function SearchableSelect<T extends string>({
 }: SearchableSelectProps<T>) {
   const popover = useRef<HTMLDivElement>(null);
   const virtualized = options.length > VIRTUALIZE_FROM;
+  const selectedLabel = options.find((option) => option.value === value)?.label ?? placeholder;
   const { contains } = useFilter({ sensitivity: "base" });
   const defaultFilter = useMemo(() => {
     const searchTextByLabel = new Map(
@@ -115,14 +116,16 @@ export function SearchableSelect<T extends string>({
         adornment={adornment}
         className={className}
         placeholder={placeholder}
-        selectedLabel={options.find((option) => option.value === value)?.label ?? placeholder}
+        selectedLabel={selectedLabel}
       />
     ) : (
       /* Selecting the current value on focus keeps this a picker: the list is
          already open, and typing filters it instead of editing a name. */
       <ComboboxInput
         className={cn("w-full", className)}
-        onFocus={(event) => event.target.select()}
+        onFocus={(event) => {
+          if (event.target.value === selectedLabel) event.target.select();
+        }}
         placeholder={placeholder}
       >
         {adornment && <InputGroupAddon align="inline-start">{adornment}</InputGroupAddon>}

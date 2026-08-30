@@ -1,8 +1,9 @@
+import { loadToaster } from "@/components/toast-loader";
 import { useToastsWanted } from "@/components/toast";
 import type { ColorMode } from "@/features/settings/theme";
 import { lazy, Suspense } from "react";
 
-const Sonner = lazy(async () => ({ default: (await import("@/components/ui/sonner")).Toaster }));
+const Sonner = lazy(() => loadToaster(import("@/components/ui/sonner")));
 
 export type ToasterProps = {
   theme: ColorMode;

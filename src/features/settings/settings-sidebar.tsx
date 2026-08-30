@@ -77,6 +77,9 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
     // the settings from under someone doing that would be a surprise. See
     // CodeEditor.
     if (event.target instanceof Element && event.target.closest(".pico-editor")) return;
+    // A picker owns the first Escape while its list is open. React Aria closes
+    // that nested surface; the settings remain for a second Escape to close.
+    if (event.target instanceof Element && event.target.closest('[aria-expanded="true"]')) return;
     onClose();
   });
 
@@ -97,8 +100,10 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
     const close = (event: KeyboardEvent) => {
       if (event.key === "Escape") onEscape(event);
     };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
+    // Capture sees an expanded nested picker before React Aria handles the key
+    // and closes it. In the bubble phase that state has already been erased.
+    window.addEventListener("keydown", close, { capture: true });
+    return () => window.removeEventListener("keydown", close, { capture: true });
   }, [open]);
 
   return (

@@ -119,6 +119,32 @@ it("gives the keyboard back to the button that opened the settings", async () =>
   expect(document.activeElement?.getAttribute("aria-label")).toBe("Open settings");
 });
 
+it("keeps each character typed into a settings search", async () => {
+  await renderApp();
+  await page.getByRole("button", { name: "Open settings" }).click();
+  const font = page.getByRole("combobox", { name: "Font" });
+  await font.click();
+
+  await userEvent.keyboard("udev");
+
+  await expect.element(font).toHaveValue("udev");
+});
+
+it("closes a settings picker before it closes the settings", async () => {
+  await renderApp();
+  await page.getByRole("button", { name: "Open settings" }).click();
+  await page.getByRole("combobox", { name: "Font" }).click();
+  await expect.poll(() => document.querySelector('[data-slot="combobox-content"]')).toBeTruthy();
+
+  await userEvent.keyboard("{Escape}");
+
+  await expect.poll(() => document.querySelector('[data-slot="combobox-content"]')).toBeNull();
+  expect(document.querySelector('.pico-sidebar[data-open="true"]')).not.toBeNull();
+
+  await userEvent.keyboard("{Escape}");
+  expect(document.querySelector('.pico-sidebar[data-open="true"]')).toBeNull();
+});
+
 it("keeps the closed settings out of the tab order once a popover has been open", async () => {
   await renderApp();
 
