@@ -29,9 +29,14 @@ afterEach(async () => {
   await page.viewport(1280, 900);
 });
 
-async function resizeTo(width: number, role: "complementary" | "dialog"): Promise<void> {
+async function resizeTo(
+  width: number,
+  expectedRole: "complementary" | "dialog" | null,
+): Promise<void> {
   await page.viewport(width, 900);
-  await expect.poll(() => document.querySelector(".pico-sidebar")?.getAttribute("role")).toBe(role);
+  await expect
+    .poll(() => document.querySelector(".pico-sidebar")?.getAttribute("role"))
+    .toBe(expectedRole);
 }
 
 async function openSettings(): Promise<void> {
@@ -51,7 +56,7 @@ it("leaves outside focus alone when a closed panel changes mode", async () => {
   const editor = page.getByRole("textbox", { name: "Code" });
   await editor.click();
 
-  await resizeTo(420, "dialog");
+  await resizeTo(420, null);
 
   await expect.element(editor).toHaveFocus();
 });

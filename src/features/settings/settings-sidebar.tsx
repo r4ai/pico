@@ -57,13 +57,16 @@ export type SettingsSidebarProps = {
  *
  * Which of the two it is decides what it is, and not only how it looks: beside
  * the picture it is a second region of the same page, and on top of it, behind
- * a scrim that swallows every click, it is a dialog. See {@link useSidebarMode}.
+ * a scrim that swallows every click, it is a dialog. While closed it is neither:
+ * the inert contents stay mounted for animation, but no hidden landmark is left
+ * for assistive navigation to find. See {@link useSidebarMode}.
  */
 export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsSidebarProps) {
   const scrim = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const drawer = useSidebarMode() === "drawer";
   const panel = usePanelFocus(open, drawer);
+  const role = open ? (drawer ? "dialog" : "complementary") : undefined;
 
   // Only where it is a drawer. Beside the picture the panel is a column of the
   // page, and a column that can be shoved off the side of the window is not a
@@ -122,12 +125,12 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
         type="button"
       />
       <GlassPanel
-        aria-labelledby={titleId}
-        aria-modal={drawer || undefined}
+        aria-labelledby={open ? titleId : undefined}
+        aria-modal={open && drawer ? true : undefined}
         className="pico-sidebar"
         data-open={open}
         ref={panel}
-        role={drawer ? "dialog" : "complementary"}
+        role={role}
       >
         <div className="pico-sidebar-body" inert={!open}>
           {/* A div rather than a header: a bare <header> is a page-level

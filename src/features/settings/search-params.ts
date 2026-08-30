@@ -12,6 +12,7 @@ import {
   useQueryState,
   useQueryStates,
 } from "nuqs";
+import { useCallback } from "react";
 
 /**
  * Every setting is a search param, so a link reproduces the picture exactly.
@@ -34,6 +35,7 @@ const settingsParsers = {
 };
 
 export const CODE_PARAM = "c";
+const PENDING_CODE_KEY = "pico:pending-code";
 
 const codeParser = createParser({
   parse: (value) => {
@@ -47,6 +49,63 @@ const codeParser = createParser({
   serialize: encodeCode,
 });
 
+function flushCodeToUrl(code: string): void {
+  const url = new URL(window.location.href);
+  if (code === "") url.searchParams.delete(CODE_PARAM);
+  else url.searchParams.set(CODE_PARAM, codeParser.serialize(code));
+  window.history.replaceState(window.history.state, "", url);
+}
+
+type PendingCode = readonly [from: string | null, code: string];
+
+function readPendingCode(): PendingCode | undefined {
+  try {
+    const raw = window.sessionStorage.getItem(PENDING_CODE_KEY);
+    if (raw === null) return undefined;
+    const value: unknown = JSON.parse(raw);
+    if (!Array.isArray(value) || value.length !== 2) return undefined;
+    const [from, code] = value;
+    if ((from !== null && typeof from !== "string") || typeof code !== "string") return undefined;
+    return [from, code];
+  } catch {
+    return undefined;
+  }
+}
+
+function writePendingCode(code: string): void {
+  const from = new URLSearchParams(window.location.search).get(CODE_PARAM);
+  try {
+    window.sessionStorage.setItem(PENDING_CODE_KEY, JSON.stringify([from, code]));
+  } catch {
+    // Losing the reload checkpoint must not stop editing in a restricted browser.
+  }
+}
+
+function removePendingCode(): void {
+  try {
+    window.sessionStorage.removeItem(PENDING_CODE_KEY);
+  } catch {
+    // A restricted browser may refuse storage access altogether.
+  }
+}
+
+function clearPendingCode(code: string): void {
+  if (readPendingCode()?.[1] === code) removePendingCode();
+}
+
+/** Restores an edit whose throttled URL write was interrupted by a reload. */
+export function recoverPendingCode(): void {
+  const pending = readPendingCode();
+  if (pending) {
+    const [from, code] = pending;
+    const current = new URLSearchParams(window.location.search).get(CODE_PARAM);
+    if (current === from) flushCodeToUrl(code);
+  }
+  // A checkpoint is single-use. A different URL means navigation won the race;
+  // an invalid value has nothing safe to recover and should not linger either.
+  removePendingCode();
+}
+
 /** The settings, read from and written to the URL. */
 export function useSettings() {
   return useQueryStates(settingsParsers, { history: "replace" });
@@ -55,13 +114,29 @@ export function useSettings() {
 /**
  * The code, compressed into the URL.
  *
- * Throttled because otherwise every keystroke would be a history write.
+ * Throttled because otherwise every keystroke would be a history write. Until
+ * that write lands, a tab-scoped checkpoint lets startup recover a reload.
  */
 export function useCode() {
-  return useQueryState(
+  const [code, setQueryCode] = useQueryState(
     CODE_PARAM,
     codeParser.withDefault("").withOptions({ history: "replace", throttleMs: 500 }),
   );
+
+  const setCode = useCallback(
+    (nextCode: string) => {
+      writePendingCode(nextCode);
+      const pending = setQueryCode(nextCode);
+      void pending.then(
+        () => clearPendingCode(nextCode),
+        () => {},
+      );
+      return pending;
+    },
+    [setQueryCode],
+  );
+
+  return [code, setCode] as const;
 }
 
 /**

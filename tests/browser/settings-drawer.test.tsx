@@ -55,8 +55,14 @@ function dock(): HTMLElement {
   return element;
 }
 
-it("is a dialog while it covers the picture", async () => {
+it("is a dialog only while it covers the picture", async () => {
   const panel = document.querySelector(".pico-sidebar");
+  expect(panel?.getAttribute("role")).toBeNull();
+  expect(panel?.getAttribute("aria-modal")).toBeNull();
+  expect(panel?.getAttribute("aria-labelledby")).toBeNull();
+
+  await openSettings();
+
   expect(panel?.getAttribute("role")).toBe("dialog");
   expect(panel?.getAttribute("aria-modal")).toBe("true");
   expect(panel?.getAttribute("aria-labelledby")).toBeTruthy();

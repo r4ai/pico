@@ -74,11 +74,17 @@ it("goes quiet again once the capture is over", async () => {
   expect(document.querySelector('[aria-live="polite"]')?.textContent).toBe("");
 });
 
-it("is a region beside the picture at this width, not a dialog over it", async () => {
+it("is a region only while it is open beside the picture", async () => {
   expect(window.matchMedia(SIDEBAR_INSET_QUERY).matches).toBe(true);
   await renderApp();
 
   const panel = document.querySelector(".pico-sidebar");
+  expect(panel?.getAttribute("role")).toBeNull();
+  expect(panel?.getAttribute("aria-modal")).toBeNull();
+  expect(panel?.getAttribute("aria-labelledby")).toBeNull();
+
+  await page.getByRole("button", { name: "Open settings" }).click();
+
   expect(panel?.getAttribute("role")).toBe("complementary");
   expect(panel?.getAttribute("aria-modal")).toBeNull();
   expect(panel?.getAttribute("aria-labelledby")).toBeTruthy();
