@@ -37,4 +37,4 @@ jobs:
           comment: true
           review-comments: true
           commit-status: true
-          version: "0.9.12"
+          version: "0.9.13"
