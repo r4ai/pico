@@ -1,3 +1,4 @@
+import { BackgroundSetting } from "@/features/settings/background-setting";
 import { GlassPanel } from "@/components/glass-panel";
 import { SearchableSelect } from "@/components/searchable-select";
 import { Button } from "@/components/ui/button";
@@ -190,6 +191,10 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                 value={settings.mode}
               />
             </section>
+
+            <Separator />
+
+            <BackgroundSetting settings={settings} onChange={onChange} />
 
             <Separator />
 

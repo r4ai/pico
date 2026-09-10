@@ -12,6 +12,7 @@ export default mergeConfig(baseConfig, {
         "src/features/editor/language-registry.ts",
         "src/features/editor/language.ts",
         "src/features/preview/frame-colors.ts",
+        "src/features/settings/background.ts",
         "src/features/settings/fonts.ts",
         "src/features/settings/theme-accents.ts",
         "src/features/settings/theme.ts",

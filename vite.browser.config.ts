@@ -29,6 +29,7 @@ export default mergeConfig(baseConfig, {
           include: [
             "tests/browser/initial-render.test.tsx",
             "tests/browser/japanese-fonts.test.tsx",
+            "tests/browser/background.test.tsx",
             "tests/browser/preview-geometry.test.tsx",
             "tests/browser/editor-keyboard.test.tsx",
             "tests/browser/chrome-keyboard.test.tsx",

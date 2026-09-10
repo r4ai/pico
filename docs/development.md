@@ -309,6 +309,26 @@ nearly every file above it and therefore comes last.
 Pico synchronizes the code and appearance settings to URL query parameters.
 Shared links compress the code into the URL, so the application does not need server-side storage.
 
+### Frame backgrounds
+
+The `background` setting is `theme` (the default), `transparent`, or a canonical
+six-digit HEX color. Theme mode uses the background from the currently rendered
+syntax theme; explicit colors and transparency survive theme and appearance
+changes. Choosing **Theme** resets the override. The preset swatches use existing
+theme backgrounds for the current light/dark appearance.
+
+The native color picker applies changes immediately. HEX input accepts three or
+six digits, with an optional `#`, and commits on Enter or blur. Invalid drafts
+show an inline error and leave the applied color intact. The frame owns the
+background override, so the editor, PNG/SVG export, and clipboard capture agree;
+syntax colors remain controlled by the syntax theme. Transparent export retains
+the selected shadow; select **Shadow → None** for text alone.
+
+The URL parser rejects invalid backgrounds by using the theme default, consistent
+with other appearance parameters. Old links remain unchanged. Background changes
+apply immediately without a page-wide transition so dragging a color picker
+cannot queue view transitions.
+
 ## Design principles
 
 - Show only the editor and essential export actions on first load.
