@@ -35,9 +35,9 @@ const metadata = {
 await test("report explains improvements, regressions, unchanged metrics and absolute budgets", () => {
   const pr = { ...summary, median: { ...summary.median, score: 0.8, lcp: 1500, tbt: 201 } };
   const body = renderReport({ pr, main: summary }, metadata);
-  assert.match(body, /\| Performance.*\| 90.*\| 80.*\|.*悪化/);
-  assert.match(body, /\| LCP.*\| 2,000 ms.*\| 1,500 ms.*\|.*改善/);
-  assert.match(body, /\| FCP.*変化なし/);
+  assert.match(body, /\| スコア.*\| 90.*\| 80.*\|.*🟠/);
+  assert.match(body, /\| LCP.*\| 2,000.*\| 1,500.*\|.*🟢/);
+  assert.match(body, /\| FCP.*\| — \|/);
   assert.match(body, /警告/);
   assert.match(body, /超過/);
   assert.match(body, /既存基準を超過/);
@@ -53,7 +53,23 @@ await test("passing boundaries and a zero baseline are rendered without invalid 
   const body = renderReport({ pr, main }, metadata);
   assert.match(body, /既存基準を満たしています/);
   assert.doesNotMatch(body, /NaN|Infinity|超過|警告/);
-  assert.match(body, /\+200 ms/);
+  assert.match(body, /\+200 🟠/);
+});
+
+await test("keeps a four-column summary and collapses explanations and budget details", () => {
+  const body = renderReport({ pr: summary, main: summary }, metadata);
+  const [visible, details] = body.split("<details>");
+  assert.match(visible, /\| 指標 \| main \| PR \| 差分 \|/);
+  const rows = visible.split("\n").filter((line) => line.startsWith("|"));
+  assert.equal(rows.length, 9);
+  for (const row of rows) assert.equal(row.split("|").length, 6);
+  assert.doesNotMatch(visible, /中央値|計測コミット|総合スコア|PRの既存基準/);
+  assert.match(visible, /時間: ms.*転送量: kB/);
+  assert.match(details, /<summary>指標・基準・計測条件<\/summary>\n\n/);
+  assert.match(details, /FCP.*最初の描画/);
+  assert.match(details, /SI.*Speed Index/);
+  assert.match(details, /≤ 4,000 ms/);
+  assert.match(details, /\n<\/details>/);
 });
 
 for (const [name, reports, expected] of [
