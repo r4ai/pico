@@ -7,7 +7,10 @@ export function parseAudit(output, status) {
   assert.ok(status === 0 || status === 1, "pnpm audit did not complete");
   const report = JSON.parse(output);
   assert.ok(!report.error, "pnpm audit returned an error");
-  assert.ok(report.advisories && !Array.isArray(report.advisories), "Missing advisories");
+  assert.ok(
+    report.advisories && typeof report.advisories === "object" && !Array.isArray(report.advisories),
+    "Missing advisories",
+  );
   const advisories = Object.values(report.advisories);
   const counts = report.metadata?.vulnerabilities;
   for (const severity of severities) {
@@ -69,7 +72,7 @@ export async function syncIssues(findings, issues, request) {
     const title = `Security audit: ${id}`;
     if (!issue) {
       await request("POST", "/issues", { title, body });
-    } else if (issue.state !== "open" || issue.body !== body || issue.title !== title) {
+    } else if (issue.state !== "open" || issue.body !== body) {
       await request("PATCH", `/issues/${issue.number}`, { title, body, state: "open" });
     }
   }

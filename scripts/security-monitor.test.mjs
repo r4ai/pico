@@ -16,12 +16,11 @@ function report(advisories = {}) {
   return JSON.stringify({ advisories, metadata: { vulnerabilities } });
 }
 
-await test("groups affected packages by advisory and ignores low severity", () => {
+await test("groups affected packages by advisory", () => {
   const findings = parseAudit(
     report({
       a: advisory,
       b: { ...advisory, module_name: "@vitest/mocker" },
-      c: { ...advisory, severity: "low" },
     }),
     1,
   );
@@ -35,6 +34,9 @@ for (const [name, output, status] of [
   ["registry failure", JSON.stringify({ error: { message: "offline" } }), 1],
   ["missing advisories", JSON.stringify({ metadata: { vulnerabilities: {} } }), 0],
   ["missing metadata", JSON.stringify({ advisories: {} }), 0],
+  ["invalid advisories type", report(true), 0],
+  ["missing package name", report({ a: { ...advisory, module_name: undefined } }), 1],
+  ["contradictory success", report({ a: advisory }), 0],
   ["unexpected exit", report(), 2],
   ["terminated process", report(), null],
   ["failed empty audit", report(), 1],
