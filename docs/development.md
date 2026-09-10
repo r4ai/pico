@@ -96,8 +96,9 @@ and `main/` in the artifact. Local runs still write directly to `lighthouse-resu
 After CI completes, `Lighthouse PR comment` creates or updates one Japanese PR
 comment showing the score, metric explanations, values, signed differences,
 improvement/regression, existing budget verdicts, and the report link. Differences
-appear in a compact four-column table (metric, main, PR, delta). Units and a color
-legend appear once below the table; metric explanations, per-metric budget
+appear in a compact four-column table (metric, main, PR, delta). Each metric's
+unit appears on a second line in its label cell; CLS is unitless. A color
+legend appears below the table; metric explanations, per-metric budget
 verdicts, measurement conditions, and caveats are collapsed in `<details>`.
 The overall verdict and report link remain visible. Differences
 are informational: only the existing PR budgets affect the Lighthouse gate.
