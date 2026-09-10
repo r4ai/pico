@@ -27,6 +27,9 @@ export const FONT_IDS = [
   "space-mono",
   "inconsolata",
   "udev-gothic",
+  "hackgen",
+  "plemoljp",
+  "firge",
 ] as const;
 
 export type FontId = (typeof FONT_IDS)[number];
@@ -130,6 +133,48 @@ export const FONTS: Record<FontId, Font> = {
     faces: [
       {
         url: `${import.meta.env.BASE_URL}fonts/udev-gothic-subset.woff2`,
+        weight: 400,
+        style: "normal",
+      },
+    ],
+  },
+  hackgen: {
+    id: "hackgen",
+    label: "HackGen",
+    note: "Japanese",
+    stack: '"HackGen", ui-monospace, SFMono-Regular, Menlo, monospace',
+    // Regular subset; bold and italic are synthesized, as with UDEV Gothic.
+    faces: [
+      {
+        url: `${import.meta.env.BASE_URL}fonts/hackgen-subset.woff2`,
+        weight: 400,
+        style: "normal",
+      },
+    ],
+  },
+  plemoljp: {
+    id: "plemoljp",
+    label: "PlemolJP",
+    note: "Japanese",
+    stack: '"PlemolJP", ui-monospace, SFMono-Regular, Menlo, monospace',
+    // Regular subset; bold and italic are synthesized, as with UDEV Gothic.
+    faces: [
+      {
+        url: `${import.meta.env.BASE_URL}fonts/plemoljp-subset.woff2`,
+        weight: 400,
+        style: "normal",
+      },
+    ],
+  },
+  firge: {
+    id: "firge",
+    label: "Firge",
+    note: "Japanese",
+    stack: '"Firge", ui-monospace, SFMono-Regular, Menlo, monospace',
+    // Regular subset; bold and italic are synthesized, as with UDEV Gothic.
+    faces: [
+      {
+        url: `${import.meta.env.BASE_URL}fonts/firge-subset.woff2`,
         weight: 400,
         style: "normal",
       },

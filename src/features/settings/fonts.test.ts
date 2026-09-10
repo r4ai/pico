@@ -18,6 +18,9 @@ describe("font registry", () => {
       "space-mono",
       "inconsolata",
       "udev-gothic",
+      "hackgen",
+      "plemoljp",
+      "firge",
     ]);
   });
 
