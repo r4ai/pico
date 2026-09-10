@@ -314,8 +314,17 @@ Shared links compress the code into the URL, so the application does not need se
 The `background` setting is `theme` (the default), `transparent`, or a canonical
 six-digit HEX color. Theme mode uses the background from the currently rendered
 syntax theme; explicit colors and transparency survive theme and appearance
-changes. Choosing **Theme** resets the override. The preset swatches use existing
-theme backgrounds for the current light/dark appearance.
+changes. The background row offers **Theme** and **Custom**. Theme keeps the
+color controls hidden; Custom reveals preset swatches, the native color picker,
+and HEX input. Choosing Custom from Theme starts with the active theme color.
+Choosing **Theme** resets the override and clears unfinished HEX input.
+
+Transparency is the checkerboard swatch inside Custom. Shared URLs with an
+explicit color or transparency open the Custom controls automatically. While
+transparent, the HEX input is empty with a Transparent placeholder; entering a
+color or choosing a swatch/picker color returns to an opaque background. The
+remaining swatches use existing theme backgrounds for the current light/dark
+appearance.
 
 The native color picker applies changes immediately. HEX input accepts three or
 six digits, with an optional `#`, and commits on Enter or blur. Invalid drafts

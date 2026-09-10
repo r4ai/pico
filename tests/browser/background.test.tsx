@@ -1,3 +1,4 @@
+import { parseHexColor } from "@/features/settings/background";
 import { App } from "@/app";
 import "@/global.css";
 import { renderImage } from "@/features/export/export-image";
@@ -9,6 +10,19 @@ import { page, userEvent } from "vite-plus/test/browser";
 import { cleanup, render } from "vitest-browser-react/pure";
 
 afterEach(async () => {
+  // nuqs batches URL writes. Finish the app's pending write before a subsequent
+  // case replaces history, or that write can overwrite the next shared URL.
+  const background = document.querySelector('[aria-label="Use theme background"]');
+  if (background) {
+    const expected =
+      background.getAttribute("aria-checked") === "true" ? "theme" : frameBackground();
+    await expect
+      .poll(() => {
+        const value = new URLSearchParams(window.location.search).get("background");
+        return value === "transparent" ? value : (parseHexColor(value ?? "") ?? "theme");
+      })
+      .toBe(expected);
+  }
   await cleanup();
   window.history.replaceState(null, "", window.location.pathname);
   window.localStorage.clear();
@@ -33,6 +47,7 @@ function frameBackground(selector = ".pico-shell-canvas .pico-frame") {
 
 it("applies HEX on Enter, keeps invalid drafts out of the frame, and resets to the active theme", async () => {
   await openApp();
+  await page.getByRole("radio", { name: "Custom background" }).click();
   const hex = page.getByRole("textbox", { name: "Background HEX" });
   await hex.fill("#AbC");
   await userEvent.keyboard("{Enter}");
@@ -46,11 +61,14 @@ it("applies HEX on Enter, keeps invalid drafts out of the frame, and resets to t
   await expect.poll(() => frameBackground()).toBe("#aabbcc");
   await page.getByRole("radio", { name: "Use theme background" }).click();
   await expect.poll(() => frameBackground()).toBe(THEMES.vitesse.colors.light.background);
+  await expect.element(hex).not.toBeInTheDocument();
+  await page.getByRole("radio", { name: "Custom background" }).click();
   await expect.element(hex).not.toHaveAttribute("aria-invalid", "true");
 });
 
 it("uses a preset and keeps that explicit color when the theme changes", async () => {
   await openApp();
+  await page.getByRole("radio", { name: "Custom background" }).click();
   await page.getByRole("radio", { name: "GitHub background" }).click();
   await expect.poll(() => frameBackground()).toBe("#24292e");
   await page.getByRole("combobox", { name: "Theme", exact: true }).fill("Catppuccin");
@@ -76,6 +94,7 @@ it("exports transparent PNG pixels and SVG without a background fill", async () 
   await expect
     .poll(() => document.querySelector(".pico-export-host")?.textContent)
     .toContain("const color = 42;");
+  await page.getByRole("radio", { name: "Custom background" }).click();
   await page.getByRole("radio", { name: "Transparent background" }).click();
   await expect.poll(() => frameBackground()).toBe("transparent");
   await expect
@@ -104,6 +123,7 @@ it("exports transparent PNG pixels and SVG without a background fill", async () 
 
 it("applies native color-picker input immediately without moving keyboard focus", async () => {
   await openApp();
+  await page.getByRole("radio", { name: "Custom background" }).click();
   const picker = document.querySelector<HTMLInputElement>('input[type="color"]')!;
   picker.focus();
   // The OS color dialog is outside the document; deliver its native input event.
@@ -121,7 +141,55 @@ it("applies native color-picker input immediately without moving keyboard focus"
 
 it("commits valid HEX when focus leaves the input", async () => {
   await openApp();
+  await page.getByRole("radio", { name: "Custom background" }).click();
   await page.getByRole("textbox", { name: "Background HEX" }).fill("abcdef");
   await page.getByText("Custom color", { exact: true }).click();
   await expect.poll(() => frameBackground()).toBe("#abcdef");
 });
+
+// Theme -> custom reveals editing. Transparent is a custom preset, including
+// on URL restore; custom -> theme hides editing and resumes theme following.
+it("keeps transparency inside Custom and returns to theme without stale drafts", async () => {
+  await openApp();
+  const hex = page.getByRole("textbox", { name: "Background HEX" });
+  const custom = page.getByRole("radio", { name: "Custom background" });
+  const transparent = page.getByRole("radio", { name: "Transparent background" });
+  await expect.element(hex).not.toBeInTheDocument();
+  await expect.element(transparent).not.toBeInTheDocument();
+  await custom.click();
+  await expect.element(custom).toBeChecked();
+  await expect.element(hex).toHaveValue("#121212");
+  await hex.fill("invalid");
+  await transparent.click();
+  await expect.element(custom).toBeChecked();
+  await expect.element(transparent).toBeChecked();
+  await expect.element(hex).toHaveValue("");
+  await expect.element(hex).not.toHaveAttribute("aria-invalid", "true");
+  await expect.poll(() => frameBackground()).toBe("transparent");
+  await hex.fill("123456");
+  await userEvent.keyboard("{Enter}");
+  await expect.poll(() => frameBackground()).toBe("#123456");
+  await expect.element(transparent).not.toBeChecked();
+  await page.getByRole("radio", { name: "Use theme background" }).click();
+  await expect.element(hex).not.toBeInTheDocument();
+  await expect.element(transparent).not.toBeInTheDocument();
+  await expect.poll(() => frameBackground()).toBe(THEMES.vitesse.colors.dark.background);
+});
+
+it.each(["%23123456", "transparent"])(
+  "opens Custom for shared background=%s and supports keyboard return to Theme",
+  async (background) => {
+    await openApp(`?background=${background}`);
+    const custom = page.getByRole("radio", { name: "Custom background" });
+    await expect.element(custom).toBeChecked();
+    await expect
+      .element(page.getByRole("textbox", { name: "Background HEX" }))
+      .toHaveValue(background === "transparent" ? "" : "#123456");
+    await custom.click();
+    await userEvent.keyboard("{ArrowLeft} ");
+    await expect.element(page.getByRole("radio", { name: "Use theme background" })).toBeChecked();
+    await expect
+      .element(page.getByRole("textbox", { name: "Background HEX" }))
+      .not.toBeInTheDocument();
+  },
+);
