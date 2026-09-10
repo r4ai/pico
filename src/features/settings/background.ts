@@ -1,16 +1,17 @@
-/** A theme-owned background, a fully transparent frame, or an explicit opaque RGB color. */
+/** A theme-owned background, a fully transparent frame, or an explicit RGB(A) color. */
 export type Background = "theme" | "transparent" | `#${string}`;
 
-/** Accept short or full HEX, with an optional hash; store a canonical six-digit RGB value. */
+/** Accept RGB/RGBA HEX, with an optional hash; expand short forms and omit opaque alpha. */
 export function parseHexColor(input: string): `#${string}` | null {
   const hex = input.trim().replace(/^#/, "");
-  if (!/^(?:[\da-f]{3}|[\da-f]{6})$/i.test(hex)) return null;
+  if (!/^(?:[\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i.test(hex)) return null;
   const expanded =
-    hex.length === 3
+    hex.length <= 4
       ? hex
           .split("")
           .map((digit) => digit + digit)
           .join("")
       : hex;
-  return `#${expanded.toLowerCase()}`;
+  const normalized = expanded.toLowerCase();
+  return `#${normalized.length === 8 && normalized.endsWith("ff") ? normalized.slice(0, 6) : normalized}`;
 }
