@@ -32,13 +32,13 @@ describe("font registry", () => {
   });
 
   it.each([
-    ["hackgen", "Pico Maru JP", "HackGen"],
-    ["plemoljp", "Pico Sans JP", "PlemolJP"],
-    ["firge", "Pico Mono JP", "Firge"],
-  ] as const)("identifies %s by its modified family name", (id, family, source) => {
+    ["hackgen", "HackGen"],
+    ["plemoljp", "PlemolJP"],
+    ["firge", "Firge"],
+  ] as const)("identifies %s by its original family name", (id, family) => {
     expect(FONTS[id].label).toBe(family);
     expect(familyNameOf(FONTS[id])).toBe(family);
-    expect(FONTS[id].note).toBe(`Japanese · based on ${source}`);
+    expect(FONTS[id].note).toBe("Japanese");
   });
 
   it.each([

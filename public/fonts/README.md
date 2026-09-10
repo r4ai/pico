@@ -13,30 +13,31 @@ The Latin coding fonts are not vendored here — they come from the
 
 ## Additional Japanese coding fonts
 
-The picker names these modified Regular subsets separately from their upstream
-fonts, as required by the Reserved Font Name clauses. The note beside each
-name credits the upstream font, and searching its original name still works.
+HackGen, PlemolJP, and Firge use their original family names and complete Regular
+faces. These files are WOFF2 compression of the pinned upstream TTFs, without
+subsetting, renaming, removing hinting, changing layout features, or rewriting
+metadata. Bold and italic are synthesized.
 
-| Picker and CSS family | Derived from                                  | Upstream release | Complete license notices                        |
-| --------------------- | --------------------------------------------- | ---------------- | ----------------------------------------------- |
-| Pico Maru JP          | [HackGen](https://github.com/yuru7/HackGen)   | v2.10.0          | [HackGen notices](./licenses/hackgen/LICENSE)   |
-| Pico Sans JP          | [PlemolJP](https://github.com/yuru7/PlemolJP) | v3.1.0           | [PlemolJP notices](./licenses/plemoljp/LICENSE) |
-| Pico Mono JP          | [Firge](https://github.com/yuru7/Firge)       | v0.3.0           | [Firge notices](./licenses/firge/LICENSE)       |
+| Font                                          | Upstream release | Complete license notices                        |
+| --------------------------------------------- | ---------------- | ----------------------------------------------- |
+| [HackGen](https://github.com/yuru7/HackGen)   | v2.10.0          | [HackGen notices](./licenses/hackgen/LICENSE)   |
+| [PlemolJP](https://github.com/yuru7/PlemolJP) | v3.1.0           | [PlemolJP notices](./licenses/plemoljp/LICENSE) |
+| [Firge](https://github.com/yuru7/Firge)       | v0.3.0           | [Firge notices](./licenses/firge/LICENSE)       |
 
-Each `licenses/<id>/` directory mirrors the upstream `LICENSE` and its source
-font license files under `source/`, including nested component licenses.
-These public files also ship in the production build. Copyright metadata is
-preserved in the WOFF2 files; the license description additionally contains the
-bundled notices so they accompany fonts embedded in exported SVGs.
+Each `licenses/<id>/` directory mirrors the upstream `LICENSE` and source-font
+license files under `source/`, including nested component licenses. These files
+ship in the production build alongside the fonts. Original copyright and license
+metadata are retained exactly as supplied by upstream.
 
-Rebuild with `uv run scripts/build-japanese-subsets.py` from the repository root.
-The script pins upstream versions and FontTools, downloads the matching notices,
-and uses the same family names in the binaries, picker, and CSS. Existing font
-IDs and URLs remain stable for saved links.
+Rebuild with `uv run scripts/build-japanese-fonts.py` from the repository root.
+The script pins upstream versions and FontTools, downloads matching notices,
+and disables WOFF2 table transforms. It compares every decoded font table with
+the original; only the container checksum and WOFF2 compression flag in `head`
+are normalized for comparison. No font-specific metadata is added.
+This follows the compression-only approach described in [OFL FAQ 2.2.1](https://openfontlicense.org/ofl-faq/).
 
-Like UDEV Gothic, these subsets include Latin, JIS X 0208 rows 1–47 (symbols,
-kana and level 1 kanji), punctuation and full-width forms. Characters outside
-the subset use system fallback and are not embedded by Pico during export.
-Only Regular is bundled; the browser synthesizes bold and italic.
-Opening the picker does not download the candidates. Selecting a font loads its
-face; exports embed only that selected font.
+Saved font IDs remain stable. Opening the picker does not download candidates;
+selecting a font loads its face, and exports embed only the selected font.
+Full faces increase the initial download and SVG size compared with the former
+subsets. They preserve upstream character coverage, not every Unicode character;
+characters absent upstream still use system fallback.

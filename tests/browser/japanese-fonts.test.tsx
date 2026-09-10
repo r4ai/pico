@@ -58,14 +58,14 @@ it.each(addedFonts)("selects %s, loads its Japanese face and exports Japanese te
   expect(getComputedStyle(frame!).fontFamily).toContain(font.label);
   const faces = await document.fonts.load(
     `16px "${familyNameOf(font)}"`,
-    "日本語の表示 あいうえお 漢字",
+    "日本語の表示 あいうえお 漢字 翔凜齋①髙﨑𠮷",
   );
   expect(faces).toHaveLength(1);
   expect(faces[0]?.status).toBe("loaded");
 
   await page
     .getByRole("textbox", { name: "Code", exact: true })
-    .fill("// 日本語の表示 あいうえお 漢字");
+    .fill("// 日本語の表示 あいうえお 漢字 翔凜齋①髙﨑𠮷");
   const exportNode = document.querySelector<HTMLElement>(".pico-export-host");
   await expect.poll(() => exportNode?.textContent).toContain("日本語の表示");
   const blob = await renderImage({
