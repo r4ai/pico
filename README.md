@@ -41,5 +41,5 @@ See [Development](./docs/development.md) for setup, architecture, testing, and d
 
 Pico is available under the [MIT License](./LICENSE).
 
-The bundled subset of UDEV Gothic is available under the
-[SIL Open Font License 1.1](./public/fonts/UDEVGothic-LICENSE.txt).
+The bundled UDEV Gothic subset and the complete HackGen, PlemolJP, and Firge faces are
+available under the SIL Open Font License 1.1. See [font sources and licenses](./public/fonts/README.md).

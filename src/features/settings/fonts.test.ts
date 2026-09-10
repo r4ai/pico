@@ -5,6 +5,7 @@ import {
   fontFaceCss,
   FONTS,
 } from "@/features/settings/fonts";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
 
 describe("font registry", () => {
@@ -18,6 +19,9 @@ describe("font registry", () => {
       "space-mono",
       "inconsolata",
       "udev-gothic",
+      "hackgen",
+      "plemoljp",
+      "firge",
     ]);
   });
 
@@ -25,6 +29,38 @@ describe("font registry", () => {
     expect(FONTS[id].faces).toContainEqual(
       expect.objectContaining({ weight: 400, style: "normal" }),
     );
+  });
+
+  it.each([
+    ["hackgen", "HackGen"],
+    ["plemoljp", "PlemolJP"],
+    ["firge", "Firge"],
+  ] as const)("identifies %s by its original family name", (id, family) => {
+    expect(FONTS[id].label).toBe(family);
+    expect(familyNameOf(FONTS[id])).toBe(family);
+    expect(FONTS[id].note).toBe("Japanese");
+  });
+
+  it.each([
+    ["hackgen", ["LICENSE_GenJyuuGothic", "LICENSE_Hack", "LICENSE_NerdFonts"]],
+    [
+      "plemoljp",
+      [
+        "LICENSE_IBM-Plex",
+        "LICENSE_NerdFonts",
+        "IBM-Plex-Mono/license.txt",
+        "IBM-Plex-Sans-JP/unhinted/license.txt",
+        "hack/LICENSE",
+        "nerd-fonts/LICENSE",
+      ],
+    ],
+    ["firge", ["LICENSE_FiraMono", "LICENSE_GenJyuuGothic_GenShinGothic"]],
+  ] as const)("ships %s source-font notices with the public assets", (id, notices) => {
+    for (const notice of notices) {
+      expect(readFileSync(`public/fonts/licenses/${id}/source/${notice}`, "utf8")).toMatch(
+        /copyright/i,
+      );
+    }
   });
 
   it("generates one font-face rule for every registered face", () => {
