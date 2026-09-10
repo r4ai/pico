@@ -1,4 +1,7 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import * as chromeLauncher from "chrome-launcher";
 import lighthouse from "lighthouse";
@@ -7,7 +10,9 @@ import { preview } from "vite";
 
 import { evaluateBudgets, median, PERFORMANCE_BUDGETS } from "./lighthouse-budget.mjs";
 
-const REPORT_DIRECTORY = new URL("../lighthouse-results/", import.meta.url);
+const REPORT_DIRECTORY = pathToFileURL(
+  `${resolve(process.env.LIGHTHOUSE_REPORT_DIRECTORY ?? "lighthouse-results")}/`,
+);
 const RUN_COUNT = 3;
 const TARGET_URL = "http://127.0.0.1:4173/";
 
@@ -58,6 +63,8 @@ async function main() {
   await mkdir(REPORT_DIRECTORY, { recursive: true });
 
   const server = await preview({
+    configFile: false,
+    build: { outDir: resolve(process.env.LIGHTHOUSE_BUILD_DIRECTORY ?? "dist") },
     logLevel: "silent",
     preview: { host: "127.0.0.1", port: 4173, strictPort: true },
   });
@@ -83,7 +90,7 @@ async function main() {
     const violations = evaluateBudgets(medianResult);
     await writeFile(
       new URL("summary.json", REPORT_DIRECTORY),
-      `${JSON.stringify({ budgets: PERFORMANCE_BUDGETS, median: medianResult, runs, violations }, null, 2)}\n`,
+      `${JSON.stringify({ commit: process.env.LIGHTHOUSE_COMMIT_SHA ?? execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), budgets: PERFORMANCE_BUDGETS, median: medianResult, runs, violations }, null, 2)}\n`,
     );
 
     console.table(runs.map((run, index) => ({ run: index + 1, ...run })));

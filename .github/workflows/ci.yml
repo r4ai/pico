@@ -104,6 +104,40 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - run: pnpm run ${{ matrix.script }}
+        env:
+          LIGHTHOUSE_REPORT_DIRECTORY: lighthouse-results/pr
+          LIGHTHOUSE_COMMIT_SHA: ${{ github.sha }}
+
+      # main is built independently, then measured with the PR's same harness/browser.
+      # Comparison failures do not change the existing PR budget gate.
+      - name: Check out main for Lighthouse comparison
+        id: lighthouse-main
+        if: ${{ !cancelled() && matrix.lighthouse && github.event_name == 'pull_request' }}
+        continue-on-error: true
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          path: .lighthouse-main
+          persist-credentials: false
+
+      - name: Build main for Lighthouse comparison
+        id: lighthouse-main-build
+        if: ${{ !cancelled() && steps.lighthouse-main.outcome == 'success' }}
+        continue-on-error: true
+        working-directory: .lighthouse-main
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Measure main with the same Lighthouse and Chromium
+        if: ${{ !cancelled() && steps.lighthouse-main-build.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          LIGHTHOUSE_BUILD_DIRECTORY: .lighthouse-main/dist
+          LIGHTHOUSE_REPORT_DIRECTORY: lighthouse-results/main
+          LIGHTHOUSE_COMMIT_SHA: ${{ steps.lighthouse-main-build.outputs.sha }}
+        run: node scripts/lighthouse.mjs
 
       - name: Upload coverage to Codecov
         if: >-
@@ -124,7 +158,7 @@ jobs:
         if: always() && matrix.lighthouse
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: lighthouse-reports
+          name: lighthouse-reports-${{ github.run_attempt }}
           path: lighthouse-results
           if-no-files-found: warn
           retention-days: 14
