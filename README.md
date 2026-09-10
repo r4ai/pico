@@ -29,6 +29,7 @@
 
 - Automatic detection for common languages, with highlighting for 243 languages.
 - Twelve paired light and dark themes, plus fonts with Japanese text support.
+- Custom frame backgrounds with theme presets, a color picker, HEX input, and transparency.
 - Clipboard copy, PNG/SVG downloads, and URL sharing.
 - No account required; editing and export run entirely in the browser.
 
