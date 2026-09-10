@@ -140,9 +140,9 @@ export const FONTS: Record<FontId, Font> = {
   },
   hackgen: {
     id: "hackgen",
-    label: "HackGen",
-    note: "Japanese",
-    stack: '"HackGen", ui-monospace, SFMono-Regular, Menlo, monospace',
+    label: "Pico Maru JP",
+    note: "Japanese · based on HackGen",
+    stack: '"Pico Maru JP", ui-monospace, SFMono-Regular, Menlo, monospace',
     // Regular subset; bold and italic are synthesized, as with UDEV Gothic.
     faces: [
       {
@@ -154,9 +154,9 @@ export const FONTS: Record<FontId, Font> = {
   },
   plemoljp: {
     id: "plemoljp",
-    label: "PlemolJP",
-    note: "Japanese",
-    stack: '"PlemolJP", ui-monospace, SFMono-Regular, Menlo, monospace',
+    label: "Pico Sans JP",
+    note: "Japanese · based on PlemolJP",
+    stack: '"Pico Sans JP", ui-monospace, SFMono-Regular, Menlo, monospace',
     // Regular subset; bold and italic are synthesized, as with UDEV Gothic.
     faces: [
       {
@@ -168,9 +168,9 @@ export const FONTS: Record<FontId, Font> = {
   },
   firge: {
     id: "firge",
-    label: "Firge",
-    note: "Japanese",
-    stack: '"Firge", ui-monospace, SFMono-Regular, Menlo, monospace',
+    label: "Pico Mono JP",
+    note: "Japanese · based on Firge",
+    stack: '"Pico Mono JP", ui-monospace, SFMono-Regular, Menlo, monospace',
     // Regular subset; bold and italic are synthesized, as with UDEV Gothic.
     faces: [
       {

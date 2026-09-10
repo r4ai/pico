@@ -202,6 +202,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                 options={FONT_IDS.map((id) => ({
                   value: id,
                   label: FONTS[id].label,
+                  searchTerms: [FONTS[id].note ?? ""],
                   render: (
                     <span className="flex items-center gap-2">
                       <span>{FONTS[id].label}</span>

@@ -34,7 +34,9 @@ it("keeps unselected Japanese fonts unloaded when opening the picker", async () 
   await page.getByRole("combobox", { name: "Font", exact: true }).click();
   for (const id of addedFonts) {
     await expect
-      .element(page.getByRole("option", { name: `${FONTS[id].label} Japanese`, exact: true }))
+      .element(
+        page.getByRole("option", { name: `${FONTS[id].label} ${FONTS[id].note}`, exact: true }),
+      )
       .toBeVisible();
   }
   const families = addedFonts.map((id) => familyNameOf(FONTS[id]));
@@ -48,7 +50,8 @@ it("keeps unselected Japanese fonts unloaded when opening the picker", async () 
 it.each(addedFonts)("selects %s, loads its Japanese face and exports Japanese text", async (id) => {
   const font = FONTS[id];
   await page.getByRole("combobox", { name: "Font", exact: true }).click();
-  await page.getByRole("option", { name: `${font.label} Japanese`, exact: true }).click();
+  await page.getByRole("combobox", { name: "Font", exact: true }).fill(id);
+  await page.getByRole("option", { name: `${font.label} ${font.note}`, exact: true }).click();
   await expect.poll(() => new URLSearchParams(window.location.search).get("font")).toBe(id);
   const frame = document.querySelector<HTMLElement>(".pico-shell-canvas .pico-frame");
   expect(frame).not.toBeNull();
