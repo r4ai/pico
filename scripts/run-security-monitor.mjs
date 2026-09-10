@@ -4,7 +4,9 @@ import { parseAudit, syncIssues } from "./security-monitor.mjs";
 
 const repository = process.env.GITHUB_REPOSITORY;
 assert.match(repository, /^[\w.-]+\/[\w.-]+$/);
-const audit = spawnSync("pnpm", ["audit", "--json", "--audit-level", "moderate"], {
+// Request the complete report so metadata and advisory counts stay comparable.
+// Notification filtering happens only after validating the complete audit.
+const audit = spawnSync("pnpm", ["audit", "--json", "--audit-level", "info"], {
   encoding: "utf8",
   timeout: 120_000,
   maxBuffer: 20 * 1024 * 1024,

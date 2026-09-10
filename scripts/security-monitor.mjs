@@ -44,7 +44,7 @@ export function parseAudit(output, status) {
     );
     groups.set(id, entries);
   }
-  assert.equal(status, Number(groups.size > 0), "Audit exit status contradicts findings");
+  assert.equal(status, Number(advisories.length > 0), "Audit exit status contradicts findings");
   return new Map(
     [...groups].map(([id, entries]) => [
       id,

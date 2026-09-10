@@ -140,7 +140,7 @@ for (const [severity, expected] of [
   ["critical", 1],
 ]) {
   await test(`monitor threshold for ${severity}`, () => {
-    assert.equal(parseAudit(report({ a: { ...advisory, severity } }), expected).size, expected);
+    assert.equal(parseAudit(report({ a: { ...advisory, severity } }), 1).size, expected);
   });
 }
 
