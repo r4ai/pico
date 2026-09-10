@@ -65,12 +65,12 @@ await test("keeps a four-column summary and collapses explanations and budget de
   for (const row of rows) assert.equal(row.split("|").length, 6);
   assert.doesNotMatch(visible, /中央値|計測コミット|総合スコア|PRの既存基準/);
   for (const label of [
-    "スコア<br>(点)",
-    "FCP<br>(ms)",
-    "LCP<br>(ms)",
-    "SI<br>(ms)",
-    "TBT<br>(ms)",
-    "転送量<br>(kB)",
+    "スコア (点)",
+    "FCP (ms)",
+    "LCP (ms)",
+    "SI (ms)",
+    "TBT (ms)",
+    "転送量 (kB)",
   ]) {
     assert.ok(visible.includes(`| ${label} |`));
   }

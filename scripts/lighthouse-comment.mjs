@@ -66,7 +66,7 @@ export function renderReport({ pr, main }, { runId, attempt, serverUrl, reposito
       );
       return {
         level: violates ? budget.level : null,
-        text: `| ${label}${metric[3] ? `<br>(${metric[3]})` : ""} | ${main ? format(main.median[key], metric) : "—"} | ${format(actual, metric)} | ${main ? difference(actual, main.median[key], metric) : "—"} |`,
+        text: `| ${label}${metric[3] ? ` (${metric[3]})` : ""} | ${main ? format(main.median[key], metric) : "—"} | ${format(actual, metric)} | ${main ? difference(actual, main.median[key], metric) : "—"} |`,
       };
     });
     const hasErrors = rows.some(({ level }) => level === "error");
