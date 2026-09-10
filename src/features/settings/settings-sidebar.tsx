@@ -83,7 +83,11 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
     if (event.target instanceof Element && event.target.closest(".pico-editor")) return;
     // A picker owns the first Escape while its list is open. React Aria closes
     // that nested surface; the settings remain for a second Escape to close.
-    if (event.target instanceof Element && event.target.closest('[aria-expanded="true"]')) return;
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[aria-expanded="true"], [data-settings-popover]')
+    )
+      return;
     onClose();
   });
 
@@ -190,11 +194,8 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
                 options={COLOR_MODES}
                 value={settings.mode}
               />
+              <BackgroundSetting settings={settings} onChange={onChange} />
             </section>
-
-            <Separator />
-
-            <BackgroundSetting settings={settings} onChange={onChange} />
 
             <Separator />
 
