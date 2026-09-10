@@ -42,6 +42,11 @@ denied in `allowBuilds`.
 version to exactly match the Vitest version bundled by Vite+. Update the
 provider together with Vite+, then verify with `pnpm run test:coverage`.
 
+The `miniflare>sharp` override pins the patched release for
+[GHSA-rgj7-g3m4-5g8c](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c).
+Remove it once the pinned Wrangler version brings in Miniflare with
+`sharp >=0.35.4` and the dependency audit passes without the override.
+
 Update workflow action pins with:
 
 ```sh

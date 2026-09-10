@@ -3,12 +3,14 @@ allowBuilds:
   workerd: true
 blockExoticSubdeps: true
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@0.2.9
-  vite-plus: 0.2.9
+  vite: npm:@voidzero-dev/vite-plus-core@0.3.1
+  vite-plus: 0.3.1
 minimumReleaseAge: 1440
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 overrides:
+  # GHSA-rgj7-g3m4-5g8c; remove when Miniflare pins sharp >=0.35.4.
+  miniflare>sharp: 0.35.4
   vite: "catalog:"
 peerDependencyRules:
   allowAny:
