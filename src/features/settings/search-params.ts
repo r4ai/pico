@@ -1,3 +1,4 @@
+import { parseHexColor, type Background } from "@/features/settings/background";
 import { LANGUAGE_IDS } from "@/features/editor/language";
 import { FONT_SIZE_IDS, PADDING_IDS, RADIUS_IDS, SHADOW_IDS } from "@/features/settings/appearance";
 import { FONT_IDS } from "@/features/settings/fonts";
@@ -23,6 +24,10 @@ import { useCallback } from "react";
 const languageParser = parseAsStringLiteral(LANGUAGE_IDS);
 
 const settingsParsers = {
+  background: createParser<Background>({
+    parse: (value) => (value === "theme" || value === "transparent" ? value : parseHexColor(value)),
+    serialize: (value) => value,
+  }).withDefault(DEFAULT_SETTINGS.background),
   lang: languageParser.withDefault(DEFAULT_SETTINGS.lang),
   theme: parseAsStringLiteral(THEME_IDS).withDefault(DEFAULT_SETTINGS.theme),
   mode: parseAsStringLiteral(COLOR_MODES).withDefault(DEFAULT_SETTINGS.mode),

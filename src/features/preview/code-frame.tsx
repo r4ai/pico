@@ -47,7 +47,7 @@ export function CodeFrame({
     "--pico-radius": RADII[settings.radius],
     "--pico-shadow": SHADOWS[settings.shadow],
     "--pico-shadow-room": SHADOW_ROOM[settings.shadow],
-    "--pico-bg": colors.background,
+    "--pico-bg": settings.background === "theme" ? colors.background : settings.background,
     "--pico-fg": colors.foreground,
     "--pico-line-number": colors.lineNumber,
     "--pico-gutter-gap": "1.5ch",

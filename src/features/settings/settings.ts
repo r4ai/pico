@@ -1,3 +1,4 @@
+import type { Background } from "@/features/settings/background";
 import type { LanguageId } from "@/features/editor/language";
 import {
   DEFAULT_FONT_SIZE,
@@ -23,6 +24,7 @@ import { DEFAULT_LANGUAGE } from "@/features/editor/language";
 export type Settings = {
   readonly lang: LanguageId;
   readonly theme: ThemeId;
+  readonly background: Background;
   readonly mode: ColorMode;
   readonly padding: PaddingId;
   readonly radius: RadiusId;
@@ -35,6 +37,7 @@ export type Settings = {
 export const DEFAULT_SETTINGS: Settings = {
   lang: DEFAULT_LANGUAGE,
   theme: DEFAULT_THEME,
+  background: "theme",
   mode: DEFAULT_MODE,
   padding: DEFAULT_PADDING,
   radius: DEFAULT_RADIUS,
