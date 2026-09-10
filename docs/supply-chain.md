@@ -53,3 +53,46 @@ Update workflow action pins with:
 mise exec -- pinact run
 mise exec -- pinact run --check
 ```
+
+## Proactive security maintenance
+
+[Security monitor](../.github/workflows/security-monitor.yml) audits main every
+six hours, at approximately 03:17, 09:17, 15:17 and 21:17 JST. It also supports a
+manual run from the Actions tab. Scheduled Actions can be delayed and GitHub can
+disable them after 60 days of inactivity in public repositories.
+
+The monitor uses the pinned pnpm and frozen lockfile, with install scripts
+disabled. It creates one `Security audit: GHSA-…` issue per moderate-or-higher
+advisory, grouping all affected packages. Its body marker and GitHub Actions bot
+author identify managed issues; unrelated issues and pull requests are untouched.
+Repeated findings produce no writes or comments. Changed findings update the
+existing issue, resolved findings close it, and recurrence reopens the same issue.
+Registry, process, malformed-response and GitHub API errors fail the workflow;
+an incomplete audit never closes issues. Finding a vulnerability succeeds once
+its issue is synchronized, avoiding repeated failure notifications. The existing
+push/PR audit continues to block moderate-or-higher vulnerabilities.
+
+The external Codex automation `pico` checks security issues and ongoing fixes
+daily at 10:00 JST. It checks monitor health, including stale or disabled runs,
+and continues existing PRs before opening another. Broader maintenance remains
+weekly on Mondays. No change means no notification; new findings, completed
+fixes, failures and required decisions are reported. This automation requires
+its Codex host to be available; GitHub detection runs independently of that host.
+
+Repairs preserve the 24-hour release age and audit policy. Vite+, its Vite core,
+and matching Vitest adapters must be updated together. PRs adding overrides or
+requiring breaking changes are left for human review rather than automatically
+merged. Renovate is a later extension for routine version updates; it is not
+installed by this initial monitoring setup.
+
+Run the monitor's behavior tests locally with:
+
+```sh
+mise exec -- node --test --experimental-test-coverage scripts/security-monitor.test.mjs
+```
+
+To start a monitor run manually using the GitHub Actions bot identity:
+
+```sh
+gh workflow run security-monitor.yml --ref main
+```
