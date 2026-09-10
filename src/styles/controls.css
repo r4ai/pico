@@ -71,3 +71,15 @@
 .pico-preset-item[data-selected][data-hovered] {
   background: light-dark(oklch(0 0 0 / 23%), oklch(1 0 0 / 30%));
 }
+
+/* Show alpha against a neutral checkerboard in the swatch and opacity track. */
+.pico-color-checker {
+  background-color: var(--background);
+  background-image: conic-gradient(
+    var(--muted-foreground) 25%,
+    transparent 0 50%,
+    var(--muted-foreground) 0 75%,
+    transparent 0
+  );
+  background-size: 8px 8px;
+}

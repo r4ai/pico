@@ -311,26 +311,30 @@ Shared links compress the code into the URL, so the application does not need se
 
 ### Frame backgrounds
 
-The `background` setting is `theme` (the default), `transparent`, or a canonical
-six-digit HEX color. Theme mode uses the background from the currently rendered
-syntax theme; explicit colors and transparency survive theme and appearance
-changes. The background row offers **Theme** and **Custom**. Theme keeps the
-color controls hidden; Custom reveals preset swatches, the native color picker,
-and HEX input. Choosing Custom from Theme starts with the active theme color.
-Choosing **Theme** resets the override and clears unfinished HEX input.
+The `background` setting is `theme` (the default), legacy `transparent`, or a
+canonical six-digit RGB / eight-digit RGBA HEX color. Background belongs to the
+Theme section and offers **Theme** and **Custom**. Theme keeps color editing
+hidden; Custom shows a color swatch and HEX input, without presets. Choosing
+Custom from Theme starts with the active theme color. Choosing **Theme** resets
+the override and clears unfinished HEX input.
 
-Transparency is the checkerboard swatch inside Custom. Shared URLs with an
-explicit color or transparency open the Custom controls automatically. While
-transparent, the HEX input is empty with a Transparent placeholder; entering a
-color or choosing a swatch/picker color returns to an opaque background. The
-remaining swatches use existing theme backgrounds for the current light/dark
-appearance.
+The swatch opens a React Aria color picker with a saturation/brightness area,
+hue slider, and **Opacity** slider (0% is transparent, 100% is opaque). Changes
+apply immediately. Checkerboards make alpha visible in the swatch and slider.
+The picker retains HSB while editing so hue does not reset at black or gray;
+external HEX/URL changes replace that editing value when RGB(A) differs.
+The first Escape closes the picker and restores focus to its swatch, including
+inside the mobile settings drawer; the next Escape closes settings.
 
-The native color picker applies changes immediately. HEX input accepts three or
-six digits, with an optional `#`, and commits on Enter or blur. Invalid drafts
-show an inline error and leave the applied color intact. The frame owns the
-background override, so the editor, PNG/SVG export, and clipboard capture agree;
-syntax colors remain controlled by the syntax theme. Transparent export retains
+HEX input accepts three, four, six, or eight digits, with an optional `#`, and
+commits on Enter or blur. Short forms expand, and an opaque `ff` alpha is omitted.
+Invalid drafts show an inline error and leave the applied color intact. Shared
+colors, including alpha, restore Custom automatically; old `transparent` URLs
+remain supported and appear as `#00000000` in the picker.
+
+The frame owns the override, so preview, PNG/SVG export, and clipboard capture
+agree; syntax colors remain controlled by the syntax theme. Explicit colors
+and opacity survive theme and appearance changes. Transparent export retains
 the selected shadow; select **Shadow → None** for text alone.
 
 The URL parser rejects invalid backgrounds by using the theme default, consistent

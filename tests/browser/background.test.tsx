@@ -26,6 +26,7 @@ afterEach(async () => {
   await cleanup();
   window.history.replaceState(null, "", window.location.pathname);
   window.localStorage.clear();
+  await page.viewport(1280, 900);
 });
 
 async function openApp(query = "") {
@@ -54,7 +55,7 @@ it("applies HEX on Enter, keeps invalid drafts out of the frame, and resets to t
   await expect.poll(() => frameBackground()).toBe("#aabbcc");
   expect(frameBackground(".pico-export-host .pico-frame")).toBe("#aabbcc");
   await hex.fill("#xyz");
-  await page.getByText("Custom color", { exact: true }).click();
+  await page.getByText("Background", { exact: true }).click();
   await expect.element(hex).toHaveAttribute("aria-invalid", "true");
   expect(frameBackground()).toBe("#aabbcc");
   await page.getByRole("radio", { name: "Light", exact: true }).click();
@@ -66,10 +67,11 @@ it("applies HEX on Enter, keeps invalid drafts out of the frame, and resets to t
   await expect.element(hex).not.toHaveAttribute("aria-invalid", "true");
 });
 
-it("uses a preset and keeps that explicit color when the theme changes", async () => {
+it("keeps a custom color when the theme changes", async () => {
   await openApp();
   await page.getByRole("radio", { name: "Custom background" }).click();
-  await page.getByRole("radio", { name: "GitHub background" }).click();
+  await page.getByRole("textbox", { name: "Background HEX" }).fill("24292e");
+  await userEvent.keyboard("{Enter}");
   await expect.poll(() => frameBackground()).toBe("#24292e");
   await page.getByRole("combobox", { name: "Theme", exact: true }).fill("Catppuccin");
   await page.getByRole("option", { name: "Catppuccin" }).click();
@@ -78,7 +80,7 @@ it("uses a preset and keeps that explicit color when the theme changes", async (
   await expect.poll(() => frameBackground()).toBe(THEMES.catppuccin.colors.dark.background);
 });
 
-it.each(["%23123456", "transparent", "invalid"])(
+it.each(["%23123456", "%2312345680", "transparent", "invalid"])(
   "restores background=%s from a shared URL",
   async (value) => {
     await openApp(`?background=${value}`);
@@ -88,22 +90,26 @@ it.each(["%23123456", "transparent", "invalid"])(
   },
 );
 
-it("exports transparent PNG pixels and SVG without a background fill", async () => {
+it.each([
+  ["#12345600", 0],
+  ["#12345680", 128],
+] as const)("exports %s with matching PNG and SVG alpha", async (background, alpha) => {
   await openApp("?shadow=none");
   await page.getByRole("textbox", { name: "Code", exact: true }).fill("const color = 42;");
   await expect
     .poll(() => document.querySelector(".pico-export-host")?.textContent)
     .toContain("const color = 42;");
   await page.getByRole("radio", { name: "Custom background" }).click();
-  await page.getByRole("radio", { name: "Transparent background" }).click();
-  await expect.poll(() => frameBackground()).toBe("transparent");
+  await page.getByRole("textbox", { name: "Background HEX" }).fill(background);
+  await userEvent.keyboard("{Enter}");
+  await expect.poll(() => frameBackground()).toBe(background);
   await expect
     .poll(() => new URLSearchParams(window.location.search).get("background"))
-    .toBe("transparent");
+    .toBe(background);
   const node = document.querySelector<HTMLElement>(".pico-export-host")!;
   const request = {
     node,
-    settings: { ...DEFAULT_SETTINGS, background: "transparent", shadow: "none" },
+    settings: { ...DEFAULT_SETTINGS, background, shadow: "none" },
     scale: 1,
   } as const;
   const png = await renderImage({ ...request, format: "png" });
@@ -113,67 +119,37 @@ it("exports transparent PNG pixels and SVG without a background fill", async () 
   canvas.height = bitmap.height;
   const context = canvas.getContext("2d")!;
   context.drawImage(bitmap, 0, 0);
-  expect(context.getImageData(10, 10, 1, 1).data[3]).toBe(0);
+  expect(context.getImageData(10, 10, 1, 1).data[3]).toBe(alpha);
   bitmap.close();
   const svg = await (await renderImage({ ...request, format: "svg" })).text();
   const exported = new DOMParser().parseFromString(svg, "image/svg+xml");
   const frame = exported.querySelector<HTMLElement>(".pico-frame")!;
-  expect(frame.style.backgroundColor).toBe("rgba(0, 0, 0, 0)");
-});
-
-it("applies native color-picker input immediately without moving keyboard focus", async () => {
-  await openApp();
-  await page.getByRole("radio", { name: "Custom background" }).click();
-  const picker = document.querySelector<HTMLInputElement>('input[type="color"]')!;
-  picker.focus();
-  // The OS color dialog is outside the document; deliver its native input event.
-  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(
-    picker,
-    "#314159",
+  expect(frame.style.backgroundColor).toBe(
+    getComputedStyle(document.querySelector(".pico-shell-canvas .pico-frame")!).backgroundColor,
   );
-  picker.dispatchEvent(new Event("input", { bubbles: true }));
-  await expect.poll(() => frameBackground()).toBe("#314159");
-  await expect
-    .element(page.getByRole("textbox", { name: "Background HEX" }))
-    .toHaveValue("#314159");
-  expect(document.activeElement).toBe(picker);
 });
 
 it("commits valid HEX when focus leaves the input", async () => {
   await openApp();
   await page.getByRole("radio", { name: "Custom background" }).click();
   await page.getByRole("textbox", { name: "Background HEX" }).fill("abcdef");
-  await page.getByText("Custom color", { exact: true }).click();
+  await page.getByText("Background", { exact: true }).click();
   await expect.poll(() => frameBackground()).toBe("#abcdef");
 });
 
-// Theme -> custom reveals editing. Transparent is a custom preset, including
-// on URL restore; custom -> theme hides editing and resumes theme following.
-it("keeps transparency inside Custom and returns to theme without stale drafts", async () => {
+it("hides color editing in Theme and clears drafts when resetting", async () => {
   await openApp();
   const hex = page.getByRole("textbox", { name: "Background HEX" });
-  const custom = page.getByRole("radio", { name: "Custom background" });
-  const transparent = page.getByRole("radio", { name: "Transparent background" });
   await expect.element(hex).not.toBeInTheDocument();
-  await expect.element(transparent).not.toBeInTheDocument();
-  await custom.click();
-  await expect.element(custom).toBeChecked();
+  await page.getByRole("radio", { name: "Custom background" }).click();
   await expect.element(hex).toHaveValue("#121212");
   await hex.fill("invalid");
-  await transparent.click();
-  await expect.element(custom).toBeChecked();
-  await expect.element(transparent).toBeChecked();
-  await expect.element(hex).toHaveValue("");
-  await expect.element(hex).not.toHaveAttribute("aria-invalid", "true");
-  await expect.poll(() => frameBackground()).toBe("transparent");
-  await hex.fill("123456");
-  await userEvent.keyboard("{Enter}");
-  await expect.poll(() => frameBackground()).toBe("#123456");
-  await expect.element(transparent).not.toBeChecked();
   await page.getByRole("radio", { name: "Use theme background" }).click();
   await expect.element(hex).not.toBeInTheDocument();
-  await expect.element(transparent).not.toBeInTheDocument();
   await expect.poll(() => frameBackground()).toBe(THEMES.vitesse.colors.dark.background);
+  await page.getByRole("radio", { name: "Custom background" }).click();
+  await expect.element(hex).toHaveValue("#121212");
+  await expect.element(hex).not.toHaveAttribute("aria-invalid", "true");
 });
 
 it.each(["%23123456", "transparent"])(
@@ -184,7 +160,7 @@ it.each(["%23123456", "transparent"])(
     await expect.element(custom).toBeChecked();
     await expect
       .element(page.getByRole("textbox", { name: "Background HEX" }))
-      .toHaveValue(background === "transparent" ? "" : "#123456");
+      .toHaveValue(background === "transparent" ? "#00000000" : "#123456");
     await custom.click();
     await userEvent.keyboard("{ArrowLeft} ");
     await expect.element(page.getByRole("radio", { name: "Use theme background" })).toBeChecked();
@@ -193,3 +169,65 @@ it.each(["%23123456", "transparent"])(
       .not.toBeInTheDocument();
   },
 );
+
+// The color editor is nested in Theme. Its popup owns opacity and the first
+// Escape; the settings panel stays open and focus returns to the swatch.
+it.each([1280, 390])("edits opacity and restores focus at %spx", async (width) => {
+  await page.viewport(width, 900);
+  await openApp("?background=%23314159");
+  await expect.element(page.getByRole("radiogroup", { name: "Presets" })).not.toBeInTheDocument();
+  const picker = page.getByRole("button", { name: "Background color picker" });
+  await picker.click();
+  const opacity = page.getByRole("slider", { name: "Opacity", exact: true });
+  opacity.element().focus();
+  await userEvent.keyboard("{Home}");
+  await expect.poll(() => frameBackground()).toBe("#31415900");
+  await userEvent.keyboard("{PageUp}{PageUp}{PageUp}{PageUp}{PageUp}");
+  await expect.poll(() => frameBackground()).toBe("#31415980");
+  await expect.element(opacity).toHaveValue("0.5");
+  await userEvent.keyboard("{End}");
+  await expect.poll(() => frameBackground()).toBe("#314159");
+  await userEvent.keyboard("{Escape}");
+  await expect
+    .element(page.getByRole("dialog", { name: "Background color", exact: true }))
+    .not.toBeInTheDocument();
+  await expect.element(picker).toHaveFocus();
+  await expect
+    .element(
+      page.getByRole(width < 896 ? "dialog" : "complementary", { name: "Settings", exact: true }),
+    )
+    .toBeVisible();
+  const section = picker.element().closest("section");
+  expect(section?.querySelector("h3")?.textContent).toBe("Theme");
+});
+
+// A black/gray RGB value cannot encode hue. Moving hue before the other
+// channels must still affect the resulting color, without snapping the slider.
+it("retains hue through black and resynchronizes after an external HEX edit", async () => {
+  await openApp("?background=%23000000");
+  const picker = page.getByRole("button", { name: "Background color picker" });
+  await picker.click();
+  const hue = page.getByRole("slider", { name: "Hue", exact: true });
+  hue.element().focus();
+  await userEvent.keyboard("{Home}{PageUp}");
+  await expect.element(hue).toHaveValue("15");
+  expect(frameBackground()).toBe("#000000");
+  const axes = page
+    .getByRole("group", { name: "Background color, Color picker", exact: true })
+    .element()
+    .querySelectorAll<HTMLInputElement>('input[type="range"]');
+  axes[0]!.focus();
+  await userEvent.keyboard("{End}".repeat(10));
+  await userEvent.keyboard("{PageUp}".repeat(10));
+  await expect.poll(() => frameBackground()).toBe("#ff4000");
+  await expect.element(hue).toHaveValue("15");
+  await userEvent.keyboard("{Escape}");
+  await page.getByRole("textbox", { name: "Background HEX" }).fill("0000ff80");
+  await userEvent.keyboard("{Enter}");
+  await picker.click();
+  await expect.element(hue).toHaveValue("240");
+  await expect
+    .element(page.getByRole("slider", { name: "Opacity", exact: true }))
+    .toHaveAttribute("aria-valuetext", "50%");
+  await userEvent.keyboard("{Escape}");
+});
