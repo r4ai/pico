@@ -101,6 +101,12 @@ beforeEach(async () => {
     for (const entry of list.getEntries() as LayoutShiftEntry[]) {
       if (entry.hadRecentInput || entry.value < NOISE) continue;
       if (isPopoverKeepingUp(entry)) continue;
+      console.log(
+        "SHIFT",
+        entry.startTime,
+        JSON.stringify(entry.sources),
+        document.querySelector(".pico-shell")?.getAttribute("data-font-phase"),
+      );
       shifts.push({ value: entry.value, sources: describe(entry) });
     }
   });

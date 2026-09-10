@@ -42,7 +42,9 @@ function codeWithLineCount(count: number): string {
 
 async function finishAnimations(element: HTMLElement): Promise<void> {
   await nextFrame();
-  for (const animation of element.getAnimations({ subtree: true })) animation.finish();
+  for (const animation of element.getAnimations({ subtree: true })) {
+    if (Number.isFinite(animation.effect?.getComputedTiming().endTime)) animation.finish();
+  }
   await nextFrame();
 }
 
@@ -62,7 +64,9 @@ async function openSettings(): Promise<void> {
 
 async function pauseAtMidpoint(element: HTMLElement): Promise<void> {
   await nextFrame();
-  const animations = element.getAnimations({ subtree: true });
+  const animations = element
+    .getAnimations({ subtree: true })
+    .filter((animation) => Number.isFinite(animation.effect?.getComputedTiming().endTime));
   expect(animations.length).toBeGreaterThan(0);
   for (const animation of animations) {
     animation.pause();
@@ -98,6 +102,23 @@ afterEach(async () => {
 });
 
 describe("preview geometry", () => {
+  it("settles geometry without finishing a blinking caret", async () => {
+    const caret = document.createElement("span");
+    liveFrame().append(caret);
+    const blink = caret.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 500,
+      iterations: Infinity,
+    });
+    const transition = liveFrame().animate([{ opacity: 0 }, { opacity: 1 }], 1000);
+
+    await finishAnimations(liveFrame());
+
+    expect(transition.playState).toBe("finished");
+    expect(blink.playState).toBe("running");
+    blink.cancel();
+    caret.remove();
+  });
+
   it("does not animate initial state or ordinary code input", async () => {
     expect(liveFrame().dataset.animateGeometry).toBe("false");
 
