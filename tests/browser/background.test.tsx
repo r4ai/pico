@@ -1,7 +1,7 @@
 import { parseHexColor } from "@/core/settings/background";
 import { App } from "@/app";
 import "@/global.css";
-import { renderImage } from "@/features/export/export-image";
+import { renderImage } from "@/features/export/lib/export-image";
 import { DEFAULT_SETTINGS } from "@/core/settings/settings";
 import { THEMES } from "@/core/theme/theme";
 import { NuqsAdapter } from "nuqs/adapters/react";

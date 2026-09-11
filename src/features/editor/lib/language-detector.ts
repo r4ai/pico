@@ -1,4 +1,4 @@
-import type { DetectRequest, DetectResponse } from "@/features/editor/detect-language-protocol";
+import type { DetectRequest, DetectResponse } from "@/features/editor/lib/detect-language-protocol";
 import type { LanguageId } from "@/core/language/language";
 
 type Pending = {

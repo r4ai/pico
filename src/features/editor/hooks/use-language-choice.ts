@@ -1,5 +1,5 @@
 import type { LanguageId } from "@/core/language/language";
-import { useLanguageDetection } from "@/features/editor/use-language-detection";
+import { useLanguageDetection } from "@/features/editor/hooks/use-language-detection";
 import { hasExplicitLanguage } from "@/core/settings/search-params";
 import { useCallback, useState } from "react";
 

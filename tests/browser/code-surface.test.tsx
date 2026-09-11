@@ -1,6 +1,6 @@
-import { CodeEditor } from "@/features/editor/code-editor";
+import { CodeEditor } from "@/features/editor/components/code-editor";
 import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
-import { CodeFrame } from "@/features/preview/code-frame";
+import { CodeFrame } from "@/features/preview/components/code-frame";
 import { ShikiCode } from "@/components/shiki-code";
 import { frameColorsOfTheme } from "@/core/theme/theme";
 import { ensureHighlighter } from "@/core/highlight/shiki";

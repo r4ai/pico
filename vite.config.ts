@@ -2,7 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig, type Plugin } from "vite-plus";
-import { HLJS_MODULES } from "./src/features/editor/detect-language";
+import { HLJS_MODULES } from "./src/features/editor/lib/detect-language";
 
 /**
  * The face the first screen is painted in, unless a link says otherwise.

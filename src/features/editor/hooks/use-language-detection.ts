@@ -1,4 +1,4 @@
-import { detectLanguageOffThread } from "@/features/editor/language-detector";
+import { detectLanguageOffThread } from "@/features/editor/lib/language-detector";
 import type { LanguageId } from "@/core/language/language";
 import { useEffect, useRef } from "react";
 

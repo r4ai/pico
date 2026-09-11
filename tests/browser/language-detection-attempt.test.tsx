@@ -1,5 +1,5 @@
 import type { LanguageId } from "@/core/language/language";
-import { useLanguageDetection } from "@/features/editor/use-language-detection";
+import { useLanguageDetection } from "@/features/editor/hooks/use-language-detection";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import { cleanup, renderHook } from "vitest-browser-react/pure";
 
@@ -7,7 +7,7 @@ const { detect } = vi.hoisted(() => ({
   detect: vi.fn<(code: string) => Promise<LanguageId | undefined>>(),
 }));
 
-vi.mock("@/features/editor/language-detector", () => ({
+vi.mock("@/features/editor/lib/language-detector", () => ({
   detectLanguageOffThread: detect,
 }));
 

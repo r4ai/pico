@@ -1,10 +1,10 @@
-import { createEditorTheme } from "@/features/editor/cm-theme";
+import { createEditorTheme } from "@/features/editor/lib/cm-theme";
 import {
   setShikiHighlight,
   type ShikiHighlight,
   shikiHighlighting,
 } from "@/core/highlight/shiki-highlight";
-import { useLiveMetrics } from "@/features/editor/use-live-metrics";
+import { useLiveMetrics } from "@/features/editor/hooks/use-live-metrics";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 // This module is the split point: it is the one CodeMirror is imported
 // dynamically through, and half of what the entry chunk would otherwise be.

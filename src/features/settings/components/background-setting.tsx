@@ -1,7 +1,7 @@
-import { BackgroundColorPicker } from "@/features/settings/background-color-picker";
+import { BackgroundColorPicker } from "@/features/settings/components/background-color-picker";
 import { Input } from "@/components/ui/input";
 import { parseHexColor, type Background } from "@/core/settings/background";
-import { PresetToggle } from "@/features/settings/setting-row";
+import { PresetToggle } from "@/features/settings/components/setting-row";
 import type { Settings } from "@/core/settings/settings";
 import { THEMES } from "@/core/theme/theme";
 import { useId, useState } from "react";

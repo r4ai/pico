@@ -1,6 +1,6 @@
 import { App } from "@/app";
 import "@/global.css";
-import { SIDEBAR_INSET_QUERY } from "@/features/settings/use-sidebar-mode";
+import { SIDEBAR_INSET_QUERY } from "@/features/settings/hooks/use-sidebar-mode";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, beforeEach, expect, it } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";

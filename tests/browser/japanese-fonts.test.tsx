@@ -1,5 +1,5 @@
 import { App } from "@/app";
-import { renderImage } from "@/features/export/export-image";
+import { renderImage } from "@/features/export/lib/export-image";
 import { familyNameOf, fontFaceCss, FONTS } from "@/core/settings/fonts";
 import { DEFAULT_SETTINGS } from "@/core/settings/settings";
 import "@/global.css";

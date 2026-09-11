@@ -1,4 +1,4 @@
-import { detectLanguage } from "@/features/editor/detect-language";
+import { detectLanguage } from "@/features/editor/lib/detect-language";
 import { describe, expect, it } from "vite-plus/test";
 
 const SAMPLES = {

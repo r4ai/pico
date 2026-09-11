@@ -1,5 +1,5 @@
 import type { ExportFormat, ExportScale } from "@/core/export";
-import { fontEmbedCss } from "@/features/export/font-embed";
+import { fontEmbedCss } from "@/features/export/lib/font-embed";
 import { FONTS } from "@/core/settings/fonts";
 import type { Settings } from "@/core/settings/settings";
 

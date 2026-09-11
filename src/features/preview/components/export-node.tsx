@@ -1,5 +1,5 @@
 import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
-import { CodeFrame } from "@/features/preview/code-frame";
+import { CodeFrame } from "@/features/preview/components/code-frame";
 import type { FrameColors } from "@/core/theme/frame-colors";
 import { ShikiCode } from "@/components/shiki-code";
 import { SHADOW_ROOM } from "@/core/settings/appearance";

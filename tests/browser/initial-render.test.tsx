@@ -1,6 +1,6 @@
-import { CodeEditor } from "@/features/editor/code-editor";
-import { createEditorTheme } from "@/features/editor/cm-theme";
-import { CodeFrame } from "@/features/preview/code-frame";
+import { CodeEditor } from "@/features/editor/components/code-editor";
+import { createEditorTheme } from "@/features/editor/lib/cm-theme";
+import { CodeFrame } from "@/features/preview/components/code-frame";
 import { DEFAULT_SETTINGS } from "@/core/settings/settings";
 import { frameColorsOfTheme, type ColorMode } from "@/core/theme/theme";
 import "@/global.css";

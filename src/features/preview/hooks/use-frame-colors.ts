@@ -1,5 +1,5 @@
 import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
-import { useShikiHighlight } from "@/features/preview/use-shiki-highlight";
+import { useShikiHighlight } from "@/features/preview/hooks/use-shiki-highlight";
 import { frameColorsOf, type FrameColors } from "@/core/theme/frame-colors";
 import type { Settings } from "@/core/settings/settings";
 import { frameColorsOfTheme, shikiThemeOf } from "@/core/theme/theme";

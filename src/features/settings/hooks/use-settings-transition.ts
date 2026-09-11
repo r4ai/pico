@@ -5,7 +5,7 @@ import {
 } from "@/core/settings/appearance";
 import type { Settings } from "@/core/settings/settings";
 import { shikiThemeOf } from "@/core/theme/theme";
-import type { FontPhase } from "@/features/settings/use-font-ready";
+import type { FontPhase } from "@/features/settings/hooks/use-font-ready";
 import { crossFade } from "@/lib/cross-fade";
 import { isThemeLoaded } from "@/core/highlight/shiki";
 import { useCallback, useEffect, useRef } from "react";

@@ -1,5 +1,5 @@
-import type { CodeEditorProps } from "@/features/editor/code-editor";
-import { useCodeEditor } from "@/features/editor/use-code-editor";
+import type { CodeEditorProps } from "@/features/editor/components/code-editor";
+import { useCodeEditor } from "@/features/editor/hooks/use-code-editor";
 import { ShikiCode } from "@/components/shiki-code";
 import { useState } from "react";
 

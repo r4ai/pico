@@ -1,5 +1,5 @@
-import { detectLanguage } from "@/features/editor/detect-language";
-import type { DetectRequest, DetectResponse } from "@/features/editor/detect-language-protocol";
+import { detectLanguage } from "@/features/editor/lib/detect-language";
+import type { DetectRequest, DetectResponse } from "@/features/editor/lib/detect-language-protocol";
 
 /**
  * Where guessing the language happens.

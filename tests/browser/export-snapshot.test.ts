@@ -1,4 +1,4 @@
-import { renderImage } from "@/features/export/export-image";
+import { renderImage } from "@/features/export/lib/export-image";
 import { DEFAULT_SETTINGS } from "@/core/settings/settings";
 import { afterEach, expect, it, vi } from "vite-plus/test";
 

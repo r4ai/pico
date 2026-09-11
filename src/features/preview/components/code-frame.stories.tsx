@@ -1,4 +1,4 @@
-import { CodeFrame } from "@/features/preview/code-frame";
+import { CodeFrame } from "@/features/preview/components/code-frame";
 import { PADDING_IDS, RADIUS_IDS, SHADOW_IDS } from "@/core/settings/appearance";
 import { DEFAULT_SETTINGS } from "@/core/settings/settings";
 import type { Meta, StoryObj } from "@storybook/react-vite";

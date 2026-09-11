@@ -1,5 +1,5 @@
 import { useStoredFlag } from "@/hooks/use-stored-flag";
-import { SIDEBAR_INSET_QUERY } from "@/features/settings/use-sidebar-mode";
+import { SIDEBAR_INSET_QUERY } from "@/features/settings/hooks/use-sidebar-mode";
 
 /**
  * Where the panel's open state is kept between visits.

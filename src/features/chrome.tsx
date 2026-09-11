@@ -1,7 +1,7 @@
 import { useExportActions, useSettingsControl } from "@/features/chrome-context";
-import { SettingsSidebar } from "@/features/settings/settings-sidebar";
-import { SidebarToggle } from "@/features/settings/sidebar-toggle";
-import { BottomDock } from "@/features/toolbar/bottom-dock";
+import { SettingsSidebar } from "@/features/settings/components/settings-sidebar";
+import { SidebarToggle } from "@/features/settings/components/sidebar-toggle";
+import { BottomDock } from "@/features/toolbar/components/bottom-dock";
 import { I18nProvider } from "react-aria-components";
 
 /**

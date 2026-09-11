@@ -1,6 +1,6 @@
 import { useBriefFlag } from "@/hooks/use-brief-flag";
 import type { ExportFormat, ExportScale, ExportTask } from "@/core/export";
-import { imageFileName, renderImage } from "@/features/export/export-image";
+import { imageFileName, renderImage } from "@/features/export/lib/export-image";
 import type { Settings } from "@/core/settings/settings";
 import { type RefObject, useCallback, useState } from "react";
 import { toast } from "@/components/toast/toast";

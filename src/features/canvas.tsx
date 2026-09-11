@@ -1,6 +1,6 @@
-import { CodeSurface } from "@/features/editor/code-surface";
+import { CodeSurface } from "@/features/editor/components/code-surface";
 import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
-import { CodeFrame } from "@/features/preview/code-frame";
+import { CodeFrame } from "@/features/preview/components/code-frame";
 import type { FrameColors } from "@/core/theme/frame-colors";
 import type { Settings } from "@/core/settings/settings";
 

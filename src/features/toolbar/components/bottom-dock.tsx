@@ -2,10 +2,10 @@ import { GlassPanel } from "@/components/glass-panel/glass-panel";
 import { Separator } from "@/components/ui/separator";
 import type { LanguageId } from "@/core/language/language";
 import type { ExportFormat, ExportScale, ExportTask } from "@/core/export";
-import { DockButton } from "@/features/toolbar/dock-button";
-import { DockIcon, DockLabel } from "@/features/toolbar/dock-icon";
-import { LanguagePicker } from "@/features/toolbar/language-picker";
-import { SaveSplitButton } from "@/features/toolbar/save-split-button";
+import { DockButton } from "@/features/toolbar/components/dock-button";
+import { DockIcon, DockLabel } from "@/features/toolbar/components/dock-icon";
+import { LanguagePicker } from "@/features/toolbar/components/language-picker";
+import { SaveSplitButton } from "@/features/toolbar/components/save-split-button";
 import { CopyIcon, Link2Icon } from "lucide-react";
 
 export type BottomDockProps = {

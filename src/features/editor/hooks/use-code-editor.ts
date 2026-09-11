@@ -1,4 +1,4 @@
-import type { CodeEditorProps } from "@/features/editor/code-editor";
+import type { CodeEditorProps } from "@/features/editor/components/code-editor";
 import { toast } from "@/components/toast/toast";
 import { type ComponentType, useEffect, useState } from "react";
 
@@ -15,7 +15,9 @@ let pending: Promise<CodeEditorComponent> | undefined;
  * have asked for it.
  */
 function load(): Promise<CodeEditorComponent> {
-  pending ??= import("@/features/editor/code-editor").then((module) => module.CodeEditor);
+  pending ??= import("@/features/editor/components/code-editor").then(
+    (module) => module.CodeEditor,
+  );
   return pending;
 }
 

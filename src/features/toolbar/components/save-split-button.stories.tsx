@@ -1,5 +1,5 @@
 import type { ExportScale } from "@/core/export";
-import { SaveSplitButton } from "@/features/toolbar/save-split-button";
+import { SaveSplitButton } from "@/features/toolbar/components/save-split-button";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 

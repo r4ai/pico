@@ -8,7 +8,7 @@ export default mergeConfig(baseConfig, {
       include: [
         "src/components/searchable-select/searchable-option.ts",
         "src/core/language/cuda-grammar.ts",
-        "src/features/editor/detect-language.ts",
+        "src/features/editor/lib/detect-language.ts",
         "src/core/language/language-registry.ts",
         "src/core/language/language.ts",
         "src/core/theme/frame-colors.ts",

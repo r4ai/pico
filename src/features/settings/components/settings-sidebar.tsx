@@ -1,4 +1,4 @@
-import { BackgroundSetting } from "@/features/settings/background-setting";
+import { BackgroundSetting } from "@/features/settings/components/background-setting";
 import { GlassPanel } from "@/components/glass-panel/glass-panel";
 import { SearchableSelect } from "@/components/searchable-select/searchable-select";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import {
   SHADOW_IDS,
 } from "@/core/settings/appearance";
 import { FONT_IDS, FONTS } from "@/core/settings/fonts";
-import { PresetToggle, SettingRow } from "@/features/settings/setting-row";
+import { PresetToggle, SettingRow } from "@/features/settings/components/setting-row";
 import type { Settings } from "@/core/settings/settings";
 import {
   COLOR_MODES,
@@ -23,9 +23,9 @@ import {
   type ColorMode,
   type ThemeId,
 } from "@/core/theme/theme";
-import { usePanelFocus } from "@/features/settings/use-panel-focus";
-import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
-import { useSwipeDismiss } from "@/features/settings/use-swipe-dismiss";
+import { usePanelFocus } from "@/features/settings/hooks/use-panel-focus";
+import { useSidebarMode } from "@/features/settings/hooks/use-sidebar-mode";
+import { useSwipeDismiss } from "@/features/settings/hooks/use-swipe-dismiss";
 import { warmTheme } from "@/core/highlight/shiki";
 import { MoonIcon, SunIcon, XIcon } from "lucide-react";
 import { useEffect, useEffectEvent, useId, useRef } from "react";
