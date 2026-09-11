@@ -91,12 +91,53 @@ pnpm test:lighthouse
 ```
 
 Lighthouse runs three mobile-profile measurements and evaluates their median.
-CI keeps the HTML and JSON reports as a `lighthouse-reports` artifact
+CI keeps the HTML and JSON reports as a `lighthouse-reports-<run_attempt>` artifact
 for 14 days. The enforced budgets are FCP at most 3,000 ms, LCP at most
 4,000 ms, Speed Index at most 3,400 ms, TBT at most 200 ms, CLS at most 0.1,
 and transferred bytes at most 450 kB. A median performance score below 0.85 is
 reported as a warning because hosted-runner speed varies; the metric and byte
 budgets remain blocking.
+
+For each PR, CI also checks out the current `main`, installs its locked
+dependencies, and builds it independently on the same runner. It measures both
+builds sequentially with the PR's Lighthouse harness and pinned Chromium (three
+runs each). The PR measurement uses GitHub's test merge commit; the baseline is
+`main` when the comparison checkout runs, not the merge base. Both commit SHAs
+are recorded in `summary.json` and the comment. Reports are grouped under `pr/`
+and `main/` in the artifact. Local runs still write directly to `lighthouse-results/`.
+
+After CI completes, `Lighthouse PR comment` creates or updates one Japanese PR
+comment showing the score, metric explanations, values, signed differences,
+improvement/regression, existing budget verdicts, and the report link. Differences
+appear in a compact four-column table (metric, main, PR, delta). Each metric's
+unit appears inline in its label cell (e.g. `FCP (ms)`); CLS is unitless. A color
+legend appears below the table; metric explanations, per-metric budget
+verdicts, measurement conditions, and caveats are collapsed in `<details>`.
+The overall verdict and report link remain visible. Differences
+are informational: only the existing PR budgets affect the Lighthouse gate.
+A main checkout/build/measurement failure does not fail that gate. Missing or
+invalid summaries are explicitly reported as unavailable rather than as zero or
+success. Timing noise still applies even on the same runner.
+
+The commenter runs through `workflow_run` and must first be merged into `main`
+to become active. It checks out only the trusted default-branch commit, installs
+no PR dependencies, and reads only validated JSON entries from the artifact;
+PR code never receives its write token. This supports fork PRs as well. GitHub
+API metadata determines the target PR, and closed PRs, superseded heads, and
+older attempts/results are skipped. Re-running CI updates the same bot comment.
+
+To exercise the comparison locally after building a separate main checkout:
+
+```sh
+LIGHTHOUSE_BUILD_DIRECTORY=/absolute/path/to/main/dist \
+  LIGHTHOUSE_REPORT_DIRECTORY=lighthouse-results/main \
+  LIGHTHOUSE_COMMIT_SHA=$(git -C /absolute/path/to/main rev-parse HEAD) \
+  node scripts/lighthouse.mjs
+```
+
+The Node tests in `scripts/lighthouse-*.test.mjs` cover report formatting and
+validation, comment creation/update ordering, PR targeting, and real ZIP reads.
+They run with coverage before the Lighthouse build and measurement.
 
 `.claude/launch.json` has an entry for that server. Several things are easy to
 undo:
