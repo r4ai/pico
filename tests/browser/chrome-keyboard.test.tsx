@@ -1,8 +1,8 @@
-import { App } from "@/app";
+import { App } from "@/app/app";
 import "@/global.css";
-import { SIDEBAR_INSET_QUERY } from "@/features/settings/use-sidebar-mode";
-import { BottomDock } from "@/features/toolbar/bottom-dock";
-import type { ExportTask } from "@/features/export/use-export";
+import { SIDEBAR_INSET_QUERY } from "@/features/settings/hooks/use-sidebar-mode";
+import { BottomDock } from "@/features/toolbar/components/bottom-dock";
+import type { ExportTask } from "@/core/export";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, expect, it } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";

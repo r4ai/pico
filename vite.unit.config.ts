@@ -4,19 +4,21 @@ import baseConfig from "./vite.config";
 export default mergeConfig(baseConfig, {
   test: {
     include: ["src/**/*.test.{ts,tsx}"],
+    // The browser suite sits beside its source too, and has its own config.
+    exclude: ["**/*.browser.test.*"],
     coverage: {
       include: [
-        "src/components/searchable-option.ts",
-        "src/features/editor/cuda-grammar.ts",
-        "src/features/editor/detect-language.ts",
-        "src/features/editor/language-registry.ts",
-        "src/features/editor/language.ts",
-        "src/features/preview/frame-colors.ts",
-        "src/features/settings/background.ts",
-        "src/features/settings/fonts.ts",
-        "src/features/settings/theme-accents.ts",
-        "src/features/settings/theme.ts",
-        "src/lib/shiki.ts",
+        "src/components/searchable-select/searchable-option.ts",
+        "src/core/language/cuda-grammar.ts",
+        "src/features/editor/lib/detect-language.ts",
+        "src/core/language/language-registry.ts",
+        "src/core/language/language.ts",
+        "src/core/theme/frame-colors.ts",
+        "src/core/settings/background.ts",
+        "src/core/settings/fonts.ts",
+        "src/core/theme/theme-accents.ts",
+        "src/core/theme/theme.ts",
+        "src/core/highlight/shiki.ts",
         "src/lib/url-codec.ts",
       ],
       thresholds: {

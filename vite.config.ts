@@ -2,7 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig, type Plugin } from "vite-plus";
-import { HLJS_MODULES } from "./src/features/editor/detect-language";
+import { HLJS_MODULES } from "./src/features/editor/lib/detect-language";
 
 /**
  * The face the first screen is painted in, unless a link says otherwise.
@@ -90,5 +90,128 @@ export default defineConfig({
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: { "vite-plus/prefer-vite-plus-imports": "error" },
     options: { typeAware: true, typeCheck: true },
+    // The layering, made a lint error rather than a convention:
+    //
+    //   app → features → components / hooks → core → lib
+    //
+    // A feature may not name another feature or the shell that composes them.
+    // What two features share belongs in @/core; what one of them needs from
+    // the shell arrives as a prop or through a context. Each layer below may
+    // only reach further down. A test that has to cross — one that mounts the
+    // whole application, or composes two features — is an integration test and
+    // lives in tests/browser/ rather than under src/.
+    overrides: [
+      {
+        files: ["src/features/editor/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                "@/features/export/**",
+                "@/features/preview/**",
+                "@/features/settings/**",
+                "@/features/toolbar/**",
+                "@/app/**",
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/features/export/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                "@/features/editor/**",
+                "@/features/preview/**",
+                "@/features/settings/**",
+                "@/features/toolbar/**",
+                "@/app/**",
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/features/preview/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                "@/features/editor/**",
+                "@/features/export/**",
+                "@/features/settings/**",
+                "@/features/toolbar/**",
+                "@/app/**",
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/features/settings/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                "@/features/editor/**",
+                "@/features/export/**",
+                "@/features/preview/**",
+                "@/features/toolbar/**",
+                "@/app/**",
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/features/toolbar/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                "@/features/editor/**",
+                "@/features/export/**",
+                "@/features/preview/**",
+                "@/features/settings/**",
+                "@/app/**",
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/components/**", "src/hooks/**"],
+        rules: {
+          "no-restricted-imports": ["error", { patterns: ["@/features/**", "@/app/**"] }],
+        },
+      },
+      {
+        files: ["src/core/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            { patterns: ["@/features/**", "@/app/**", "@/components/**", "@/hooks/**"] },
+          ],
+        },
+      },
+      {
+        files: ["src/lib/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: ["@/features/**", "@/app/**", "@/components/**", "@/hooks/**", "@/core/**"],
+            },
+          ],
+        },
+      },
+    ],
   },
 });

@@ -1,10 +1,10 @@
-import { CodeEditor } from "@/features/editor/code-editor";
-import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
-import { CodeFrame } from "@/features/preview/code-frame";
-import { ShikiCode } from "@/features/preview/shiki-code";
-import { frameColorsOfTheme } from "@/features/settings/theme";
-import { ensureHighlighter } from "@/lib/shiki";
-import { DEFAULT_SETTINGS } from "@/features/settings/settings";
+import { CodeEditor } from "@/features/editor/components/code-editor";
+import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
+import { CodeFrame } from "@/features/preview/components/code-frame";
+import { ShikiCode } from "@/components/shiki-code";
+import { frameColorsOfTheme } from "@/core/theme/theme";
+import { ensureHighlighter } from "@/core/highlight/shiki";
+import { DEFAULT_SETTINGS } from "@/core/settings/settings";
 import "@/global.css";
 import { useLayoutEffect } from "react";
 import { afterEach, expect, it } from "vite-plus/test";

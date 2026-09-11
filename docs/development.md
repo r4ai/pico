@@ -65,6 +65,13 @@ The source list in `vite.unit.config.ts` fixes this measurement to non-React log
 contracts can be tested without a browser. Components and hooks are exercised by
 `pnpm test:browser` instead.
 
+Unit tests live beside the source they exercise, as `*.test.ts`. A browser test that stays within
+one module joins it there as `*.browser.test.tsx`, which is how the unit config excludes it; one
+that mounts the whole application, or composes two features, is an integration test and lives in
+`tests/browser/`. Either way, a new browser test must also be added to one of the instances in
+`vite.browser.config.ts` — those lists are exhaustive, and a file in none of them is silently
+never run.
+
 Browser geometry tests control the animations they measure. Only finite animations may
 be paused or finished: CodeMirror's caret blinks indefinitely and `Animation.finish()`
 throws for it. Keep a running caret in the regression fixture so focus timing cannot
@@ -328,19 +335,49 @@ block CI.
 
 ## Architecture
 
-| Path                      | Responsibility                                   |
-| ------------------------- | ------------------------------------------------ |
-| `src/app.tsx`             | Wiring, and nothing else                         |
-| `src/features/canvas.tsx` | The picture and the room it hangs in             |
-| `src/features/chrome.tsx` | Everything on screen that is not the picture     |
-| `src/features/editor/`    | Editing, language detection, and highlighting    |
-| `src/features/preview/`   | The visible code frame and export rendering      |
-| `src/features/settings/`  | Appearance settings and URL synchronization      |
-| `src/features/export/`    | PNG/SVG generation and font embedding            |
-| `src/features/toolbar/`   | Language selection, copy, save, and link actions |
-| `src/components/`         | UI components shared across features             |
-| `src/styles/`             | The stylesheet, one file per surface             |
-| `public/fonts/`           | The UDEV Gothic subset and its license           |
+| Path                     | Responsibility                                           |
+| ------------------------ | -------------------------------------------------------- |
+| `src/main.tsx`           | The entry point `index.html` names                       |
+| `src/app/`               | Wiring, and nothing else                                 |
+| `src/core/`              | The domain: settings, theme, language, highlight, export |
+| `src/features/editor/`   | Editing, language detection, and the live highlighting   |
+| `src/features/preview/`  | The visible code frame and export rendering              |
+| `src/features/settings/` | The settings panel and its controls                      |
+| `src/features/export/`   | PNG/SVG generation and font embedding                    |
+| `src/features/toolbar/`  | Language selection, copy, save, and link actions         |
+| `src/components/`        | UI components shared across features, and shadcn's `ui/` |
+| `src/hooks/`             | Hooks shared across features                             |
+| `src/lib/`               | Utilities that know nothing about Pico                   |
+| `src/styles/`            | What no single surface owns: tokens, document, overrides |
+| `public/fonts/`          | The UDEV Gothic subset and its license                   |
+
+### Layers
+
+```
+app  →  features  →  components / hooks  →  core  →  lib
+```
+
+Imports run down this list and never up. **A feature may not name another
+feature**, nor `@/app`: what two features share belongs in `@/core`, and what a
+feature needs from the shell arrives as a prop or through a context. `core`
+holds what has no UI of its own — the `Settings` type, the theme and font
+tables, the language ids and their grammar registry, the Shiki wrapper, and
+what an export is — so `preview` can name a theme without reaching into
+`settings`, and `toolbar` can offer a scale without pulling in html-to-image.
+
+This is `no-restricted-imports` in `vite.config.ts`, not a convention: a
+crossing import fails `pnpm check`, with nothing under `src/` exempt. A test
+that has to cross is an integration test and belongs in `tests/browser/`.
+
+Inside a feature, files are filed by what they are — `components/`, `hooks/`,
+`lib/` — alongside the stylesheet for that surface and any test that stays
+within it. Shared components follow the same rule, each in a directory with its
+stories, tests, and helpers.
+
+**No barrel files.** A feature-level `index.ts` re-exporting its modules would
+put CodeMirror, React Aria, or sonner back on the first-paint path without
+anything in the diff saying so; see the chunk invariants below. Imports name
+the module they want.
 
 Every rule about what happens when something changes belongs to the hook that
 owns it — `useSettingsTransition` for how a settings change reaches the screen,
@@ -350,15 +387,17 @@ a new rule is a new file rather than another branch in the one everything meets
 in.
 
 `Chrome` takes what it needs from context rather than from props; see
-`chrome-context.ts`. Two contexts, because the export actions close over the
+`src/app/chrome-context.ts`. Two contexts, because the export actions close over the
 code and are new on every keystroke while the settings are not, and nothing
 that only reads the settings should re-render for typing. They stop at the
 chrome: the picture is handed its props, being one component with one caller.
 
-`global.css` is imports alone. Each part of the stylesheet is a file under
-`src/styles/` named for the surface it dresses, and the import order is the
-order the cascade reads them in — `reduced-motion.css` names selectors from
-nearly every file above it and therefore comes last.
+`global.css` is imports alone. Each part of the stylesheet is a file named for
+the surface it dresses and kept beside that surface — `frame.css` with
+`features/preview/`, `dock.css` with `features/toolbar/` — leaving `src/styles/`
+the parts that belong to no one surface. The import order is the order the
+cascade reads them in: `reduced-motion.css` names selectors from nearly every
+file above it and therefore comes last.
 
 Pico synchronizes the code and appearance settings to URL query parameters.
 Shared links compress the code into the URL, so the application does not need server-side storage.

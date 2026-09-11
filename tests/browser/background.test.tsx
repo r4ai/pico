@@ -1,9 +1,9 @@
-import { parseHexColor } from "@/features/settings/background";
-import { App } from "@/app";
+import { parseHexColor } from "@/core/settings/background";
+import { App } from "@/app/app";
 import "@/global.css";
-import { renderImage } from "@/features/export/export-image";
-import { DEFAULT_SETTINGS } from "@/features/settings/settings";
-import { THEMES } from "@/features/settings/theme";
+import { renderImage } from "@/features/export/lib/export-image";
+import { DEFAULT_SETTINGS } from "@/core/settings/settings";
+import { THEMES } from "@/core/theme/theme";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, expect, it } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";

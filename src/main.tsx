@@ -1,7 +1,7 @@
-import { App } from "@/app";
+import { App } from "@/app/app";
 import "@/global.css";
-import { fontFaceCss } from "@/features/settings/fonts";
-import { recoverPendingCode } from "@/features/settings/search-params";
+import { fontFaceCss } from "@/core/settings/fonts";
+import { recoverPendingCode } from "@/core/settings/search-params";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
