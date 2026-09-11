@@ -42,6 +42,7 @@ function codeWithLineCount(count: number): string {
 
 async function finishAnimations(element: HTMLElement): Promise<void> {
   await nextFrame();
+  // CodeMirror's focused caret blinks forever; it has no end to finish.
   for (const animation of element.getAnimations({ subtree: true })) {
     if (Number.isFinite(animation.effect?.getComputedTiming().endTime)) animation.finish();
   }
@@ -110,6 +111,11 @@ describe("preview geometry", () => {
       iterations: Infinity,
     });
     const transition = liveFrame().animate([{ opacity: 0 }, { opacity: 1 }], 1000);
+
+    await pauseAtMidpoint(liveFrame());
+    expect(transition.currentTime).toBe(TRANSITION_MIDPOINT_MS);
+    expect(transition.playState).toBe("paused");
+    expect(blink.playState).toBe("running");
 
     await finishAnimations(liveFrame());
 
