@@ -1,4 +1,4 @@
-import { GlassPanel } from "@/components/glass-panel";
+import { GlassPanel } from "@/components/glass-panel/glass-panel";
 import { Separator } from "@/components/ui/separator";
 import type { LanguageId } from "@/core/language/language";
 import type { ExportFormat, ExportScale, ExportTask } from "@/core/export";

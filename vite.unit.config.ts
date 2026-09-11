@@ -6,7 +6,7 @@ export default mergeConfig(baseConfig, {
     include: ["src/**/*.test.{ts,tsx}"],
     coverage: {
       include: [
-        "src/components/searchable-option.ts",
+        "src/components/searchable-select/searchable-option.ts",
         "src/core/language/cuda-grammar.ts",
         "src/features/editor/detect-language.ts",
         "src/core/language/language-registry.ts",

@@ -1,6 +1,6 @@
 import { BackgroundSetting } from "@/features/settings/background-setting";
-import { GlassPanel } from "@/components/glass-panel";
-import { SearchableSelect } from "@/components/searchable-select";
+import { GlassPanel } from "@/components/glass-panel/glass-panel";
+import { SearchableSelect } from "@/components/searchable-select/searchable-select";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";

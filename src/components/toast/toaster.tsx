@@ -1,5 +1,5 @@
-import { loadToaster } from "@/components/toast-loader";
-import { useToastsWanted } from "@/components/toast";
+import { loadToaster } from "@/components/toast/toast-loader";
+import { useToastsWanted } from "@/components/toast/toast";
 import type { ColorMode } from "@/core/theme/theme";
 import { lazy, Suspense } from "react";
 

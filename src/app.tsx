@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/toaster";
+import { Toaster } from "@/components/toast/toaster";
 import { Canvas } from "@/features/canvas";
 import { ExportActionsContext, SettingsControlContext } from "@/features/chrome-context";
 import type { LanguageId } from "@/core/language/language";

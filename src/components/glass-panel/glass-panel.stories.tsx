@@ -1,4 +1,4 @@
-import { GlassPanel } from "@/components/glass-panel";
+import { GlassPanel } from "@/components/glass-panel/glass-panel";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta = {

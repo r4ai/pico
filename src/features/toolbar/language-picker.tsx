@@ -1,4 +1,4 @@
-import { SearchableSelect } from "@/components/searchable-select";
+import { SearchableSelect } from "@/components/searchable-select/searchable-select";
 import type { LanguageId } from "@/core/language/language";
 import { LANGUAGES } from "@/core/language/language-registry";
 

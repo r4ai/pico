@@ -1,4 +1,4 @@
-import { ComboboxFocus } from "@/components/combobox-focus";
+import { ComboboxFocus } from "@/components/searchable-select/combobox-focus";
 import { createRef, useLayoutEffect } from "react";
 import { ComboBoxStateContext } from "react-aria-components";
 import { afterEach, expect, it } from "vite-plus/test";

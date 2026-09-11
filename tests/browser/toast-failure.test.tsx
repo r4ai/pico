@@ -1,4 +1,4 @@
-import { loadToaster } from "@/components/toast-loader";
+import { loadToaster } from "@/components/toast/toast-loader";
 import "@/global.css";
 import { expect, it } from "vite-plus/test";
 import { page } from "vite-plus/test/browser";

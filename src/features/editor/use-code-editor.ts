@@ -1,5 +1,5 @@
 import type { CodeEditorProps } from "@/features/editor/code-editor";
-import { toast } from "@/components/toast";
+import { toast } from "@/components/toast/toast";
 import { type ComponentType, useEffect, useState } from "react";
 
 type CodeEditorComponent = ComponentType<CodeEditorProps>;

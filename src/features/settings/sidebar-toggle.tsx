@@ -1,4 +1,4 @@
-import { GlassPanel } from "@/components/glass-panel";
+import { GlassPanel } from "@/components/glass-panel/glass-panel";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontalIcon } from "lucide-react";
 

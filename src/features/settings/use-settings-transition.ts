@@ -1,4 +1,4 @@
-import { useBriefFlag } from "@/components/use-brief-flag";
+import { useBriefFlag } from "@/hooks/use-brief-flag";
 import {
   PREVIEW_GEOMETRY_DURATION_MS,
   PREVIEW_GEOMETRY_GRACE_MS,

@@ -7,14 +7,17 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { InputGroupAddon } from "@/components/ui/input-group";
-import { searchTextOf, type SearchableOption } from "@/components/searchable-option";
-import { ComboboxFocus } from "@/components/combobox-focus";
+import {
+  searchTextOf,
+  type SearchableOption,
+} from "@/components/searchable-select/searchable-option";
+import { ComboboxFocus } from "@/components/searchable-select/combobox-focus";
 import { cn } from "@/lib/utils";
-import { useElasticWidth } from "@/components/use-elastic-width";
+import { useElasticWidth } from "@/hooks/use-elastic-width";
 import { type ComponentProps, type ReactNode, useContext, useMemo, useRef, useState } from "react";
 import { ComboBoxStateContext, ListLayout, useFilter, Virtualizer } from "react-aria-components";
 
-export type { SearchableOption } from "@/components/searchable-option";
+export type { SearchableOption } from "@/components/searchable-select/searchable-option";
 
 /**
  * Above this many options the list is virtualized.

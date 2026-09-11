@@ -1,4 +1,4 @@
-import { useStoredFlag } from "@/components/use-stored-flag";
+import { useStoredFlag } from "@/hooks/use-stored-flag";
 import { SIDEBAR_INSET_QUERY } from "@/features/settings/use-sidebar-mode";
 
 /**
