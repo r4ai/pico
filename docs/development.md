@@ -65,10 +65,12 @@ The source list in `vite.unit.config.ts` fixes this measurement to non-React log
 contracts can be tested without a browser. Components and hooks are exercised by
 `pnpm test:browser` instead.
 
-Both suites live beside the source they exercise. Unit tests are `*.test.ts`; browser tests are
-`*.browser.test.tsx`, which is how the unit config excludes them. A new browser test must also be
-added to one of the instances in `vite.browser.config.ts` — those lists are exhaustive, and a file
-in none of them is silently never run.
+Unit tests live beside the source they exercise, as `*.test.ts`. A browser test that stays within
+one module joins it there as `*.browser.test.tsx`, which is how the unit config excludes it; one
+that mounts the whole application, or composes two features, is an integration test and lives in
+`tests/browser/`. Either way, a new browser test must also be added to one of the instances in
+`vite.browser.config.ts` — those lists are exhaustive, and a file in none of them is silently
+never run.
 
 Browser geometry tests control the animations they measure. Only finite animations may
 be paused or finished: CodeMirror's caret blinks indefinitely and `Animation.finish()`
@@ -364,12 +366,12 @@ what an export is — so `preview` can name a theme without reaching into
 `settings`, and `toolbar` can offer a scale without pulling in html-to-image.
 
 This is `no-restricted-imports` in `vite.config.ts`, not a convention: a
-crossing import fails `pnpm check`. The browser suite is exempt, because those
-tests mount the whole application on purpose.
+crossing import fails `pnpm check`, with nothing under `src/` exempt. A test
+that has to cross is an integration test and belongs in `tests/browser/`.
 
 Inside a feature, files are filed by what they are — `components/`, `hooks/`,
-`lib/` — alongside the stylesheet for that surface and the browser tests that
-drive it. Shared components follow the same rule, each in a directory with its
+`lib/` — alongside the stylesheet for that surface and any test that stays
+within it. Shared components follow the same rule, each in a directory with its
 stories, tests, and helpers.
 
 **No barrel files.** A feature-level `index.ts` re-exporting its modules would

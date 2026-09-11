@@ -97,8 +97,9 @@ export default defineConfig({
     // A feature may not name another feature or the shell that composes them.
     // What two features share belongs in @/core; what one of them needs from
     // the shell arrives as a prop or through a context. Each layer below may
-    // only reach further down. The browser suite is exempt, because those
-    // tests mount the whole application on purpose.
+    // only reach further down. A test that has to cross — one that mounts the
+    // whole application, or composes two features — is an integration test and
+    // lives in tests/browser/ rather than under src/.
     overrides: [
       {
         files: ["src/features/editor/**"],
@@ -210,10 +211,6 @@ export default defineConfig({
             },
           ],
         },
-      },
-      {
-        files: ["src/**/*.browser.test.*"],
-        rules: { "no-restricted-imports": "off" },
       },
     ],
   },
