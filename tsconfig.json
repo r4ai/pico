@@ -32,7 +32,6 @@
   },
   "include": [
     "src",
-    "tests",
     "vite.config.ts",
     "vite.browser.config.ts",
     "vite.unit.config.ts",

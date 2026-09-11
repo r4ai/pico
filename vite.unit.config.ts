@@ -4,6 +4,8 @@ import baseConfig from "./vite.config";
 export default mergeConfig(baseConfig, {
   test: {
     include: ["src/**/*.test.{ts,tsx}"],
+    // The browser suite sits beside its source too, and has its own config.
+    exclude: ["**/*.browser.test.*"],
     coverage: {
       include: [
         "src/components/searchable-select/searchable-option.ts",
