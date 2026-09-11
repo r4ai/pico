@@ -90,5 +90,131 @@ export default defineConfig({
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: { "vite-plus/prefer-vite-plus-imports": "error" },
     options: { typeAware: true, typeCheck: true },
+    // The layering, made a lint error rather than a convention:
+    //
+    //   app → features → components / hooks → core → lib
+    //
+    // A feature may not name another feature or the shell that composes them.
+    // What two features share belongs in @/core; what one of them needs from
+    // the shell arrives as a prop or through a context. Each layer below may
+    // only reach further down. The browser suite is exempt, because those
+    // tests mount the whole application on purpose.
+    overrides: [
+      {
+        files: ["src/features/editor/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                "@/features/export/**",
+                "@/features/preview/**",
+                "@/features/settings/**",
+                "@/features/toolbar/**",
+                "@/app/**",
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/features/export/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                "@/features/editor/**",
+                "@/features/preview/**",
+                "@/features/settings/**",
+                "@/features/toolbar/**",
+                "@/app/**",
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/features/preview/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                "@/features/editor/**",
+                "@/features/export/**",
+                "@/features/settings/**",
+                "@/features/toolbar/**",
+                "@/app/**",
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/features/settings/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                "@/features/editor/**",
+                "@/features/export/**",
+                "@/features/preview/**",
+                "@/features/toolbar/**",
+                "@/app/**",
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/features/toolbar/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                "@/features/editor/**",
+                "@/features/export/**",
+                "@/features/preview/**",
+                "@/features/settings/**",
+                "@/app/**",
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/components/**", "src/hooks/**"],
+        rules: {
+          "no-restricted-imports": ["error", { patterns: ["@/features/**", "@/app/**"] }],
+        },
+      },
+      {
+        files: ["src/core/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            { patterns: ["@/features/**", "@/app/**", "@/components/**", "@/hooks/**"] },
+          ],
+        },
+      },
+      {
+        files: ["src/lib/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: ["@/features/**", "@/app/**", "@/components/**", "@/hooks/**", "@/core/**"],
+            },
+          ],
+        },
+      },
+      {
+        files: ["src/**/*.browser.test.*"],
+        rules: { "no-restricted-imports": "off" },
+      },
+    ],
   },
 });
