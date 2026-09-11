@@ -1,4 +1,4 @@
-import { App } from "@/app";
+import { App } from "@/app/app";
 import { renderImage } from "@/features/export/lib/export-image";
 import { familyNameOf, fontFaceCss, FONTS } from "@/core/settings/fonts";
 import { DEFAULT_SETTINGS } from "@/core/settings/settings";

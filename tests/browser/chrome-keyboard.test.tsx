@@ -1,4 +1,4 @@
-import { App } from "@/app";
+import { App } from "@/app/app";
 import "@/global.css";
 import { SIDEBAR_INSET_QUERY } from "@/features/settings/hooks/use-sidebar-mode";
 import { BottomDock } from "@/features/toolbar/components/bottom-dock";

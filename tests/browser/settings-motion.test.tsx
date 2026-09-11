@@ -1,4 +1,4 @@
-import { App } from "@/app";
+import { App } from "@/app/app";
 import { fontFaceCss } from "@/core/settings/fonts";
 import "@/global.css";
 import { NuqsAdapter } from "nuqs/adapters/react";

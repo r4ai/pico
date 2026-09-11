@@ -1,4 +1,4 @@
-import { App } from "@/app";
+import { App } from "@/app/app";
 import { CODE_PARAM } from "@/core/settings/search-params";
 import { fontFaceCss } from "@/core/settings/fonts";
 import { encodeCode } from "@/lib/url-codec";

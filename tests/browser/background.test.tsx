@@ -1,5 +1,5 @@
 import { parseHexColor } from "@/core/settings/background";
-import { App } from "@/app";
+import { App } from "@/app/app";
 import "@/global.css";
 import { renderImage } from "@/features/export/lib/export-image";
 import { DEFAULT_SETTINGS } from "@/core/settings/settings";

@@ -1,4 +1,4 @@
-import { App } from "@/app";
+import { App } from "@/app/app";
 import { CODE_PARAM, recoverPendingCode } from "@/core/settings/search-params";
 import "@/global.css";
 import { decodeCode } from "@/lib/url-codec";

@@ -1,4 +1,4 @@
-import { useExportActions, useSettingsControl } from "@/features/chrome-context";
+import { useExportActions, useSettingsControl } from "@/app/chrome-context";
 import { SettingsSidebar } from "@/features/settings/components/settings-sidebar";
 import { SidebarToggle } from "@/features/settings/components/sidebar-toggle";
 import { BottomDock } from "@/features/toolbar/components/bottom-dock";

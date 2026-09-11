@@ -1,6 +1,6 @@
 import { Toaster } from "@/components/toast/toaster";
-import { Canvas } from "@/features/canvas";
-import { ExportActionsContext, SettingsControlContext } from "@/features/chrome-context";
+import { Canvas } from "@/app/canvas";
+import { ExportActionsContext, SettingsControlContext } from "@/app/chrome-context";
 import type { LanguageId } from "@/core/language/language";
 import { useLanguageChoice } from "@/features/editor/hooks/use-language-choice";
 import { DEFAULT_SCALE, type ExportScale } from "@/core/export";
@@ -17,7 +17,7 @@ import { useSidebarMode } from "@/features/settings/hooks/use-sidebar-mode";
 import { useSidebarOpen } from "@/features/settings/hooks/use-sidebar-open";
 import { lazy, Suspense, useCallback, useRef, useState } from "react";
 
-const Chrome = lazy(() => import("@/features/chrome"));
+const Chrome = lazy(() => import("@/app/chrome"));
 
 /**
  * Where the picture, the chrome, and the copy of the picture that gets saved
