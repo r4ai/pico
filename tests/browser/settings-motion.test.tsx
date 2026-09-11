@@ -1,5 +1,5 @@
 import { App } from "@/app";
-import { fontFaceCss } from "@/features/settings/fonts";
+import { fontFaceCss } from "@/core/settings/fonts";
 import "@/global.css";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, beforeEach, expect, it } from "vite-plus/test";

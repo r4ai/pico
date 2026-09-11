@@ -2,12 +2,12 @@ import { useBriefFlag } from "@/components/use-brief-flag";
 import {
   PREVIEW_GEOMETRY_DURATION_MS,
   PREVIEW_GEOMETRY_GRACE_MS,
-} from "@/features/settings/appearance";
-import type { Settings } from "@/features/settings/settings";
-import { shikiThemeOf } from "@/features/settings/theme";
+} from "@/core/settings/appearance";
+import type { Settings } from "@/core/settings/settings";
+import { shikiThemeOf } from "@/core/theme/theme";
 import type { FontPhase } from "@/features/settings/use-font-ready";
 import { crossFade } from "@/lib/cross-fade";
-import { isThemeLoaded } from "@/lib/shiki";
+import { isThemeLoaded } from "@/core/highlight/shiki";
 import { useCallback, useEffect, useRef } from "react";
 
 /** Settings that change how much room the picture takes. */

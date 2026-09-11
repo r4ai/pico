@@ -1,6 +1,6 @@
-import type { LanguageId } from "@/features/editor/language";
+import type { LanguageId } from "@/core/language/language";
 import { useLanguageDetection } from "@/features/editor/use-language-detection";
-import { hasExplicitLanguage } from "@/features/settings/search-params";
+import { hasExplicitLanguage } from "@/core/settings/search-params";
 import { useCallback, useState } from "react";
 
 export type UseLanguageChoiceOptions = {

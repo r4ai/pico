@@ -1,4 +1,4 @@
-import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
+import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
 import type { ThemedToken } from "shiki/core";
 
 let remembered: { key: string; tokens: ThemedToken[][] } | undefined;

@@ -1,5 +1,5 @@
-import type { Background } from "@/features/settings/background";
-import type { LanguageId } from "@/features/editor/language";
+import type { Background } from "@/core/settings/background";
+import type { LanguageId } from "@/core/language/language";
 import {
   DEFAULT_FONT_SIZE,
   DEFAULT_LINE_NUMBERS,
@@ -10,15 +10,10 @@ import {
   type PaddingId,
   type RadiusId,
   type ShadowId,
-} from "@/features/settings/appearance";
-import { DEFAULT_FONT, type FontId } from "@/features/settings/fonts";
-import {
-  type ColorMode,
-  DEFAULT_MODE,
-  DEFAULT_THEME,
-  type ThemeId,
-} from "@/features/settings/theme";
-import { DEFAULT_LANGUAGE } from "@/features/editor/language";
+} from "@/core/settings/appearance";
+import { DEFAULT_FONT, type FontId } from "@/core/settings/fonts";
+import { type ColorMode, DEFAULT_MODE, DEFAULT_THEME, type ThemeId } from "@/core/theme/theme";
+import { DEFAULT_LANGUAGE } from "@/core/language/language";
 
 /** Everything that shapes the image, and therefore everything a shared link carries. */
 export type Settings = {

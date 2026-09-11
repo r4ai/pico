@@ -1,5 +1,5 @@
 import { detectLanguageOffThread } from "@/features/editor/language-detector";
-import type { LanguageId } from "@/features/editor/language";
+import type { LanguageId } from "@/core/language/language";
 import { useEffect, useRef } from "react";
 
 /** Long enough that the guess is not being recomputed mid-word. */

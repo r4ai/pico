@@ -1,11 +1,7 @@
 import { useBriefFlag } from "@/components/use-brief-flag";
-import {
-  type ExportFormat,
-  type ExportScale,
-  imageFileName,
-  renderImage,
-} from "@/features/export/export-image";
-import type { Settings } from "@/features/settings/settings";
+import type { ExportFormat, ExportScale, ExportTask } from "@/core/export";
+import { imageFileName, renderImage } from "@/features/export/export-image";
+import type { Settings } from "@/core/settings/settings";
 import { type RefObject, useCallback, useState } from "react";
 import { toast } from "@/components/toast";
 
@@ -49,9 +45,6 @@ async function copyImage(node: HTMLElement, settings: Settings, scale: ExportSca
   const image = renderImage({ node, settings, format: "png", scale });
   await navigator.clipboard.write([new ClipboardItem({ "image/png": image })]);
 }
-
-/** Which control is waiting on a capture, so only that one shows it. */
-export type ExportTask = "copy" | "save";
 
 export type UseExportOptions = {
   node: RefObject<HTMLDivElement | null>;

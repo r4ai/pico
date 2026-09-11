@@ -6,12 +6,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  EXPORT_SCALES,
-  type ExportFormat,
-  type ExportScale,
-  isExportScale,
-} from "@/features/export/export-image";
+import { EXPORT_SCALES, type ExportFormat, type ExportScale, isExportScale } from "@/core/export";
 import { DockButton } from "@/features/toolbar/dock-button";
 import { DockIcon, DockLabel } from "@/features/toolbar/dock-icon";
 import { ChevronUpIcon, DownloadIcon } from "lucide-react";

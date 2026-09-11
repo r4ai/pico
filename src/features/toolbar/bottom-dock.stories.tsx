@@ -1,5 +1,5 @@
-import type { LanguageId } from "@/features/editor/language";
-import type { ExportScale } from "@/features/export/export-image";
+import type { LanguageId } from "@/core/language/language";
+import type { ExportScale } from "@/core/export";
 import { BottomDock } from "@/features/toolbar/bottom-dock";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";

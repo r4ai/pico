@@ -1,4 +1,4 @@
-import type { ColorMode } from "@/features/settings/theme";
+import type { ColorMode } from "@/core/theme/theme";
 import { useLayoutEffect } from "react";
 
 /**

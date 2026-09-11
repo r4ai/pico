@@ -7,7 +7,7 @@ import {
   themeAccents,
   THEME_IDS,
   THEMES,
-} from "@/features/settings/theme";
+} from "@/core/theme/theme";
 import { describe, expect, it } from "vite-plus/test";
 
 describe("theme registry", () => {

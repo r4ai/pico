@@ -10,10 +10,10 @@ import {
   PADDING_IDS,
   RADIUS_IDS,
   SHADOW_IDS,
-} from "@/features/settings/appearance";
-import { FONT_IDS, FONTS } from "@/features/settings/fonts";
+} from "@/core/settings/appearance";
+import { FONT_IDS, FONTS } from "@/core/settings/fonts";
 import { PresetToggle, SettingRow } from "@/features/settings/setting-row";
-import type { Settings } from "@/features/settings/settings";
+import type { Settings } from "@/core/settings/settings";
 import {
   COLOR_MODES,
   THEME_IDS,
@@ -22,11 +22,11 @@ import {
   themeAccents,
   type ColorMode,
   type ThemeId,
-} from "@/features/settings/theme";
+} from "@/core/theme/theme";
 import { usePanelFocus } from "@/features/settings/use-panel-focus";
 import { useSidebarMode } from "@/features/settings/use-sidebar-mode";
 import { useSwipeDismiss } from "@/features/settings/use-swipe-dismiss";
-import { warmTheme } from "@/lib/shiki";
+import { warmTheme } from "@/core/highlight/shiki";
 import { MoonIcon, SunIcon, XIcon } from "lucide-react";
 import { useEffect, useEffectEvent, useId, useRef } from "react";
 

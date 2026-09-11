@@ -1,4 +1,4 @@
-import { familyNameOf, type Font, type FontId } from "@/features/settings/fonts";
+import { familyNameOf, type Font, type FontId } from "@/core/settings/fonts";
 
 function toBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);

@@ -1,9 +1,9 @@
-import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
+import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
 import { CodeFrame } from "@/features/preview/code-frame";
-import type { FrameColors } from "@/features/preview/frame-colors";
-import { ShikiCode } from "@/features/preview/shiki-code";
-import { SHADOW_ROOM } from "@/features/settings/appearance";
-import type { Settings } from "@/features/settings/settings";
+import type { FrameColors } from "@/core/theme/frame-colors";
+import { ShikiCode } from "@/components/shiki-code";
+import { SHADOW_ROOM } from "@/core/settings/appearance";
+import type { Settings } from "@/core/settings/settings";
 import { type CSSProperties, type RefObject, useLayoutEffect } from "react";
 
 export type ExportNodeProps = {

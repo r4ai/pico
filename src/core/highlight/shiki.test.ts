@@ -1,10 +1,10 @@
-import { LANGUAGE_IDS } from "@/features/editor/language";
-import { LANGUAGES } from "@/features/editor/language-registry";
-import { frameColorsOf } from "@/features/preview/frame-colors";
-import { themeAccentsOf } from "@/features/settings/theme-accents";
-import { THEME_IDS, THEMES } from "@/features/settings/theme";
-import type { ShikiThemeName } from "@/features/settings/theme";
-import { ensureHighlighter, isThemeLoaded, warmTheme } from "@/lib/shiki";
+import { LANGUAGE_IDS } from "@/core/language/language";
+import { LANGUAGES } from "@/core/language/language-registry";
+import { frameColorsOf } from "@/core/theme/frame-colors";
+import { themeAccentsOf } from "@/core/theme/theme-accents";
+import { THEME_IDS, THEMES } from "@/core/theme/theme";
+import type { ShikiThemeName } from "@/core/theme/theme";
+import { ensureHighlighter, isThemeLoaded, warmTheme } from "@/core/highlight/shiki";
 import { describe, expect, it } from "vite-plus/test";
 
 /** Representative snippets whose grammars should produce several token colors. */

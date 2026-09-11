@@ -1,5 +1,5 @@
-import { cudaGrammars } from "@/features/editor/cuda-grammar";
-import type { LanguageId } from "@/features/editor/language";
+import { cudaGrammars } from "@/core/language/cuda-grammar";
+import type { LanguageId } from "@/core/language/language";
 import type { LanguageRegistration } from "shiki/core";
 
 type LanguageDefinition = {

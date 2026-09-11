@@ -1,5 +1,5 @@
 import "@/global.css";
-import { fontFaceCss } from "@/features/settings/fonts";
+import { fontFaceCss } from "@/core/settings/fonts";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/react-vite";
 

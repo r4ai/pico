@@ -1,7 +1,7 @@
 import { toast } from "@/components/toast";
 import { useBriefFlag } from "@/components/use-brief-flag";
-import { buildShareUrl, hasBrokenCodeParam } from "@/features/settings/search-params";
-import type { Settings } from "@/features/settings/settings";
+import { buildShareUrl, hasBrokenCodeParam } from "@/core/settings/search-params";
+import type { Settings } from "@/core/settings/settings";
 import { useCallback, useEffect } from "react";
 
 export type UseShareLinkOptions = {

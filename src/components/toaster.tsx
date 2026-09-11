@@ -1,6 +1,6 @@
 import { loadToaster } from "@/components/toast-loader";
 import { useToastsWanted } from "@/components/toast";
-import type { ColorMode } from "@/features/settings/theme";
+import type { ColorMode } from "@/core/theme/theme";
 import { lazy, Suspense } from "react";
 
 const Sonner = lazy(() => loadToaster(import("@/components/ui/sonner")));

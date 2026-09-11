@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { parseHexColor } from "@/features/settings/background";
+import { parseHexColor } from "@/core/settings/background";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import {

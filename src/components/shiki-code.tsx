@@ -1,6 +1,6 @@
-import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
-import { tokenStyle } from "@/features/editor/token-style";
-import { tokenize } from "@/features/editor/tokenize";
+import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
+import { tokenStyle } from "@/core/highlight/token-style";
+import { tokenize } from "@/core/highlight/tokenize";
 
 export type ShikiCodeProps = {
   code: string;

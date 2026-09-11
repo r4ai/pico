@@ -1,6 +1,6 @@
 import { App } from "@/app";
-import { CODE_PARAM } from "@/features/settings/search-params";
-import { fontFaceCss } from "@/features/settings/fonts";
+import { CODE_PARAM } from "@/core/settings/search-params";
+import { fontFaceCss } from "@/core/settings/fonts";
 import { encodeCode } from "@/lib/url-codec";
 import "@/global.css";
 import { NuqsAdapter } from "nuqs/adapters/react";

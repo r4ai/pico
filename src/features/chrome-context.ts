@@ -1,7 +1,6 @@
-import type { LanguageId } from "@/features/editor/language";
-import type { ExportFormat, ExportScale } from "@/features/export/export-image";
-import type { ExportTask } from "@/features/export/use-export";
-import type { Settings } from "@/features/settings/settings";
+import type { LanguageId } from "@/core/language/language";
+import type { ExportFormat, ExportScale, ExportTask } from "@/core/export";
+import type { Settings } from "@/core/settings/settings";
 import { createContext, use } from "react";
 
 /** What the picture is, and the two ways of changing it. */

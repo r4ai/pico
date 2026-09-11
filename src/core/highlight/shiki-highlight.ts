@@ -4,8 +4,8 @@
 import { RangeSetBuilder, StateEffect, StateField } from "@codemirror/state";
 // react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
-import { tokenStyleCss } from "@/features/editor/token-style";
-import { tokenize } from "@/features/editor/tokenize";
+import { tokenStyleCss } from "@/core/highlight/token-style";
+import { tokenize } from "@/core/highlight/tokenize";
 import type { HighlighterCore, ThemedToken } from "shiki/core";
 
 /**

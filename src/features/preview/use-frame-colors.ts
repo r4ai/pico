@@ -1,8 +1,8 @@
-import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
-import { useShikiHighlight } from "@/features/editor/use-shiki-highlight";
-import { frameColorsOf, type FrameColors } from "@/features/preview/frame-colors";
-import type { Settings } from "@/features/settings/settings";
-import { frameColorsOfTheme, shikiThemeOf } from "@/features/settings/theme";
+import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
+import { useShikiHighlight } from "@/features/preview/use-shiki-highlight";
+import { frameColorsOf, type FrameColors } from "@/core/theme/frame-colors";
+import type { Settings } from "@/core/settings/settings";
+import { frameColorsOfTheme, shikiThemeOf } from "@/core/theme/theme";
 
 export type FramePaint = {
   /** `null` until the first grammar and theme have loaded. */

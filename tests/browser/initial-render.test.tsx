@@ -1,8 +1,8 @@
 import { CodeEditor } from "@/features/editor/code-editor";
 import { createEditorTheme } from "@/features/editor/cm-theme";
 import { CodeFrame } from "@/features/preview/code-frame";
-import { DEFAULT_SETTINGS } from "@/features/settings/settings";
-import { frameColorsOfTheme, type ColorMode } from "@/features/settings/theme";
+import { DEFAULT_SETTINGS } from "@/core/settings/settings";
+import { frameColorsOfTheme, type ColorMode } from "@/core/theme/theme";
 import "@/global.css";
 import { Compartment, EditorState } from "@codemirror/state";
 import { drawSelection, EditorView } from "@codemirror/view";

@@ -1,5 +1,5 @@
-import type { FrameColors } from "@/features/preview/frame-colors";
-import type { ThemeAccents } from "@/features/settings/theme-accents";
+import type { FrameColors } from "@/core/theme/frame-colors";
+import type { ThemeAccents } from "@/core/theme/theme-accents";
 
 export const THEME_IDS = [
   "vitesse",

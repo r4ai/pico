@@ -1,4 +1,4 @@
-import { parseHexColor } from "@/features/settings/background";
+import { parseHexColor } from "@/core/settings/background";
 import { describe, expect, it } from "vite-plus/test";
 
 describe("background HEX input", () => {

@@ -1,4 +1,4 @@
-import type { LanguageId } from "@/features/editor/language";
+import type { LanguageId } from "@/core/language/language";
 import { useLanguageDetection } from "@/features/editor/use-language-detection";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import { cleanup, renderHook } from "vitest-browser-react/pure";

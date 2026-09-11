@@ -1,4 +1,4 @@
-import type { LanguageId } from "@/features/editor/language";
+import type { LanguageId } from "@/core/language/language";
 import type { LanguageFn } from "highlight.js";
 
 /**

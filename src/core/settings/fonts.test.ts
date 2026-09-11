@@ -1,10 +1,4 @@
-import {
-  DEFAULT_FONT,
-  familyNameOf,
-  FONT_IDS,
-  fontFaceCss,
-  FONTS,
-} from "@/features/settings/fonts";
+import { DEFAULT_FONT, familyNameOf, FONT_IDS, fontFaceCss, FONTS } from "@/core/settings/fonts";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
 

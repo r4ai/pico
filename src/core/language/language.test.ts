@@ -1,5 +1,5 @@
-import { isLanguageId, LANGUAGE_IDS } from "@/features/editor/language";
-import { LANGUAGES } from "@/features/editor/language-registry";
+import { isLanguageId, LANGUAGE_IDS } from "@/core/language/language";
+import { LANGUAGES } from "@/core/language/language-registry";
 import { bundledLanguagesInfo } from "shiki/langs";
 import { describe, expect, it } from "vite-plus/test";
 

@@ -1,15 +1,7 @@
+import type { ExportFormat, ExportScale } from "@/core/export";
 import { fontEmbedCss } from "@/features/export/font-embed";
-import { FONTS } from "@/features/settings/fonts";
-import type { Settings } from "@/features/settings/settings";
-
-const EXPORT_FORMATS = ["png", "svg"] as const;
-export const EXPORT_SCALES = [1, 2, 3] as const;
-
-export type ExportFormat = (typeof EXPORT_FORMATS)[number];
-export type ExportScale = (typeof EXPORT_SCALES)[number];
-
-/** Retina by default, so a pasted image is not soft on the display most people have. */
-export const DEFAULT_SCALE: ExportScale = 2;
+import { FONTS } from "@/core/settings/fonts";
+import type { Settings } from "@/core/settings/settings";
 
 /**
  * How long to wait for the capture before giving up.
@@ -101,8 +93,4 @@ export function imageFileName(format: ExportFormat, now = new Date()): string {
     `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}` +
     `-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
   return `pico-${stamp}.${format}`;
-}
-
-export function isExportScale(value: number): value is ExportScale {
-  return (EXPORT_SCALES as readonly number[]).includes(value);
 }

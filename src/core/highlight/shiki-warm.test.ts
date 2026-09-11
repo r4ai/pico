@@ -1,4 +1,4 @@
-import { warmTheme } from "@/lib/shiki";
+import { warmTheme } from "@/core/highlight/shiki";
 import { expect, it, vi } from "vite-plus/test";
 
 vi.mock("@shikijs/themes/solarized-light", () => {

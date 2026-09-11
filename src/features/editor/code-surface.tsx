@@ -1,6 +1,6 @@
 import type { CodeEditorProps } from "@/features/editor/code-editor";
 import { useCodeEditor } from "@/features/editor/use-code-editor";
-import { ShikiCode } from "@/features/preview/shiki-code";
+import { ShikiCode } from "@/components/shiki-code";
 import { useState } from "react";
 
 export type CodeSurfaceProps = CodeEditorProps;

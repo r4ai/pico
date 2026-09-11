@@ -1,5 +1,5 @@
 import { App } from "@/app";
-import { CODE_PARAM, recoverPendingCode } from "@/features/settings/search-params";
+import { CODE_PARAM, recoverPendingCode } from "@/core/settings/search-params";
 import "@/global.css";
 import { decodeCode } from "@/lib/url-codec";
 import { NuqsAdapter } from "nuqs/adapters/react";

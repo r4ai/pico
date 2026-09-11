@@ -1,6 +1,6 @@
 import { SearchableSelect } from "@/components/searchable-select";
-import type { LanguageId } from "@/features/editor/language";
-import { LANGUAGES } from "@/features/editor/language-registry";
+import type { LanguageId } from "@/core/language/language";
+import { LANGUAGES } from "@/core/language/language-registry";
 
 /* Ordered by the registry rather than by LANGUAGE_IDS: both are alphabetical by
    label, but only one of them is the list this picker is drawing from. */

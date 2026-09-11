@@ -1,4 +1,4 @@
-import { themeAccentsOf } from "@/features/settings/theme-accents";
+import { themeAccentsOf } from "@/core/theme/theme-accents";
 import type { ThemeRegistrationResolved } from "shiki/core";
 import { describe, expect, it } from "vite-plus/test";
 

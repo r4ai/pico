@@ -1,7 +1,7 @@
-import type { LanguageId } from "@/features/editor/language";
-import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
-import type { ShikiThemeName } from "@/features/settings/theme";
-import { ensureHighlighter } from "@/lib/shiki";
+import type { LanguageId } from "@/core/language/language";
+import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
+import type { ShikiThemeName } from "@/core/theme/theme";
+import { ensureHighlighter } from "@/core/highlight/shiki";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/toast";
 

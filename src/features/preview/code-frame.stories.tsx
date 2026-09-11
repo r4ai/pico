@@ -1,6 +1,6 @@
 import { CodeFrame } from "@/features/preview/code-frame";
-import { PADDING_IDS, RADIUS_IDS, SHADOW_IDS } from "@/features/settings/appearance";
-import { DEFAULT_SETTINGS } from "@/features/settings/settings";
+import { PADDING_IDS, RADIUS_IDS, SHADOW_IDS } from "@/core/settings/appearance";
+import { DEFAULT_SETTINGS } from "@/core/settings/settings";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const COLORS = { background: "#121212", foreground: "#dbd7ca", lineNumber: "#dedcd550" };

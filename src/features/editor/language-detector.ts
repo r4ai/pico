@@ -1,5 +1,5 @@
 import type { DetectRequest, DetectResponse } from "@/features/editor/detect-language-protocol";
-import type { LanguageId } from "@/features/editor/language";
+import type { LanguageId } from "@/core/language/language";
 
 type Pending = {
   resolve: (lang: LanguageId | undefined) => void;

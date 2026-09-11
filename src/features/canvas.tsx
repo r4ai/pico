@@ -1,8 +1,8 @@
 import { CodeSurface } from "@/features/editor/code-surface";
-import type { ShikiHighlight } from "@/features/editor/shiki-highlight";
+import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
 import { CodeFrame } from "@/features/preview/code-frame";
-import type { FrameColors } from "@/features/preview/frame-colors";
-import type { Settings } from "@/features/settings/settings";
+import type { FrameColors } from "@/core/theme/frame-colors";
+import type { Settings } from "@/core/settings/settings";
 
 const PLACEHOLDER = "Paste your code here";
 

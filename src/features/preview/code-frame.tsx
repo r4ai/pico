@@ -1,4 +1,4 @@
-import type { FrameColors } from "@/features/preview/frame-colors";
+import type { FrameColors } from "@/core/theme/frame-colors";
 import {
   FONT_SIZES,
   LINE_HEIGHT,
@@ -7,9 +7,9 @@ import {
   RADII,
   SHADOW_ROOM,
   SHADOWS,
-} from "@/features/settings/appearance";
-import { FONTS } from "@/features/settings/fonts";
-import type { Settings } from "@/features/settings/settings";
+} from "@/core/settings/appearance";
+import { FONTS } from "@/core/settings/fonts";
+import type { Settings } from "@/core/settings/settings";
 import { clsx } from "clsx";
 import type { CSSProperties, ReactNode } from "react";
 

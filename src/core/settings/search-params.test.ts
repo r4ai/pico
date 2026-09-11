@@ -1,4 +1,4 @@
-import { hasExplicitLanguage } from "@/features/settings/search-params";
+import { hasExplicitLanguage } from "@/core/settings/search-params";
 import { describe, expect, it } from "vite-plus/test";
 
 describe("explicit language query", () => {
@@ -12,8 +12,8 @@ describe("explicit language query", () => {
   });
 });
 
-import { buildShareUrl } from "@/features/settings/search-params";
-import { DEFAULT_SETTINGS } from "@/features/settings/settings";
+import { buildShareUrl } from "@/core/settings/search-params";
+import { DEFAULT_SETTINGS } from "@/core/settings/settings";
 
 it.each(["theme", "transparent", "#123456", "#12345680", "#12345600"] as const)(
   "shares background %s",

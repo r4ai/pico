@@ -1,5 +1,5 @@
-import type { LanguageId } from "@/features/editor/language";
-import type { ShikiThemeName } from "@/features/settings/theme";
+import type { LanguageId } from "@/core/language/language";
+import type { ShikiThemeName } from "@/core/theme/theme";
 import type { HighlighterCore, ThemeRegistration } from "shiki/core";
 
 /** Typed by the registry, so a theme without a loader is a compile error. */
@@ -30,7 +30,7 @@ const THEME_LOADERS: Record<ShikiThemeName, () => Promise<{ default: ThemeRegist
   "solarized-dark": () => import("@shikijs/themes/solarized-dark"),
 };
 
-let registry: Promise<typeof import("@/features/editor/language-registry")> | undefined;
+let registry: Promise<typeof import("@/core/language/language-registry")> | undefined;
 
 /**
  * The language registry, downloaded on first use.
@@ -42,7 +42,7 @@ let registry: Promise<typeof import("@/features/editor/language-registry")> | un
  * every load was paying for before it had anything to paint.
  */
 function getRegistry() {
-  registry ??= import("@/features/editor/language-registry");
+  registry ??= import("@/core/language/language-registry");
   return registry;
 }
 

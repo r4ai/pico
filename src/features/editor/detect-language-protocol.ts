@@ -1,4 +1,4 @@
-import type { LanguageId } from "@/features/editor/language";
+import type { LanguageId } from "@/core/language/language";
 
 /** A document to guess the language of, and the number the answer comes back under. */
 export type DetectRequest = {

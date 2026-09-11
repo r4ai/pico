@@ -1,4 +1,4 @@
-import { familyNameOf, type Font, type FontFace } from "@/features/settings/fonts";
+import { familyNameOf, type Font, type FontFace } from "@/core/settings/fonts";
 import { useEffect, useRef, useState } from "react";
 
 /**

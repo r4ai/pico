@@ -1,8 +1,7 @@
 import { GlassPanel } from "@/components/glass-panel";
 import { Separator } from "@/components/ui/separator";
-import type { LanguageId } from "@/features/editor/language";
-import type { ExportFormat, ExportScale } from "@/features/export/export-image";
-import type { ExportTask } from "@/features/export/use-export";
+import type { LanguageId } from "@/core/language/language";
+import type { ExportFormat, ExportScale, ExportTask } from "@/core/export";
 import { DockButton } from "@/features/toolbar/dock-button";
 import { DockIcon, DockLabel } from "@/features/toolbar/dock-icon";
 import { LanguagePicker } from "@/features/toolbar/language-picker";

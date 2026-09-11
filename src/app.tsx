@@ -1,14 +1,14 @@
 import { Toaster } from "@/components/toaster";
 import { Canvas } from "@/features/canvas";
 import { ExportActionsContext, SettingsControlContext } from "@/features/chrome-context";
-import type { LanguageId } from "@/features/editor/language";
+import type { LanguageId } from "@/core/language/language";
 import { useLanguageChoice } from "@/features/editor/use-language-choice";
-import { DEFAULT_SCALE, type ExportScale } from "@/features/export/export-image";
+import { DEFAULT_SCALE, type ExportScale } from "@/core/export";
 import { useExport } from "@/features/export/use-export";
 import { ExportNode } from "@/features/preview/export-node";
 import { useFrameColors } from "@/features/preview/use-frame-colors";
-import { FONTS } from "@/features/settings/fonts";
-import { useCode, useSettings } from "@/features/settings/search-params";
+import { FONTS } from "@/core/settings/fonts";
+import { useCode, useSettings } from "@/core/settings/search-params";
 import { useColorModeClass } from "@/features/settings/use-color-mode-class";
 import { useFontReady } from "@/features/settings/use-font-ready";
 import { useSettingsTransition } from "@/features/settings/use-settings-transition";

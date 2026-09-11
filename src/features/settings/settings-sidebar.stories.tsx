@@ -1,5 +1,5 @@
 import { SettingsSidebar } from "@/features/settings/settings-sidebar";
-import { DEFAULT_SETTINGS, type Settings } from "@/features/settings/settings";
+import { DEFAULT_SETTINGS, type Settings } from "@/core/settings/settings";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 

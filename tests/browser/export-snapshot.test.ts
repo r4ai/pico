@@ -1,5 +1,5 @@
 import { renderImage } from "@/features/export/export-image";
-import { DEFAULT_SETTINGS } from "@/features/settings/settings";
+import { DEFAULT_SETTINGS } from "@/core/settings/settings";
 import { afterEach, expect, it, vi } from "vite-plus/test";
 
 const BEFORE = "BEFORE_EXPORT";

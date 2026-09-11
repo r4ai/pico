@@ -3,7 +3,7 @@ import {
   setShikiHighlight,
   type ShikiHighlight,
   shikiHighlighting,
-} from "@/features/editor/shiki-highlight";
+} from "@/core/highlight/shiki-highlight";
 import { useLiveMetrics } from "@/features/editor/use-live-metrics";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
 // This module is the split point: it is the one CodeMirror is imported

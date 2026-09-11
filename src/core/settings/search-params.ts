@@ -1,9 +1,9 @@
-import { parseHexColor, type Background } from "@/features/settings/background";
-import { LANGUAGE_IDS } from "@/features/editor/language";
-import { FONT_SIZE_IDS, PADDING_IDS, RADIUS_IDS, SHADOW_IDS } from "@/features/settings/appearance";
-import { FONT_IDS } from "@/features/settings/fonts";
-import { DEFAULT_SETTINGS, type Settings } from "@/features/settings/settings";
-import { COLOR_MODES, THEME_IDS } from "@/features/settings/theme";
+import { parseHexColor, type Background } from "@/core/settings/background";
+import { LANGUAGE_IDS } from "@/core/language/language";
+import { FONT_SIZE_IDS, PADDING_IDS, RADIUS_IDS, SHADOW_IDS } from "@/core/settings/appearance";
+import { FONT_IDS } from "@/core/settings/fonts";
+import { DEFAULT_SETTINGS, type Settings } from "@/core/settings/settings";
+import { COLOR_MODES, THEME_IDS } from "@/core/theme/theme";
 import { decodeCode, encodeCode, SAFE_URL_LENGTH } from "@/lib/url-codec";
 import {
   createParser,
