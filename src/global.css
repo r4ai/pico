@@ -1,8 +1,11 @@
 /* Pico's stylesheet, in the order the cascade reads it.
    Split by what each part dresses rather than by kind, so a change to one
-   surface is a change to one file. The order is the one the rules were written
-   in and is load-bearing in places — the reduced-motion overrides name
-   selectors from nearly every file above them and have to come last. */
+   surface is a change to one file — and each of those files sits with the
+   surface it dresses rather than in a stylesheet folder. What is left in
+   styles/ is what belongs to no one surface: the tokens, the document, and
+   the overrides. The order is the one the rules were written in and is
+   load-bearing in places — the reduced-motion overrides name selectors from
+   nearly every file above them and have to come last. */
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -15,21 +18,21 @@
 /* What the document itself is, before anything is drawn on it. */
 @import "./styles/base.css";
 /* The picture: the frame, the static rendering, and the node the export is captured from. */
-@import "./styles/frame.css";
+@import "./features/preview/frame.css";
 /* The live editor, held to the same metrics as that static rendering. */
-@import "./styles/editor.css";
+@import "./features/editor/editor.css";
 /* The material the chrome is made of. */
 @import "./styles/glass.css";
 /* Where the canvas and the dock sit, which is decided by the sidebar's width. */
-@import "./styles/layout.css";
+@import "./app/layout.css";
 /* The settings panel, its scrim, its handle, and the chrome's entrance. */
-@import "./styles/sidebar.css";
+@import "./features/settings/sidebar.css";
 /* The dock's split button and the tick its buttons wear. */
-@import "./styles/dock.css";
+@import "./features/toolbar/dock.css";
 /* A theme, in sixteen pixels. */
-@import "./styles/swatch.css";
+@import "./features/settings/swatch.css";
 /* What Pico says when something happened away from the control that caused it. */
-@import "./styles/toast.css";
+@import "./components/toast/toast.css";
 /* The controls that sit on glass: buttons and rows of presets. */
 @import "./styles/controls.css";
 /* Last, because it turns off durations the files above set. */
