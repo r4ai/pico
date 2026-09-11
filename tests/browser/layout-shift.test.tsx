@@ -95,6 +95,12 @@ beforeEach(async () => {
   fonts.dataset.testFonts = "";
   fonts.textContent = fontFaceCss();
   document.head.append(fonts);
+  // The production HTML preloads this face. Vitest mounts App without that
+  // HTML, so an uncached font could otherwise arrive after the 150ms hold
+  // deadline and make these geometry checks depend on runner/network speed.
+  const faces = await document.fonts.load('400 16px "Geist Mono"');
+  expect(faces).toHaveLength(1);
+  expect(faces[0]?.status).toBe("loaded");
 
   shifts = [];
   observer = new PerformanceObserver((list) => {
@@ -104,7 +110,9 @@ beforeEach(async () => {
       shifts.push({ value: entry.value, sources: describe(entry) });
     }
   });
-  observer.observe({ type: "layout-shift", buffered: true });
+  // A previous test's shifts remain in the document's performance buffer.
+  // Observe before mounting this App, but do not replay earlier mounts.
+  observer.observe({ type: "layout-shift" });
 
   const rendered = await render(
     <NuqsAdapter>
@@ -140,7 +148,7 @@ async function everythingArrives(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 700));
 }
 
-it("arrives without moving anything", async () => {
+it("arrives with the preloaded font without moving anything", async () => {
   await everythingArrives();
 
   // The chrome is `position: fixed`, so arriving late moves nothing; the frame

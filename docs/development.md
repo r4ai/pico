@@ -64,6 +64,19 @@ resulting behavior or validate configuration with the tool that consumes it.
 The source list in `vite.unit.config.ts` fixes this measurement to non-React logic modules whose
 contracts can be tested without a browser. Components and hooks are exercised by
 `pnpm test:browser` instead.
+
+Browser geometry tests control the animations they measure. Only finite animations may
+be paused or finished: CodeMirror's caret blinks indefinitely and `Animation.finish()`
+throws for it. Keep a running caret in the regression fixture so focus timing cannot
+hide this failure.
+
+The layout-shift suite loads the initial Geist Mono face before mounting, matching the
+production HTML's font preload. This suite checks editor and control arrival with that
+font available; it does not assert zero shift for a cold font that misses the application's
+fallback deadline. Its observer starts before each mount without replaying the document's
+buffered entries from earlier tests. Do not stabilize it by increasing shift tolerances
+or adding retries.
+
 CI uploads the Clover report to [Codecov](https://codecov.io/gh/r4ai/pico) for pushes to any branch
 and pull requests from branches in this repository. Workflows in forks and Dependabot-triggered
 workflows skip the upload because GitHub does not provide them with `CODECOV_TOKEN`.
