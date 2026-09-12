@@ -51,7 +51,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - run: node --test --experimental-test-coverage scripts/security-monitor.test.mjs
+      - run: node --test --experimental-test-coverage scripts/security-monitor.test.ts
 
       - run: pnpm run security:audit
 

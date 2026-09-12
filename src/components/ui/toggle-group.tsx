@@ -58,6 +58,7 @@ function ToggleGroup({
       )}
       {...props}
     >
+      {/* react-doctor-disable-next-line react-doctor/context-provider-value-from-unmemoized-local-literal */}
       <ToggleGroupContext.Provider value={context}>{children}</ToggleGroupContext.Provider>
     </ToggleGroupPrimitive>
   );

@@ -36,4 +36,4 @@ jobs:
       - name: Audit main and synchronize security issues
         env:
           GH_TOKEN: ${{ github.token }}
-        run: node scripts/run-security-monitor.mjs
+        run: node scripts/run-security-monitor.ts
