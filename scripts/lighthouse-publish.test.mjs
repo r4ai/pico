@@ -6,7 +6,7 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { findCurrentPullRequest, publishReport, readSummaries } from "./lighthouse-publish.mjs";
-import { PERFORMANCE_BUDGETS } from "./lighthouse-budget.mjs";
+import { PERFORMANCE_BUDGETS } from "./lighthouse-budget.ts";
 
 const run = {
   id: 42,

@@ -8,7 +8,7 @@ import lighthouse from "lighthouse";
 import { chromium } from "playwright";
 import { preview } from "vite";
 
-import { evaluateBudgets, median, PERFORMANCE_BUDGETS } from "./lighthouse-budget.mjs";
+import { evaluateBudgets, median, PERFORMANCE_BUDGETS } from "./lighthouse-budget.ts";
 
 const REPORT_DIRECTORY = pathToFileURL(
   `${resolve(process.env.LIGHTHOUSE_REPORT_DIRECTORY ?? "lighthouse-results")}/`,

@@ -142,9 +142,18 @@ LIGHTHOUSE_BUILD_DIRECTORY=/absolute/path/to/main/dist \
   node scripts/lighthouse.mjs
 ```
 
-The Node tests in `scripts/lighthouse-*.test.mjs` cover report formatting and
+The Node tests in `scripts/lighthouse-*.test.*` cover report formatting and
 validation, comment creation/update ordering, PR targeting, and real ZIP reads.
 They run with coverage before the Lighthouse build and measurement.
+
+Node runs the TypeScript under `scripts/` directly, and `pnpm check` typechecks
+it with the rest of the repository. What each script is written in follows from
+what types can check: the budgets, the comment, and the security monitor own
+their data and are TypeScript, while `lighthouse.mjs` and
+`lighthouse-publish.mjs` are glue over Lighthouse and github-script's Octokit,
+whose types this repository does not depend on — typing them would mean writing
+down a guess at somebody else's API and calling it a check. Both are still
+covered by tests.
 
 `.claude/launch.json` has an entry for that server. Several things are easy to
 undo:
