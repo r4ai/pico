@@ -159,7 +159,7 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
           </div>
           <Separator />
 
-          <div className="flex flex-col gap-5 overflow-y-auto px-4 py-4">
+          <div className="flex flex-col gap-5 overflow-y-auto p-4">
             <section className="flex flex-col gap-3">
               <SectionTitle>Theme</SectionTitle>
               <SearchableSelect

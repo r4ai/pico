@@ -3,7 +3,9 @@ import type { ComponentProps, ComponentType } from "react";
 type ToastModule = typeof import("@/components/ui/sonner");
 type ToastComponent = ComponentType<ComponentProps<ToastModule["Toaster"]>>;
 
-function ToastFallback(_: ComponentProps<ToastModule["Toaster"]>) {
+// Takes no props: it stands in for the Toaster, and there is nothing about a
+// toast it could honour. A component that ignores its props may declare none.
+function ToastFallback() {
   return (
     <div className="pico-toast fixed top-4 left-1/2 z-50 max-w-sm -translate-x-1/2" role="alert">
       <div className="pico-toast-content">
