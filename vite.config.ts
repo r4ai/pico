@@ -87,8 +87,36 @@ export default defineConfig({
   optimizeDeps: { include: [...HLJS_MODULES] },
   fmt: {},
   lint: {
-    jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
-    rules: { "vite-plus/prefer-vite-plus-imports": "error" },
+    // react-hooks carries the React Compiler's own diagnostics, which is the
+    // only way this repository sees them: the compiler runs through
+    // `react({ compiler: true })` above, and a component it cannot lower keeps
+    // its memoization silently — see the React Compiler notes in
+    // docs/development.md. Nothing else here reports that.
+    jsPlugins: [
+      { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" },
+      { name: "react-compiler", specifier: "eslint-plugin-react-hooks" },
+    ],
+    rules: {
+      "vite-plus/prefer-vite-plus-imports": "error",
+      // The compiler's bailouts and the rules of React it rests on. Not the
+      // whole plugin: `exhaustive-deps` and `rules-of-hooks` are oxlint's own,
+      // and running them twice would report everything twice.
+      "react-compiler/component-hook-factories": "error",
+      "react-compiler/error-boundaries": "error",
+      "react-compiler/globals": "error",
+      "react-compiler/hooks": "error",
+      "react-compiler/immutability": "error",
+      "react-compiler/incompatible-library": "error",
+      "react-compiler/preserve-manual-memoization": "error",
+      "react-compiler/purity": "error",
+      "react-compiler/refs": "error",
+      "react-compiler/set-state-in-effect": "warn",
+      "react-compiler/set-state-in-render": "error",
+      "react-compiler/static-components": "error",
+      "react-compiler/unsupported-syntax": "error",
+      "react-compiler/use-memo": "error",
+      "react-compiler/void-use-memo": "error",
+    },
     options: { typeAware: true, typeCheck: true },
     // The layering, made a lint error rather than a convention:
     //

@@ -15,7 +15,7 @@ import { useSettingsTransition } from "@/features/settings/hooks/use-settings-tr
 import { useBrokenLinkNotice, useShareLink } from "@/features/settings/hooks/use-share-link";
 import { useSidebarMode } from "@/features/settings/hooks/use-sidebar-mode";
 import { useSidebarOpen } from "@/features/settings/hooks/use-sidebar-open";
-import { lazy, Suspense, useCallback, useRef, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 
 const Chrome = lazy(() => import("@/app/chrome"));
 
@@ -44,7 +44,7 @@ export function App() {
   const fontPhase = useFontReady(FONTS[settings.font]);
   const { highlight, colors } = useFrameColors(settings);
 
-  const setLanguage = useCallback((lang: LanguageId) => void setSettings({ lang }), [setSettings]);
+  const setLanguage = (lang: LanguageId) => void setSettings({ lang });
   const chooseLanguage = useLanguageChoice({ code, setLanguage });
 
   const { animateGeometry, changeSettings, stopGeometryAnimation } = useSettingsTransition({
@@ -53,13 +53,10 @@ export function App() {
     settings,
   });
 
-  const changeCode = useCallback(
-    (nextCode: string) => {
-      stopGeometryAnimation();
-      void setCode(nextCode);
-    },
-    [setCode, stopGeometryAnimation],
-  );
+  const changeCode = (nextCode: string) => {
+    stopGeometryAnimation();
+    void setCode(nextCode);
+  };
 
   const { running, copied, copy, save } = useExport({ node: exportNode, settings, scale });
   const { copyLink, linkCopied } = useShareLink({ code, settings });

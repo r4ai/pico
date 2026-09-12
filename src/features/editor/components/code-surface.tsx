@@ -32,6 +32,14 @@ export function CodeSurface(props: CodeSurfaceProps) {
   // press means is which editor gets built, not something to check later.
   const [pressed, setPressed] = useState(false);
 
+  // Not a component created during render: `load()` resolves once per page and
+  // `Editor` is that one module's export, held in state, so its identity never
+  // changes and nothing here remounts. `lazy()` with a Suspense fallback is the
+  // shape the rule has in mind, and it is the wrong one — React throttles the
+  // reveal of resolved Suspense content, which would hold the editor back on
+  // exactly the warm visit where it arrives at once. See
+  // .react-doctor/false-positives.md.
+  // oxlint-disable-next-line react-compiler/static-components
   if (Editor) return <Editor {...props} focusOnMount={pressed} />;
 
   return (

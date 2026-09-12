@@ -33,6 +33,7 @@
   "include": [
     "src",
     "tests",
+    "scripts",
     "vite.config.ts",
     "vite.browser.config.ts",
     "vite.unit.config.ts",

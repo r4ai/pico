@@ -1,7 +1,7 @@
 import type { LanguageId } from "@/core/language/language";
 import { useLanguageDetection } from "@/features/editor/hooks/use-language-detection";
 import { hasExplicitLanguage } from "@/core/settings/search-params";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 export type UseLanguageChoiceOptions = {
   code: string;
@@ -23,13 +23,10 @@ export function useLanguageChoice({ code, setLanguage }: UseLanguageChoiceOption
   // Once someone picks a language themselves, guessing would only fight them.
   const [chosen, setChosen] = useState(() => hasExplicitLanguage(window.location.search));
 
-  const chooseLanguage = useCallback(
-    (lang: LanguageId) => {
-      setChosen(true);
-      setLanguage(lang);
-    },
-    [setLanguage],
-  );
+  const chooseLanguage = (lang: LanguageId) => {
+    setChosen(true);
+    setLanguage(lang);
+  };
 
   useLanguageDetection({ code, enabled: !chosen, onDetect: setLanguage });
 

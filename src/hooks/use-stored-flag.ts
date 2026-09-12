@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 /**
  * What a previous visit left under this key.
@@ -49,13 +49,10 @@ export function useStoredFlag(
 ): readonly [boolean, (next: boolean) => void] {
   const [flag, setFlag] = useState(() => resolve(read(key)));
 
-  const change = useCallback(
-    (next: boolean) => {
-      setFlag(next);
-      write(key, next);
-    },
-    [key],
-  );
+  const change = (next: boolean) => {
+    setFlag(next);
+    write(key, next);
+  };
 
   return [flag, change];
 }

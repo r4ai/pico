@@ -2,7 +2,7 @@ import { toast } from "@/components/toast/toast";
 import { useBriefFlag } from "@/hooks/use-brief-flag";
 import { buildShareUrl, hasBrokenCodeParam } from "@/core/settings/search-params";
 import type { Settings } from "@/core/settings/settings";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
 export type UseShareLinkOptions = {
   settings: Settings;
@@ -24,9 +24,8 @@ export type ShareLink = {
  */
 export function useShareLink({ settings, code }: UseShareLinkOptions): ShareLink {
   const copied = useBriefFlag();
-  const { raise } = copied;
 
-  const copyLink = useCallback(async () => {
+  const copyLink = async () => {
     const { url, tooLong } = buildShareUrl(
       settings,
       code,
@@ -34,7 +33,7 @@ export function useShareLink({ settings, code }: UseShareLinkOptions): ShareLink
     );
     try {
       await navigator.clipboard.writeText(url);
-      raise();
+      copied.raise();
       if (tooLong) {
         toast.warning("Copied, but this link is very long.", {
           description: "Some apps and browsers cut off links this size.",
@@ -45,7 +44,7 @@ export function useShareLink({ settings, code }: UseShareLinkOptions): ShareLink
     } catch {
       toast.error("Could not copy the link.");
     }
-  }, [code, raise, settings]);
+  };
 
   return { copyLink, linkCopied: copied.on };
 }

@@ -88,7 +88,7 @@ installed by this initial monitoring setup.
 Run the monitor's behavior tests locally with:
 
 ```sh
-mise exec -- node --test --experimental-test-coverage scripts/security-monitor.test.mjs
+mise exec -- node --test --experimental-test-coverage scripts/security-monitor.test.ts
 ```
 
 To start a monitor run manually using the GitHub Actions bot identity:

@@ -1,9 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { renderReport, upsertComment, validateSummary } from "./lighthouse-comment.mjs";
+import {
+  renderReport,
+  upsertComment,
+  validateSummary,
+  type CommentApi,
+  type IssueComment,
+  type RunMetadata,
+  type Summary,
+} from "./lighthouse-comment.ts";
 
-const summary = {
+const summary: Summary = {
   commit: "a".repeat(40),
   median: {
     score: 0.9,
@@ -25,7 +33,7 @@ const summary = {
   },
   runs: [{}, {}, {}],
 };
-const metadata = {
+const metadata: RunMetadata = {
   runId: 42,
   attempt: 1,
   serverUrl: "https://github.com",
@@ -59,6 +67,7 @@ await test("passing boundaries and a zero baseline are rendered without invalid 
 await test("keeps a four-column summary and collapses explanations and budget details", () => {
   const body = renderReport({ pr: summary, main: summary }, metadata);
   const [visible, details] = body.split("<details>");
+  assert.ok(visible && details);
   assert.match(visible, /\| 指標 \| main \| PR \| 差分 \|/);
   const rows = visible.split("\n").filter((line) => line.startsWith("|"));
   assert.equal(rows.length, 9);
@@ -87,7 +96,7 @@ for (const [name, reports, expected] of [
   ["main unavailable", { pr: summary, main: null }, /main.*計測結果を取得できない/],
   ["PR unavailable", { pr: null, main: summary }, /PR.*計測結果を取得できない/],
   ["both unavailable", { pr: null, main: null }, /PR.*計測結果を取得できない/],
-]) {
+] as const) {
   await test(name, () => assert.match(renderReport(reports, metadata), expected));
 }
 
@@ -97,6 +106,7 @@ for (const { name, invalid } of [
   { name: "invalid SHA", invalid: { ...summary, commit: "<script>" } },
   { name: "missing budgets", invalid: { ...summary, budgets: {} } },
   { name: "wrong run count", invalid: { ...summary, runs: [] } },
+  { name: "nothing at all", invalid: undefined },
   {
     name: "invalid severity",
     invalid: { ...summary, budgets: { ...summary.budgets, score: { min: 0.85, level: "error" } } },
@@ -107,24 +117,28 @@ for (const { name, invalid } of [
   });
 }
 
-// This stateful fake represents only the external GitHub comment store.
-function commentStore(initial = []) {
+/** This stateful fake represents only the external GitHub comment store. */
+function commentStore(initial: IssueComment[] = []) {
   const comments = structuredClone(initial);
-  return {
-    comments,
-    paginate: async () => comments,
+  const api: CommentApi = {
+    paginate: () => Promise.resolve(comments),
     rest: {
       issues: {
         listComments() {},
-        async createComment({ body }) {
+        createComment({ body }) {
           comments.push({ id: 100, body, user: { login: "github-actions[bot]" } });
+          return Promise.resolve();
         },
-        async updateComment({ comment_id, body }) {
-          comments.find(({ id }) => id === comment_id).body = body;
+        updateComment({ comment_id, body }) {
+          const target = comments.findIndex(({ id }) => id === comment_id);
+          assert.notEqual(target, -1, `No comment ${comment_id}`);
+          comments[target] = { ...comments[target], id: comment_id, body };
+          return Promise.resolve();
         },
       },
     },
   };
+  return { comments, api };
 }
 
 await test("creates once, updates on rerun, preserves human comments and ignores older runs", async () => {
@@ -133,12 +147,12 @@ await test("creates once, updates on rerun, preserves human comments and ignores
   ]);
   const target = { owner: "r4ai", repo: "pico", issue_number: 1 };
   const first = renderReport({ pr: summary, main: summary }, metadata);
-  await upsertComment(github, target, first, metadata);
+  await upsertComment(github.api, target, first, metadata);
   const second = renderReport({ pr: summary, main: null }, { ...metadata, attempt: 2 });
-  await upsertComment(github, target, second, { ...metadata, attempt: 2 });
-  await upsertComment(github, target, first, metadata);
-  await upsertComment(github, target, first, { ...metadata, runId: 41 });
+  await upsertComment(github.api, target, second, { ...metadata, attempt: 2 });
+  await upsertComment(github.api, target, first, metadata);
+  await upsertComment(github.api, target, first, { ...metadata, runId: 41 });
   assert.equal(github.comments.length, 2);
-  assert.equal(github.comments[0].body, "<!-- pico-lighthouse --> user comment");
-  assert.equal(github.comments[1].body, second);
+  assert.equal(github.comments[0]?.body, "<!-- pico-lighthouse --> user comment");
+  assert.equal(github.comments[1]?.body, second);
 });

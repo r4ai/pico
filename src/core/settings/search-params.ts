@@ -13,7 +13,6 @@ import {
   useQueryState,
   useQueryStates,
 } from "nuqs";
-import { useCallback } from "react";
 
 /**
  * Every setting is a search param, so a link reproduces the picture exactly.
@@ -128,18 +127,15 @@ export function useCode() {
     codeParser.withDefault("").withOptions({ history: "replace", throttleMs: 500 }),
   );
 
-  const setCode = useCallback(
-    (nextCode: string) => {
-      writePendingCode(nextCode);
-      const pending = setQueryCode(nextCode);
-      void pending.then(
-        () => clearPendingCode(nextCode),
-        () => {},
-      );
-      return pending;
-    },
-    [setQueryCode],
-  );
+  const setCode = (nextCode: string) => {
+    writePendingCode(nextCode);
+    const pending = setQueryCode(nextCode);
+    void pending.then(
+      () => clearPendingCode(nextCode),
+      () => {},
+    );
+    return pending;
+  };
 
   return [code, setCode] as const;
 }

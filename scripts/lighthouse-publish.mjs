@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 
-import { renderReport, upsertComment, validateSummary } from "./lighthouse-comment.mjs";
+import { renderReport, upsertComment, validateSummary } from "./lighthouse-comment.ts";
 
 const exec = promisify(execFile);
 
