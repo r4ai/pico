@@ -2,7 +2,7 @@ import { useBriefFlag } from "@/hooks/use-brief-flag";
 import type { ExportFormat, ExportScale, ExportTask } from "@/core/export";
 import { imageFileName, renderImage } from "@/features/export/lib/export-image";
 import type { Settings } from "@/core/settings/settings";
-import { type RefObject, useCallback, useState } from "react";
+import { type RefObject, useState } from "react";
 import { toast } from "@/components/toast/toast";
 
 function download(blob: Blob, fileName: string) {
@@ -63,22 +63,19 @@ export function useExport({ node, settings, scale }: UseExportOptions) {
   const [running, setRunning] = useState<ExportTask>();
   const copied = useBriefFlag();
 
-  const save = useCallback(
-    async (format: ExportFormat) => {
-      const target = node.current;
-      if (!target || running) return;
-      setRunning("save");
-      const failure = await attempt(async () => {
-        const image = await renderImage({ node: target, settings, format, scale });
-        download(image, imageFileName(format));
-      });
-      setRunning(undefined);
-      if (failure) toast.error("Could not save the image.", { description: failure });
-    },
-    [running, node, scale, settings],
-  );
+  const save = async (format: ExportFormat) => {
+    const target = node.current;
+    if (!target || running) return;
+    setRunning("save");
+    const failure = await attempt(async () => {
+      const image = await renderImage({ node: target, settings, format, scale });
+      download(image, imageFileName(format));
+    });
+    setRunning(undefined);
+    if (failure) toast.error("Could not save the image.", { description: failure });
+  };
 
-  const copy = useCallback(async () => {
+  const copy = async () => {
     const target = node.current;
     if (!target || running) return;
     setRunning("copy");
@@ -92,7 +89,7 @@ export function useExport({ node, settings, scale }: UseExportOptions) {
     }
     copied.raise();
     toast.success("Copied the image.");
-  }, [running, copied, node, scale, settings]);
+  };
 
   return { running, copied: copied.on, copy, save };
 }

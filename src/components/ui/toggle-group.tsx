@@ -39,12 +39,10 @@ function ToggleGroup({
     orientation?: "horizontal" | "vertical";
     children?: React.ReactNode;
   }) {
-  // Built once per set of values rather than per render: every item reads this
-  // context, and a fresh object would redraw the whole row on any parent render.
-  const context = React.useMemo(
-    () => ({ variant, size, spacing, orientation }),
-    [orientation, size, spacing, variant],
-  );
+  // Every item reads this context, and a fresh object on every parent render
+  // would redraw the whole row. The React Compiler builds it once per set of
+  // values; see the compiler notes in docs/development.md.
+  const context = { variant, size, spacing, orientation };
 
   return (
     <ToggleGroupPrimitive

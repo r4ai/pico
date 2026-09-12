@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /** Long enough to be read, short enough that the button is itself again by the time you look back. */
 const DEFAULT_DURATION_MS = 1600;
@@ -21,16 +21,16 @@ export function useBriefFlag(durationMs: number = DEFAULT_DURATION_MS): BriefFla
   const [on, setOn] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const raise = useCallback(() => {
+  const raise = () => {
     setOn(true);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setOn(false), durationMs);
-  }, [durationMs]);
+  };
 
-  const lower = useCallback(() => {
+  const lower = () => {
     clearTimeout(timer.current);
     setOn(false);
-  }, []);
+  };
 
   useEffect(() => () => clearTimeout(timer.current), []);
 

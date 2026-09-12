@@ -14,7 +14,7 @@ import {
 import { ComboboxFocus } from "@/components/searchable-select/combobox-focus";
 import { cn } from "@/lib/utils";
 import { useElasticWidth } from "@/hooks/use-elastic-width";
-import { type ComponentProps, type ReactNode, useContext, useMemo, useRef, useState } from "react";
+import { type ComponentProps, type ReactNode, useContext, useRef, useState } from "react";
 import { ComboBoxStateContext, ListLayout, useFilter, Virtualizer } from "react-aria-components";
 
 export type { SearchableOption } from "@/components/searchable-select/searchable-option";
@@ -105,13 +105,12 @@ export function SearchableSelect<T extends string>({
   const virtualized = options.length > VIRTUALIZE_FROM;
   const selectedLabel = options.find((option) => option.value === value)?.label ?? placeholder;
   const { contains } = useFilter({ sensitivity: "base" });
-  const defaultFilter = useMemo(() => {
-    const searchTextByLabel = new Map(
-      options.map((option) => [option.label, searchTextOf(option)]),
-    );
-    return (textValue: string, inputValue: string) =>
-      contains(searchTextByLabel.get(textValue) ?? textValue, inputValue);
-  }, [contains, options]);
+  // Built per set of options rather than per keystroke: the language picker
+  // holds 243 of them and this runs on every character typed into the field.
+  // The React Compiler is what keeps it to one build; see docs/development.md.
+  const searchTextByLabel = new Map(options.map((option) => [option.label, searchTextOf(option)]));
+  const defaultFilter = (textValue: string, inputValue: string) =>
+    contains(searchTextByLabel.get(textValue) ?? textValue, inputValue);
 
   const field =
     width === "content" ? (
