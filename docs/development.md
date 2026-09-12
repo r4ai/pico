@@ -318,12 +318,29 @@ nowhere the page itself loads; importing `detect-language` from a component
 puts all of it back. A browser test watches for a long task after the settle.
 
 The React Compiler is enabled, so components do not need `useMemo` or `memo`
-to survive the re-render every keystroke causes. It skips whole components and
-hooks over syntax it cannot lower, silently as far as the app is concerned and
-loudly in the build log — a `throw` inside a `try`, a `finally`, or a ref read
-during a render each cost `useExport` and `CodeSurface` their memoization
-until they were written another way. `pnpm build` should print no
+to survive the re-render every keystroke causes. There are none left in `src/`,
+and a new one is a claim that the compiler got something wrong. It skips whole
+components and hooks over syntax it cannot lower, silently as far as the app is
+concerned and loudly in the build log — a `throw` inside a `try`, a `finally`,
+or a ref read during a render each cost `useExport` and `CodeSurface` their
+memoization until they were written another way. `pnpm build` should print no
 `react-compiler` notes.
+
+That silence is why `pnpm lint` runs the compiler's own diagnostics, as the
+`react-compiler/*` rules in `vite.config.ts`: a ref read during render is an
+error there rather than a memoization that quietly stopped happening.
+`exhaustive-deps` and `rules-of-hooks` stay off, being oxlint's own.
+`static-components` fires once, on `CodeSurface`, which holds the editor it
+imported in state rather than creating a component; the suppression carries its
+reasoning and `.react-doctor/false-positives.md` carries the rest of it.
+
+React Doctor would run these rules itself, but it does not recognize
+`react({ compiler: true })` from `@vitejs/plugin-react` 6 — it looks for a Babel
+plugin or `react-compiler-runtime`, neither of which this build has — so it
+reports the codebase as uncompiled and asks for manual memoization it does not
+need. `pnpm lint` is what covers that gap. To see what React Doctor would say if
+it knew, drop a `babel.config.json` naming `babel-plugin-react-compiler` beside
+`package.json`, scan, and delete it again.
 
 ## React Doctor
 
@@ -332,6 +349,12 @@ diagnostics through `pnpm run doctor`. To inspect only issues introduced by the 
 `pnpm run doctor --verbose --scope changed`. Pull requests receive advisory summaries and inline
 review comments, while pushes to any branch record the full-project health score; these reports do not
 block CI.
+
+Its findings are hypotheses, not defects. A finding this repository has
+investigated and rejected belongs in [`.react-doctor/false-positives.md`](../.react-doctor/false-positives.md)
+with the evidence, and only then in the code as a suppression that names it.
+An empty report is not the goal: the scanner cannot see the React Compiler
+here, so some of what it asks for is work this codebase deliberately does not do.
 
 ## Architecture
 
