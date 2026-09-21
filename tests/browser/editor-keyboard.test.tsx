@@ -3,7 +3,7 @@ import { CODE_PARAM, recoverPendingCode } from "@/core/settings/search-params";
 import "@/global.css";
 import { decodeCode } from "@/lib/url-codec";
 import { NuqsAdapter } from "nuqs/adapters/react";
-import { afterEach, beforeEach, expect, it } from "vite-plus/test";
+import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";
 import { cleanup, render } from "vitest-browser-react/pure";
 
@@ -35,6 +35,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  vi.useRealTimers();
   await unmount?.();
   unmount = undefined;
   await cleanup();
@@ -66,6 +67,9 @@ it("persists the latest edit when the page leaves before the URL throttle flushe
   await editor.fill("const persisted = 1;");
   await expect.poll(codeInUrl).toBe("const persisted = 1;");
 
+  // Hold the throttle open explicitly. Relying on fill finishing within 500ms
+  // made this exercise the recovery path only when the machine was fast.
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   await editor.fill("const persisted = 2;");
   expect(codeInUrl()).toBe("const persisted = 1;");
 
