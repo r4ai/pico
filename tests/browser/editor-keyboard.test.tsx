@@ -52,6 +52,8 @@ it("lets the keyboard out of the editor", async () => {
   await userEvent.keyboard("{Escape}");
   await userEvent.keyboard("{Tab}");
   expect(inEditor()).toBe(false);
+  expect(document.activeElement?.getAttribute("aria-label")).toBe("Frame width");
+  await userEvent.keyboard("{Tab}");
   expect(document.activeElement?.getAttribute("aria-label")).toBe("Language");
 });
 

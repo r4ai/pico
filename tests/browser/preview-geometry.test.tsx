@@ -3,7 +3,7 @@ import { fontFaceCss } from "@/core/settings/fonts";
 import "@/global.css";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
-import { page } from "vite-plus/test/browser";
+import { page, userEvent } from "vite-plus/test/browser";
 import { cleanup, render } from "vitest-browser-react/pure";
 
 const TRANSITION_MIDPOINT_MS = 130;
@@ -31,6 +31,52 @@ async function setCode(code: string): Promise<void> {
   await page.getByRole("textbox", { name: "Code" }).fill(code);
   await nextFrame();
   await nextFrame();
+}
+
+async function resizeFrameTo(
+  targetWidth: number,
+  pointerType: "mouse" | "touch" = "mouse",
+): Promise<void> {
+  const handle = frame(".pico-resize-handle");
+  const stage = frame(".pico-canvas-stage");
+  const canvas = frame(".pico-shell-canvas");
+  const padding = Number.parseFloat(getComputedStyle(stage).paddingLeft);
+  const viewportWidth =
+    canvas.clientWidth - Number.parseFloat(getComputedStyle(canvas).paddingLeft);
+  const stageLeft = stage.getBoundingClientRect().left;
+  const targetRight =
+    targetWidth <= viewportWidth - 2 * padding
+      ? stageLeft + viewportWidth / 2 + targetWidth / 2
+      : stageLeft + padding + targetWidth;
+  const start = handle.getBoundingClientRect();
+  const startX = start.left + start.width / 2;
+  const pointerId = 42;
+  const send = (type: string, clientX: number) =>
+    handle.dispatchEvent(
+      new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        clientX,
+        clientY: start.top + start.height / 2,
+        pointerId,
+        pointerType,
+        isPrimary: true,
+      }),
+    );
+
+  send("pointerdown", startX);
+  send("pointermove", targetRight);
+  await expect.poll(() => liveFrame().getBoundingClientRect().width).toBe(targetWidth);
+  expect(handle.querySelector(".pico-resize-readout")?.textContent).toBe(`${targetWidth} px`);
+  expect(new URLSearchParams(window.location.search).has("width")).toBe(false);
+  expect(
+    handle.getBoundingClientRect().left + handle.getBoundingClientRect().width / 2,
+  ).toBeCloseTo(targetRight, 0);
+  send("pointerup", targetRight);
+  await expect
+    .poll(() => new URLSearchParams(window.location.search).get("width"))
+    .toBe(String(targetWidth));
+  await expect.poll(() => handle.querySelector(".pico-resize-readout")).toBeNull();
 }
 
 function codeWithLineCount(count: number): string {
@@ -100,6 +146,7 @@ afterEach(async () => {
   unmount = undefined;
   await cleanup();
   document.querySelector("style[data-test-fonts]")?.remove();
+  await page.viewport(1280, 900);
 });
 
 describe("preview geometry", () => {
@@ -146,13 +193,13 @@ describe("preview geometry", () => {
   });
 
   it("sets a fixed frame width, wraps long lines with aligned numbers, and returns to auto", async () => {
-    await setCode(`${"x".repeat(180)}\nlast line`);
+    await setCode("short\nlast line");
     await page.getByRole("switch", { name: "Line numbers" }).click({ force: true });
     await finishAnimations(liveFrame());
 
-    const width = page.getByRole("radiogroup", { name: "Width" });
-    await width.getByRole("radio", { name: "240 pixels" }).click();
+    await resizeFrameTo(240);
     await finishAnimations(liveFrame());
+    await setCode(`${"x".repeat(180)}\nlast line`);
 
     await expect.poll(() => new URLSearchParams(window.location.search).get("width")).toBe("240");
     expect(liveFrame().getBoundingClientRect().width).toBe(240);
@@ -171,7 +218,7 @@ describe("preview geometry", () => {
       0,
     );
 
-    await width.getByRole("radio", { name: "Auto width" }).click();
+    await page.getByRole("button", { name: "Reset to auto" }).click();
     await finishAnimations(liveFrame());
     await expect.poll(() => new URLSearchParams(window.location.search).has("width")).toBe(false);
     expect(liveFrame().getBoundingClientRect().width).toBeGreaterThan(240);
@@ -184,10 +231,10 @@ describe("preview geometry", () => {
   it("keeps trailing-space wraps aligned between the editor and export", async () => {
     await setCode(`${"x".repeat(13)}${" ".repeat(38)}\nnext`);
     await page.getByRole("switch", { name: "Line numbers" }).click({ force: true });
-    await page
-      .getByRole("radiogroup", { name: "Width" })
-      .getByRole("radio", { name: "240 pixels" })
-      .click();
+    frame(".pico-resize-handle").dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "Home" }),
+    );
+    await expect.poll(() => new URLSearchParams(window.location.search).get("width")).toBe("240");
     await finishAnimations(liveFrame());
 
     const liveLine = liveFrame().querySelectorAll<HTMLElement>(".cm-line")[1];
@@ -199,6 +246,63 @@ describe("preview geometry", () => {
       liveLine.getBoundingClientRect().top - liveFrame().getBoundingClientRect().top,
       0,
     );
+  });
+
+  it("resizes on a narrow screen and keeps the handle reachable", async () => {
+    await page.viewport(390, 844);
+    await page.getByRole("button", { name: "Close settings" }).click();
+    await setCode("small frame");
+
+    await resizeFrameTo(315, "touch");
+    await finishAnimations(liveFrame());
+    expect(exportFrame().getBoundingClientRect().width).toBe(315);
+    expect(frame(".pico-resize-handle").getBoundingClientRect().right).toBeLessThan(390);
+  });
+
+  it("keeps the dragged edge under the pointer as the frame grows past the canvas", async () => {
+    await setCode("wide frame");
+    await resizeFrameTo(1200);
+    expect(exportFrame().getBoundingClientRect().width).toBe(1200);
+    expect(frame(".pico-shell-canvas").scrollWidth).toBeGreaterThan(
+      frame(".pico-shell-canvas").clientWidth,
+    );
+  });
+
+  it("lets a focused handle resize with the keyboard", async () => {
+    const handle = page.getByRole("slider", { name: "Frame width" });
+    await handle.click();
+    await expect.element(handle).toHaveFocus();
+    await userEvent.keyboard("{Home}");
+    await expect.poll(() => new URLSearchParams(window.location.search).get("width")).toBe("240");
+    await userEvent.keyboard("{ArrowRight}");
+    await expect.poll(() => new URLSearchParams(window.location.search).get("width")).toBe("260");
+    await userEvent.keyboard("{ArrowRight}".repeat(4));
+    await expect.poll(() => new URLSearchParams(window.location.search).get("width")).toBe("340");
+    expect(liveFrame().getBoundingClientRect().width).toBe(340);
+  });
+
+  it("restores auto width when a drag is canceled", async () => {
+    const handle = frame(".pico-resize-handle");
+    const start = handle.getBoundingClientRect();
+    const startX = start.left + start.width / 2;
+    const send = (type: string, clientX: number) =>
+      handle.dispatchEvent(
+        new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          clientX,
+          pointerId: 43,
+          pointerType: "touch",
+          isPrimary: true,
+        }),
+      );
+
+    send("pointerdown", startX);
+    send("pointermove", startX - 40);
+    await expect.poll(() => liveFrame().getBoundingClientRect().width).toBeLessThan(448);
+    send("pointercancel", startX - 40);
+    await expect.poll(() => liveFrame().getBoundingClientRect().width).toBe(448);
+    expect(new URLSearchParams(window.location.search).has("width")).toBe(false);
   });
 
   it("restores URL geometry directly at its final dimensions", async () => {

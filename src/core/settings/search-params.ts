@@ -2,10 +2,11 @@ import { parseHexColor, type Background } from "@/core/settings/background";
 import { LANGUAGE_IDS } from "@/core/language/language";
 import {
   FONT_SIZE_IDS,
+  MAX_FRAME_WIDTH,
+  MIN_FRAME_WIDTH,
   PADDING_IDS,
   RADIUS_IDS,
   SHADOW_IDS,
-  WIDTH_IDS,
 } from "@/core/settings/appearance";
 import { FONT_IDS } from "@/core/settings/fonts";
 import { DEFAULT_SETTINGS, type Settings } from "@/core/settings/settings";
@@ -37,7 +38,16 @@ const settingsParsers = {
   theme: parseAsStringLiteral(THEME_IDS).withDefault(DEFAULT_SETTINGS.theme),
   mode: parseAsStringLiteral(COLOR_MODES).withDefault(DEFAULT_SETTINGS.mode),
   padding: parseAsStringLiteral(PADDING_IDS).withDefault(DEFAULT_SETTINGS.padding),
-  width: parseAsStringLiteral(WIDTH_IDS).withDefault(DEFAULT_SETTINGS.width),
+  width: createParser<number | "auto">({
+    parse: (value) => {
+      if (value === "auto") return "auto";
+      const width = Number(value);
+      return Number.isInteger(width) && width >= MIN_FRAME_WIDTH && width <= MAX_FRAME_WIDTH
+        ? width
+        : null;
+    },
+    serialize: String,
+  }).withDefault(DEFAULT_SETTINGS.width),
   radius: parseAsStringLiteral(RADIUS_IDS).withDefault(DEFAULT_SETTINGS.radius),
   shadow: parseAsStringLiteral(SHADOW_IDS).withDefault(DEFAULT_SETTINGS.shadow),
   fontSize: parseAsStringLiteral(FONT_SIZE_IDS).withDefault(DEFAULT_SETTINGS.fontSize),

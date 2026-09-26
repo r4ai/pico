@@ -25,7 +25,7 @@ it.each(["theme", "transparent", "#123456", "#12345680", "#12345600"] as const)(
   },
 );
 
-it.each(["auto", "240", "480", "960"] as const)("shares width %s", (width) => {
+it.each(["auto", 240, 480, 960, 2400] as const)("shares width %s", (width) => {
   const { url } = buildShareUrl({ ...DEFAULT_SETTINGS, width }, "", "https://pico.example/");
-  expect(new URL(url).searchParams.get("width")).toBe(width === "auto" ? null : width);
+  expect(new URL(url).searchParams.get("width")).toBe(width === "auto" ? null : String(width));
 });

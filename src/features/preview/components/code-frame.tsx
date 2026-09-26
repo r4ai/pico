@@ -11,13 +11,14 @@ import {
 import { FONTS } from "@/core/settings/fonts";
 import type { Settings } from "@/core/settings/settings";
 import { clsx } from "clsx";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactNode, Ref } from "react";
 
 export type CodeFrameProps = {
   settings: Settings;
   colors: FrameColors;
   children: ReactNode;
   className?: string;
+  ref?: Ref<HTMLDivElement>;
   width?: number;
   animateGeometry?: boolean;
   lineNumberDigits?: number;
@@ -35,6 +36,7 @@ export function CodeFrame({
   colors,
   children,
   className,
+  ref,
   width,
   animateGeometry = false,
   lineNumberDigits = 1,
@@ -54,7 +56,7 @@ export function CodeFrame({
     "--pico-gutter-min-width": "2ch",
     "--pico-line-number-digits": lineNumberDigits,
     "--pico-geometry-duration": `${PREVIEW_GEOMETRY_DURATION_MS}ms`,
-    width: settings.width === "auto" ? width : Number(settings.width),
+    width: settings.width === "auto" ? width : settings.width,
   } as CSSProperties;
 
   return (
@@ -66,6 +68,7 @@ export function CodeFrame({
       className={clsx("pico-frame", className)}
       data-animate-geometry={animateGeometry}
       data-fixed-width={settings.width !== "auto"}
+      ref={ref}
       style={style}
     >
       {children}
