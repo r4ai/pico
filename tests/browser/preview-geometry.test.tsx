@@ -268,6 +268,45 @@ describe("preview geometry", () => {
     );
   });
 
+  it("keeps the dragged edge under the pointer while shrinking a scrolled frame", async () => {
+    await setCode("wide frame");
+    await resizeFrameTo(1200);
+    const canvas = frame(".pico-shell-canvas");
+    canvas.scrollLeft = canvas.scrollWidth - canvas.clientWidth;
+    await nextFrame();
+
+    const handle = frame(".pico-resize-handle");
+    const initial = handle.getBoundingClientRect();
+    const startX = initial.left + initial.width / 2;
+    const send = (type: string, clientX: number) =>
+      handle.dispatchEvent(
+        new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          clientX,
+          pointerId: 44,
+          pointerType: "mouse",
+          isPrimary: true,
+        }),
+      );
+
+    send("pointerdown", startX);
+    for (const delta of [180, 450]) {
+      const pointerX = startX - delta;
+      send("pointermove", pointerX);
+      await expect.poll(() => liveFrame().getBoundingClientRect().width).toBe(1200 - delta);
+      expect(
+        Math.abs(
+          handle.getBoundingClientRect().left + handle.getBoundingClientRect().width / 2 - pointerX,
+        ),
+      ).toBeLessThan(1.5);
+      expect(new URLSearchParams(window.location.search).get("width")).toBe("1200");
+    }
+    send("pointerup", startX - 450);
+    await expect.poll(() => new URLSearchParams(window.location.search).get("width")).toBe("750");
+    expect(exportFrame().getBoundingClientRect().width).toBe(750);
+  });
+
   it("lets a focused handle resize with the keyboard", async () => {
     const handle = page.getByRole("slider", { name: "Frame width" });
     await handle.click();

@@ -11,6 +11,8 @@ const KEYBOARD_STEP = 20;
 type ResizeGesture = {
   pointerId: number;
   startX: number;
+  startWidth: number;
+  holdScrollRoom: boolean;
   pointerOffset: number;
   stageLeft: number;
   viewportWidth: number;
@@ -70,14 +72,16 @@ export function Canvas({
   const [resizing, setResizing] = useState(false);
   const shownWidth = draftWidth ?? (settings.width === "auto" ? width : settings.width);
   const frameSettings = draftWidth === null ? settings : { ...settings, width: draftWidth };
+  const releaseScrollRoom = () => stageRef.current?.style.removeProperty("padding-right");
 
   const widthForPointer = (event: PointerEvent<HTMLDivElement>): number => {
     const active = gesture.current;
     if (!active) return MIN_FRAME_WIDTH;
     const right = event.clientX - active.pointerOffset;
     const boundary = active.stageLeft + active.viewportWidth - active.padding;
-    const width =
-      right <= boundary
+    const width = active.holdScrollRoom
+      ? right - active.stageLeft - active.padding
+      : right <= boundary
         ? 2 * (right - active.stageLeft - active.viewportWidth / 2)
         : right - active.stageLeft - active.padding;
     return clampWidth(width);
@@ -91,25 +95,25 @@ export function Canvas({
     gesture.current = null;
     setResizing(false);
     if (!moved) {
+      releaseScrollRoom();
       setDraftWidth(null);
       return;
     }
     setDraftWidth(next);
     const id = ++commitId.current;
-    void onWidthCommit(next).then(
-      () => {
-        if (id === commitId.current) setDraftWidth(null);
-      },
-      () => {
-        if (id === commitId.current) setDraftWidth(null);
-      },
-    );
+    const settle = () => {
+      if (id !== commitId.current) return;
+      releaseScrollRoom();
+      setDraftWidth(null);
+    };
+    void onWidthCommit(next).then(settle, settle);
   };
 
   const cancelResize = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerId !== gesture.current?.pointerId) return;
     gesture.current = null;
     setResizing(false);
+    releaseScrollRoom();
     setDraftWidth(null);
   };
 
@@ -203,12 +207,14 @@ export function Canvas({
               const canvas = canvasRef.current;
               if (!frame || !stage || !canvas) return;
               event.preventDefault();
-              event.currentTarget.focus();
+              event.currentTarget.focus({ preventScroll: true });
               ++commitId.current;
               const padding = Number.parseFloat(getComputedStyle(stage).paddingLeft);
               gesture.current = {
                 pointerId: event.pointerId,
                 startX: event.clientX,
+                startWidth: frame.getBoundingClientRect().width,
+                holdScrollRoom: canvas.scrollLeft > 0,
                 pointerOffset: event.clientX - frame.getBoundingClientRect().right,
                 stageLeft: stage.getBoundingClientRect().left,
                 viewportWidth:
@@ -224,8 +230,19 @@ export function Canvas({
               }
             }}
             onPointerMove={(event) => {
-              if (event.pointerId === gesture.current?.pointerId)
-                setDraftWidth(widthForPointer(event));
+              const active = gesture.current;
+              if (event.pointerId !== active?.pointerId) return;
+              const next = widthForPointer(event);
+              // Keep the stage's original scroll width while a wide frame is
+              // shrinking. Otherwise the browser clamps scrollLeft and pins
+              // the right edge to the viewport instead of the pointer.
+              if (active.holdScrollRoom) {
+                stageRef.current?.style.setProperty(
+                  "padding-right",
+                  `${active.padding + Math.max(0, active.startWidth - next)}px`,
+                );
+              }
+              setDraftWidth(next);
             }}
             onPointerUp={finishResize}
             role="slider"
