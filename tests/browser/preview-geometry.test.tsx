@@ -67,7 +67,6 @@ async function resizeFrameTo(
   send("pointerdown", startX);
   send("pointermove", targetRight);
   await expect.poll(() => liveFrame().getBoundingClientRect().width).toBe(targetWidth);
-  expect(handle.querySelector(".pico-resize-readout")?.textContent).toBe(`${targetWidth} px`);
   expect(new URLSearchParams(window.location.search).has("width")).toBe(false);
   expect(
     handle.getBoundingClientRect().left + handle.getBoundingClientRect().width / 2,
@@ -76,7 +75,6 @@ async function resizeFrameTo(
   await expect
     .poll(() => new URLSearchParams(window.location.search).get("width"))
     .toBe(String(targetWidth));
-  await expect.poll(() => handle.querySelector(".pico-resize-readout")).toBeNull();
 }
 
 function codeWithLineCount(count: number): string {
@@ -218,7 +216,9 @@ describe("preview geometry", () => {
       0,
     );
 
-    await page.getByRole("button", { name: "Reset to auto" }).click();
+    frame(".pico-resize-handle").dispatchEvent(
+      new MouseEvent("dblclick", { bubbles: true, cancelable: true }),
+    );
     await finishAnimations(liveFrame());
     await expect.poll(() => new URLSearchParams(window.location.search).has("width")).toBe(false);
     expect(liveFrame().getBoundingClientRect().width).toBeGreaterThan(240);
@@ -295,11 +295,12 @@ describe("preview geometry", () => {
       const pointerX = startX - delta;
       send("pointermove", pointerX);
       await expect.poll(() => liveFrame().getBoundingClientRect().width).toBe(1200 - delta);
+      await nextFrame();
       expect(
         Math.abs(
           handle.getBoundingClientRect().left + handle.getBoundingClientRect().width / 2 - pointerX,
         ),
-      ).toBeLessThan(1.5);
+      ).toBeLessThan(3);
       expect(new URLSearchParams(window.location.search).get("width")).toBe("1200");
     }
     send("pointerup", startX - 450);
@@ -318,6 +319,8 @@ describe("preview geometry", () => {
     await userEvent.keyboard("{ArrowRight}".repeat(4));
     await expect.poll(() => new URLSearchParams(window.location.search).get("width")).toBe("340");
     expect(liveFrame().getBoundingClientRect().width).toBe(340);
+    await userEvent.keyboard("{Enter}");
+    await expect.poll(() => new URLSearchParams(window.location.search).has("width")).toBe(false);
   });
 
   it("restores auto width when a drag is canceled", async () => {

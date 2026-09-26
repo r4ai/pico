@@ -28,7 +28,7 @@ const PLACEHOLDER = "Paste your code here";
 export type CanvasProps = {
   code: string;
   onCodeChange: (code: string) => void;
-  onWidthCommit: (width: number) => Promise<unknown>;
+  onWidthCommit: (width: Settings["width"]) => Promise<unknown>;
   settings: Settings;
   colors: FrameColors;
   highlight: ShikiHighlight | null;
@@ -69,7 +69,6 @@ export function Canvas({
   const gesture = useRef<ResizeGesture | null>(null);
   const commitId = useRef(0);
   const [draftWidth, setDraftWidth] = useState<number | null>(null);
-  const [resizing, setResizing] = useState(false);
   const shownWidth = draftWidth ?? (settings.width === "auto" ? width : settings.width);
   const frameSettings = draftWidth === null ? settings : { ...settings, width: draftWidth };
   const releaseScrollRoom = () => stageRef.current?.style.removeProperty("padding-right");
@@ -93,7 +92,6 @@ export function Canvas({
     const moved = Math.abs(event.clientX - active.startX) >= 2;
     const next = widthForPointer(event);
     gesture.current = null;
-    setResizing(false);
     if (!moved) {
       releaseScrollRoom();
       setDraftWidth(null);
@@ -112,7 +110,6 @@ export function Canvas({
   const cancelResize = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerId !== gesture.current?.pointerId) return;
     gesture.current = null;
-    setResizing(false);
     releaseScrollRoom();
     setDraftWidth(null);
   };
@@ -133,6 +130,10 @@ export function Canvas({
       case "End":
         next = MAX_FRAME_WIDTH;
         break;
+      case "Enter":
+        event.preventDefault();
+        void onWidthCommit("auto");
+        return;
       default:
         return;
     }
@@ -188,6 +189,7 @@ export function Canvas({
           </CodeFrame>
           <div
             aria-label="Frame width"
+            aria-description="Drag the frame edge to resize. Double-click or press Enter for auto width."
             aria-valuemax={MAX_FRAME_WIDTH}
             aria-valuemin={MIN_FRAME_WIDTH}
             aria-valuenow={clampWidth(shownWidth ?? MIN_FRAME_WIDTH)}
@@ -197,6 +199,7 @@ export function Canvas({
                 : `${Math.round(shownWidth ?? MIN_FRAME_WIDTH)} pixels`
             }
             className="pico-resize-handle"
+            onDoubleClick={() => void onWidthCommit("auto")}
             onKeyDown={keyboardResize}
             onLostPointerCapture={cancelResize}
             onPointerCancel={cancelResize}
@@ -221,7 +224,6 @@ export function Canvas({
                   canvas.clientWidth - Number.parseFloat(getComputedStyle(canvas).paddingLeft),
                 padding,
               };
-              setResizing(true);
               setDraftWidth(Math.round(frame.getBoundingClientRect().width));
               try {
                 event.currentTarget.setPointerCapture(event.pointerId);
@@ -247,14 +249,9 @@ export function Canvas({
             onPointerUp={finishResize}
             role="slider"
             tabIndex={blocked ? -1 : 0}
-            title="Drag to resize frame"
+            title="Drag edge to resize · Double-click for auto width"
           >
             <span aria-hidden className="pico-resize-grip" />
-            {resizing && draftWidth !== null && (
-              <span aria-hidden className="pico-resize-readout">
-                {draftWidth} px
-              </span>
-            )}
           </div>
         </div>
       </div>

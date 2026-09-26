@@ -245,21 +245,6 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
 
             <section className="flex flex-col gap-3">
               <SectionTitle>Frame</SectionTitle>
-              <SettingRow label="Width">
-                <span className="text-muted-foreground text-xs">
-                  {settings.width === "auto" ? "Auto" : `${settings.width} px`}
-                </span>
-                {settings.width !== "auto" && (
-                  <Button
-                    className="h-7 px-2 text-xs"
-                    onPress={() => onChange({ width: "auto" })}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Reset to auto
-                  </Button>
-                )}
-              </SettingRow>
               <PresetToggle
                 label="Padding"
                 labelOf={(id) => SIZE_LABELS[id]}
