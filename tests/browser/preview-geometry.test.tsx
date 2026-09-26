@@ -181,6 +181,26 @@ describe("preview geometry", () => {
     );
   });
 
+  it("keeps trailing-space wraps aligned between the editor and export", async () => {
+    await setCode(`${"x".repeat(13)}${" ".repeat(38)}\nnext`);
+    await page.getByRole("switch", { name: "Line numbers" }).click({ force: true });
+    await page
+      .getByRole("radiogroup", { name: "Width" })
+      .getByRole("radio", { name: "240 pixels" })
+      .click();
+    await finishAnimations(liveFrame());
+
+    const liveLine = liveFrame().querySelectorAll<HTMLElement>(".cm-line")[1];
+    const exportLine = exportFrame().querySelectorAll<HTMLElement>(".pico-line")[1];
+    if (!liveLine || !exportLine) throw new Error("the second line is missing");
+    expect(
+      exportLine.getBoundingClientRect().top - exportFrame().getBoundingClientRect().top,
+    ).toBeCloseTo(
+      liveLine.getBoundingClientRect().top - liveFrame().getBoundingClientRect().top,
+      0,
+    );
+  });
+
   it("restores URL geometry directly at its final dimensions", async () => {
     await unmount?.();
     await cleanup();

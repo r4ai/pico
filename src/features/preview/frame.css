@@ -127,7 +127,7 @@
 .pico-frame[data-fixed-width="true"] .pico-line-content {
   min-width: 0;
   flex: 1;
-  white-space: pre-wrap;
+  white-space: break-spaces;
   overflow-wrap: anywhere;
 }
 
