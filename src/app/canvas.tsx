@@ -72,6 +72,7 @@ export function Canvas({
         >
           <CodeSurface
             animatingGeometry={animateGeometry}
+            wrapLines={settings.width !== "auto"}
             highlight={highlight}
             label="Code"
             onChange={onCodeChange}

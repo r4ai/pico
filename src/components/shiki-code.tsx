@@ -31,32 +31,26 @@ export function ShikiCode({ code, highlight, showLineNumbers, placeholder }: Shi
 
   return (
     <div className="pico-code">
-      {showLineNumbers && (
-        <div className="pico-gutter">
-          {tokens.map((_line, index) => (
-            <div key={`line-number-${index + 1}`}>{index + 1}</div>
-          ))}
-        </div>
-      )}
       <div className="pico-lines">
-        {empty && placeholder !== undefined ? (
-          // In place of the one empty line an empty document already has, so
-          // the frame is exactly the height it is without a placeholder.
-          <div className="pico-line pico-placeholder">{placeholder}</div>
-        ) : (
-          tokens.map((line, lineIndex) => (
-            <div className="pico-line" key={`line-${lineIndex + 1}`}>
-              {/* Keyed by position rather than by offset: a token's offset
-                  moves with every character typed before it, which would
-                  remount every span after the caret on every keystroke. */}
-              {line.map((token, tokenIndex) => (
-                <span key={`${lineIndex}-${tokenIndex}`} style={tokenStyle(token)}>
-                  {token.content}
-                </span>
-              ))}
+        {tokens.map((line, lineIndex) => (
+          <div className="pico-line" key={`line-${lineIndex + 1}`}>
+            {showLineNumbers && <div className="pico-gutter">{lineIndex + 1}</div>}
+            <div className="pico-line-content">
+              {empty && placeholder !== undefined ? (
+                <span className="pico-placeholder">{placeholder}</span>
+              ) : (
+                // Keyed by position rather than by offset: a token's offset
+                // moves with every character typed before it, which would
+                // remount every span after the caret on every keystroke.
+                line.map((token, tokenIndex) => (
+                  <span key={`${lineIndex}-${tokenIndex}`} style={tokenStyle(token)}>
+                    {token.content}
+                  </span>
+                ))
+              )}
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
     </div>
   );

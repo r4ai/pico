@@ -54,6 +54,10 @@
   tab-size: 2;
 }
 
+.pico-frame[data-fixed-width="true"] {
+  min-width: 0;
+}
+
 /* Corners and shadow always ease between presets. Geometry joins that motion
    only while a settings action is changing the live preview: the export node
    stays at the final computed values so a capture can never contain an
@@ -91,8 +95,7 @@
 /* The static rendering used for export. */
 
 .pico-code {
-  display: flex;
-  align-items: flex-start;
+  width: max-content;
 }
 
 .pico-gutter {
@@ -104,11 +107,28 @@
 }
 
 .pico-lines {
-  white-space: pre;
+  width: max-content;
 }
 
 .pico-line {
+  display: flex;
   min-height: 1lh;
+}
+
+.pico-line-content {
+  white-space: pre;
+}
+
+.pico-frame[data-fixed-width="true"] .pico-code,
+.pico-frame[data-fixed-width="true"] .pico-lines {
+  width: 100%;
+}
+
+.pico-frame[data-fixed-width="true"] .pico-line-content {
+  min-width: 0;
+  flex: 1;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 /* What an empty frame says before there is anything in it. The same wash of

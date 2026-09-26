@@ -11,7 +11,13 @@ import { isThemeLoaded } from "@/core/highlight/shiki";
 import { useEffect, useRef } from "react";
 
 /** Settings that change how much room the picture takes. */
-const GEOMETRY_SETTINGS = new Set<keyof Settings>(["padding", "font", "fontSize", "lineNumbers"]);
+const GEOMETRY_SETTINGS = new Set<keyof Settings>([
+  "padding",
+  "width",
+  "font",
+  "fontSize",
+  "lineNumbers",
+]);
 
 /** Settings that change nothing but color, and so can simply be dissolved into. */
 const COLOR_SETTINGS = new Set<keyof Settings>(["theme", "mode"]);

@@ -21,6 +21,10 @@
   font-size: inherit;
 }
 
+.pico-frame[data-fixed-width="true"] .pico-editor .cm-editor {
+  width: 100%;
+}
+
 .pico-editor .cm-editor .cm-scroller {
   overflow: visible;
   font-family: inherit;

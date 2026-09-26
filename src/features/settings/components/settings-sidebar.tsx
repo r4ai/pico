@@ -10,6 +10,7 @@ import {
   PADDING_IDS,
   RADIUS_IDS,
   SHADOW_IDS,
+  WIDTH_IDS,
 } from "@/core/settings/appearance";
 import { FONT_IDS, FONTS } from "@/core/settings/fonts";
 import { PresetToggle, SettingRow } from "@/features/settings/components/setting-row";
@@ -245,6 +246,14 @@ export function SettingsSidebar({ open, onClose, settings, onChange }: SettingsS
 
             <section className="flex flex-col gap-3">
               <SectionTitle>Frame</SectionTitle>
+              <PresetToggle
+                label="Width"
+                labelOf={(width) => (width === "auto" ? "Auto" : width)}
+                ariaLabelOf={(width) => (width === "auto" ? "Auto width" : `${width} pixels`)}
+                onChange={(width) => onChange({ width })}
+                options={WIDTH_IDS}
+                value={settings.width}
+              />
               <PresetToggle
                 label="Padding"
                 labelOf={(id) => SIZE_LABELS[id]}
