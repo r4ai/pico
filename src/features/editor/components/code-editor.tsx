@@ -41,6 +41,7 @@ export type CodeEditorProps = {
   placeholderText: string;
   /** True while the frame's geometry is easing between two settings. */
   animatingGeometry: boolean;
+  wrapLines?: boolean;
   /**
    * Whether to take the keyboard as soon as there is an editor to take it.
    *
@@ -66,6 +67,7 @@ export function CodeEditor({
   showLineNumbers,
   placeholderText,
   animatingGeometry,
+  wrapLines = false,
   focusOnMount = false,
 }: CodeEditorProps) {
   const hintId = useId();
@@ -75,6 +77,7 @@ export function CodeEditor({
   const compartments = useRef({
     theme: new Compartment(),
     placeholder: new Compartment(),
+    wrapping: new Compartment(),
   });
   // The initial document; later values are synced by their own effect.
   const initialValue = useRef(value);
@@ -91,6 +94,7 @@ export function CodeEditor({
   // placeholder, and uncoloured where it had colour.
   const initialHighlight = useRef(highlight);
   const initialPlaceholder = useRef(placeholderText);
+  const initialWrapLines = useRef(wrapLines);
 
   useEffect(() => {
     latestOnChange.current = onChange;
@@ -145,6 +149,7 @@ export function CodeEditor({
           lineNumbers(),
           gutters({ fixed: false }),
           placeholderCompartment.of(placeholder(initialPlaceholder.current)),
+          compartments.current.wrapping.of(initialWrapLines.current ? EditorView.lineWrapping : []),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) latestOnChange.current(update.state.doc.toString());
           }),
@@ -184,6 +189,12 @@ export function CodeEditor({
       effects: compartments.current.placeholder.reconfigure(placeholder(placeholderText)),
     });
   }, [placeholderText]);
+
+  useEffect(() => {
+    view.current?.dispatch({
+      effects: compartments.current.wrapping.reconfigure(wrapLines ? EditorView.lineWrapping : []),
+    });
+  }, [wrapLines]);
 
   useEffect(() => {
     view.current?.dom

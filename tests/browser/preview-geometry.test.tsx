@@ -145,13 +145,69 @@ describe("preview geometry", () => {
     );
   });
 
+  it("sets a fixed frame width, wraps long lines with aligned numbers, and returns to auto", async () => {
+    await setCode(`${"x".repeat(180)}\nlast line`);
+    await page.getByRole("switch", { name: "Line numbers" }).click({ force: true });
+    await finishAnimations(liveFrame());
+
+    const width = page.getByRole("radiogroup", { name: "Width" });
+    await width.getByRole("radio", { name: "240 pixels" }).click();
+    await finishAnimations(liveFrame());
+
+    await expect.poll(() => new URLSearchParams(window.location.search).get("width")).toBe("240");
+    expect(liveFrame().getBoundingClientRect().width).toBe(240);
+    expect(exportFrame().getBoundingClientRect().width).toBe(240);
+    const exportLines = exportFrame().querySelectorAll<HTMLElement>(".pico-line");
+    const firstContent = exportLines[0]?.querySelector<HTMLElement>(".pico-line-content");
+    const secondGutter = exportLines[1]?.querySelector<HTMLElement>(".pico-gutter");
+    if (!firstContent || !secondGutter) throw new Error("wrapped lines or gutters are missing");
+    expect(firstContent.getBoundingClientRect().height).toBeGreaterThan(40);
+    const liveLines = liveFrame().querySelectorAll<HTMLElement>(".cm-line");
+    expect(liveLines.length).toBe(2);
+    expect(
+      secondGutter.getBoundingClientRect().top - exportFrame().getBoundingClientRect().top,
+    ).toBeCloseTo(
+      liveLines[1]!.getBoundingClientRect().top - liveFrame().getBoundingClientRect().top,
+      0,
+    );
+
+    await width.getByRole("radio", { name: "Auto width" }).click();
+    await finishAnimations(liveFrame());
+    await expect.poll(() => new URLSearchParams(window.location.search).has("width")).toBe(false);
+    expect(liveFrame().getBoundingClientRect().width).toBeGreaterThan(240);
+    expect(liveFrame().getBoundingClientRect().width).toBeCloseTo(
+      exportFrame().getBoundingClientRect().width,
+      1,
+    );
+  });
+
+  it("keeps trailing-space wraps aligned between the editor and export", async () => {
+    await setCode(`${"x".repeat(13)}${" ".repeat(38)}\nnext`);
+    await page.getByRole("switch", { name: "Line numbers" }).click({ force: true });
+    await page
+      .getByRole("radiogroup", { name: "Width" })
+      .getByRole("radio", { name: "240 pixels" })
+      .click();
+    await finishAnimations(liveFrame());
+
+    const liveLine = liveFrame().querySelectorAll<HTMLElement>(".cm-line")[1];
+    const exportLine = exportFrame().querySelectorAll<HTMLElement>(".pico-line")[1];
+    if (!liveLine || !exportLine) throw new Error("the second line is missing");
+    expect(
+      exportLine.getBoundingClientRect().top - exportFrame().getBoundingClientRect().top,
+    ).toBeCloseTo(
+      liveLine.getBoundingClientRect().top - liveFrame().getBoundingClientRect().top,
+      0,
+    );
+  });
+
   it("restores URL geometry directly at its final dimensions", async () => {
     await unmount?.();
     await cleanup();
     window.history.replaceState(
       null,
       "",
-      `${window.location.pathname}?padding=xl&fontSize=xl&lineNumbers=true`,
+      `${window.location.pathname}?padding=xl&fontSize=xl&lineNumbers=true&width=240`,
     );
     const restored = await render(
       <NuqsAdapter>
@@ -165,6 +221,7 @@ describe("preview geometry", () => {
     expect(liveFrame().dataset.animateGeometry).toBe("false");
     expect(Number.parseFloat(getComputedStyle(liveFrame()).paddingLeft)).toBe(64);
     expect(Number.parseFloat(getComputedStyle(liveFrame()).fontSize)).toBe(18);
+    expect(liveFrame().getBoundingClientRect().width).toBe(240);
     expect(frame(".pico-editor .cm-gutters").getBoundingClientRect().width).toBeGreaterThan(0);
     expect(liveFrame().getBoundingClientRect().width).toBeCloseTo(
       exportFrame().getBoundingClientRect().width,
