@@ -3,12 +3,32 @@ import type { ShikiHighlight } from "@/core/highlight/shiki-highlight";
 import { CodeFrame } from "@/features/preview/components/code-frame";
 import type { FrameColors } from "@/core/theme/frame-colors";
 import type { Settings } from "@/core/settings/settings";
+import { MAX_FRAME_WIDTH, MIN_FRAME_WIDTH } from "@/core/settings/appearance";
+import { type KeyboardEvent, type PointerEvent, useRef, useState } from "react";
+
+const KEYBOARD_STEP = 20;
+
+type ResizeGesture = {
+  pointerId: number;
+  startX: number;
+  startWidth: number;
+  holdScrollRoom: boolean;
+  pointerOffset: number;
+  stageLeft: number;
+  viewportWidth: number;
+  padding: number;
+};
+
+function clampWidth(width: number): number {
+  return Math.max(MIN_FRAME_WIDTH, Math.min(MAX_FRAME_WIDTH, Math.round(width)));
+}
 
 const PLACEHOLDER = "Paste your code here";
 
 export type CanvasProps = {
   code: string;
   onCodeChange: (code: string) => void;
+  onWidthCommit: (width: number) => Promise<unknown>;
   settings: Settings;
   colors: FrameColors;
   highlight: ShikiHighlight | null;
@@ -34,6 +54,7 @@ export type CanvasProps = {
 export function Canvas({
   code,
   onCodeChange,
+  onWidthCommit,
   settings,
   colors,
   highlight,
@@ -42,13 +63,94 @@ export function Canvas({
   width,
   blocked,
 }: CanvasProps) {
+  const canvasRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const gesture = useRef<ResizeGesture | null>(null);
+  const commitId = useRef(0);
+  const [draftWidth, setDraftWidth] = useState<number | null>(null);
+  const [resizing, setResizing] = useState(false);
+  const shownWidth = draftWidth ?? (settings.width === "auto" ? width : settings.width);
+  const frameSettings = draftWidth === null ? settings : { ...settings, width: draftWidth };
+  const releaseScrollRoom = () => stageRef.current?.style.removeProperty("padding-right");
+
+  const widthForPointer = (event: PointerEvent<HTMLDivElement>): number => {
+    const active = gesture.current;
+    if (!active) return MIN_FRAME_WIDTH;
+    const right = event.clientX - active.pointerOffset;
+    const boundary = active.stageLeft + active.viewportWidth - active.padding;
+    const width = active.holdScrollRoom
+      ? right - active.stageLeft - active.padding
+      : right <= boundary
+        ? 2 * (right - active.stageLeft - active.viewportWidth / 2)
+        : right - active.stageLeft - active.padding;
+    return clampWidth(width);
+  };
+
+  const finishResize = (event: PointerEvent<HTMLDivElement>) => {
+    const active = gesture.current;
+    if (!active || event.pointerId !== active.pointerId) return;
+    const moved = Math.abs(event.clientX - active.startX) >= 2;
+    const next = widthForPointer(event);
+    gesture.current = null;
+    setResizing(false);
+    if (!moved) {
+      releaseScrollRoom();
+      setDraftWidth(null);
+      return;
+    }
+    setDraftWidth(next);
+    const id = ++commitId.current;
+    const settle = () => {
+      if (id !== commitId.current) return;
+      releaseScrollRoom();
+      setDraftWidth(null);
+    };
+    void onWidthCommit(next).then(settle, settle);
+  };
+
+  const cancelResize = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerId !== gesture.current?.pointerId) return;
+    gesture.current = null;
+    setResizing(false);
+    releaseScrollRoom();
+    setDraftWidth(null);
+  };
+
+  const keyboardResize = (event: KeyboardEvent<HTMLDivElement>) => {
+    const current = shownWidth ?? MIN_FRAME_WIDTH;
+    let next: number;
+    switch (event.key) {
+      case "ArrowLeft":
+        next = current - KEYBOARD_STEP;
+        break;
+      case "ArrowRight":
+        next = current + KEYBOARD_STEP;
+        break;
+      case "Home":
+        next = MIN_FRAME_WIDTH;
+        break;
+      case "End":
+        next = MAX_FRAME_WIDTH;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    void onWidthCommit(clampWidth(next));
+  };
+
   return (
     /* tabIndex, because the canvas scrolls: a scrollable box that cannot be
        focused cannot be scrolled from the keyboard, and a picture wider than
        the window would be unreachable without a pointer. It gives that up
        while the settings are a drawer over it, when there is nothing worth
        scrolling to. */
-    <main className="pico-shell-canvas flex-1 overflow-auto" tabIndex={blocked ? -1 : 0}>
+    <main
+      className="pico-shell-canvas flex-1 overflow-auto"
+      ref={canvasRef}
+      tabIndex={blocked ? -1 : 0}
+    >
       {/* The only heading on a page whose entire content is one editor. It
           is what a screen reader announces on arrival, and what the document
           outline would otherwise be missing. */}
@@ -62,25 +164,99 @@ export function Canvas({
       <div
         className="pico-canvas-stage flex min-h-full w-full min-w-max items-center justify-center"
         inert={blocked}
+        ref={stageRef}
       >
-        <CodeFrame
-          animateGeometry={animateGeometry}
-          colors={colors}
-          lineNumberDigits={lineNumberDigits}
-          settings={settings}
-          width={width}
-        >
-          <CodeSurface
-            animatingGeometry={animateGeometry}
-            wrapLines={settings.width !== "auto"}
-            highlight={highlight}
-            label="Code"
-            onChange={onCodeChange}
-            placeholderText={PLACEHOLDER}
-            showLineNumbers={settings.lineNumbers}
-            value={code}
-          />
-        </CodeFrame>
+        <div className="pico-resize-target">
+          <CodeFrame
+            animateGeometry={animateGeometry && draftWidth === null}
+            colors={colors}
+            lineNumberDigits={lineNumberDigits}
+            ref={frameRef}
+            settings={frameSettings}
+            width={width}
+          >
+            <CodeSurface
+              animatingGeometry={animateGeometry}
+              wrapLines={frameSettings.width !== "auto"}
+              highlight={highlight}
+              label="Code"
+              onChange={onCodeChange}
+              placeholderText={PLACEHOLDER}
+              showLineNumbers={settings.lineNumbers}
+              value={code}
+            />
+          </CodeFrame>
+          <div
+            aria-label="Frame width"
+            aria-valuemax={MAX_FRAME_WIDTH}
+            aria-valuemin={MIN_FRAME_WIDTH}
+            aria-valuenow={clampWidth(shownWidth ?? MIN_FRAME_WIDTH)}
+            aria-valuetext={
+              draftWidth === null && settings.width === "auto"
+                ? `Auto, ${Math.round(shownWidth ?? MIN_FRAME_WIDTH)} pixels`
+                : `${Math.round(shownWidth ?? MIN_FRAME_WIDTH)} pixels`
+            }
+            className="pico-resize-handle"
+            onKeyDown={keyboardResize}
+            onLostPointerCapture={cancelResize}
+            onPointerCancel={cancelResize}
+            onPointerDown={(event) => {
+              if (gesture.current || (event.pointerType === "mouse" && event.button !== 0)) return;
+              const frame = frameRef.current;
+              const stage = stageRef.current;
+              const canvas = canvasRef.current;
+              if (!frame || !stage || !canvas) return;
+              event.preventDefault();
+              event.currentTarget.focus({ preventScroll: true });
+              ++commitId.current;
+              const padding = Number.parseFloat(getComputedStyle(stage).paddingLeft);
+              gesture.current = {
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                startWidth: frame.getBoundingClientRect().width,
+                holdScrollRoom: canvas.scrollLeft > 0,
+                pointerOffset: event.clientX - frame.getBoundingClientRect().right,
+                stageLeft: stage.getBoundingClientRect().left,
+                viewportWidth:
+                  canvas.clientWidth - Number.parseFloat(getComputedStyle(canvas).paddingLeft),
+                padding,
+              };
+              setResizing(true);
+              setDraftWidth(Math.round(frame.getBoundingClientRect().width));
+              try {
+                event.currentTarget.setPointerCapture(event.pointerId);
+              } catch {
+                // Synthetic browser tests have no active pointer to capture.
+              }
+            }}
+            onPointerMove={(event) => {
+              const active = gesture.current;
+              if (event.pointerId !== active?.pointerId) return;
+              const next = widthForPointer(event);
+              // Keep the stage's original scroll width while a wide frame is
+              // shrinking. Otherwise the browser clamps scrollLeft and pins
+              // the right edge to the viewport instead of the pointer.
+              if (active.holdScrollRoom) {
+                stageRef.current?.style.setProperty(
+                  "padding-right",
+                  `${active.padding + Math.max(0, active.startWidth - next)}px`,
+                );
+              }
+              setDraftWidth(next);
+            }}
+            onPointerUp={finishResize}
+            role="slider"
+            tabIndex={blocked ? -1 : 0}
+            title="Drag to resize frame"
+          >
+            <span aria-hidden className="pico-resize-grip" />
+            {resizing && draftWidth !== null && (
+              <span aria-hidden className="pico-resize-readout">
+                {draftWidth} px
+              </span>
+            )}
+          </div>
+        </div>
       </div>
     </main>
   );

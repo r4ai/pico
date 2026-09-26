@@ -88,6 +88,7 @@ export function App() {
         highlight={highlight}
         lineNumberDigits={lineNumberDigits}
         onCodeChange={changeCode}
+        onWidthCommit={(width) => setSettings({ width })}
         settings={settings}
         width={frameWidth}
       />

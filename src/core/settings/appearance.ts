@@ -2,13 +2,14 @@ export const PADDING_IDS = ["sm", "md", "lg", "xl"] as const;
 export const RADIUS_IDS = ["none", "sm", "md", "lg"] as const;
 export const SHADOW_IDS = ["none", "sm", "md", "lg"] as const;
 export const FONT_SIZE_IDS = ["sm", "md", "lg", "xl"] as const;
-export const WIDTH_IDS = ["auto", "240", "480", "960"] as const;
+export const MIN_FRAME_WIDTH = 240;
+export const MAX_FRAME_WIDTH = 2400;
 
 export type PaddingId = (typeof PADDING_IDS)[number];
 export type RadiusId = (typeof RADIUS_IDS)[number];
 export type ShadowId = (typeof SHADOW_IDS)[number];
 export type FontSizeId = (typeof FONT_SIZE_IDS)[number];
-export type WidthId = (typeof WIDTH_IDS)[number];
+export type FrameWidth = number | "auto";
 
 /**
  * Presets rather than free numbers: a handful of good-looking steps is faster

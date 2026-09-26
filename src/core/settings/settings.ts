@@ -10,7 +10,7 @@ import {
   type PaddingId,
   type RadiusId,
   type ShadowId,
-  type WidthId,
+  type FrameWidth,
 } from "@/core/settings/appearance";
 import { DEFAULT_FONT, type FontId } from "@/core/settings/fonts";
 import { type ColorMode, DEFAULT_MODE, DEFAULT_THEME, type ThemeId } from "@/core/theme/theme";
@@ -24,7 +24,7 @@ export type Settings = {
   readonly mode: ColorMode;
   readonly padding: PaddingId;
   /** Auto keeps the frame sized to its contents. */
-  readonly width: WidthId;
+  readonly width: FrameWidth;
   readonly radius: RadiusId;
   readonly shadow: ShadowId;
   readonly fontSize: FontSizeId;
