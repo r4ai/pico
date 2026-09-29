@@ -47,6 +47,11 @@ The `miniflare>sharp` override pins the patched release for
 Remove it once the pinned Wrangler version brings in Miniflare with
 `sharp >=0.35.4` and the dependency audit passes without the override.
 
+The `miniflare>undici` override pins the patched release for
+[GHSA-3wwx-pv8p-q78v](https://github.com/advisories/GHSA-3wwx-pv8p-q78v).
+Remove it once the pinned Wrangler version brings in Miniflare with
+`undici >=7.29.1` and the dependency audit passes without the override.
+
 Update workflow action pins with:
 
 ```sh
