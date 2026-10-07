@@ -43,9 +43,10 @@ version to exactly match the Vitest version bundled by Vite+. Update the
 provider together with Vite+, then verify with `pnpm run test:coverage`.
 
 The `miniflare>sharp` override pins the patched release for
-[GHSA-rgj7-g3m4-5g8c](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c).
+[GHSA-rgj7-g3m4-5g8c](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c) and
+[GHSA-wq5f-xc86-pv6w](https://github.com/advisories/GHSA-wq5f-xc86-pv6w).
 Remove it once the pinned Wrangler version brings in Miniflare with
-`sharp >=0.35.4` and the dependency audit passes without the override.
+`sharp >=0.35.5` and the dependency audit passes without the override.
 
 The `miniflare>undici` override pins the patched release for
 [GHSA-3wwx-pv8p-q78v](https://github.com/advisories/GHSA-3wwx-pv8p-q78v).

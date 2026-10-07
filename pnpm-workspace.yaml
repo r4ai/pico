@@ -9,8 +9,8 @@ minimumReleaseAge: 1440
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 overrides:
-  # GHSA-rgj7-g3m4-5g8c; remove when Miniflare pins sharp >=0.35.4.
-  miniflare>sharp: 0.35.4
+  # GHSA-rgj7-g3m4-5g8c and GHSA-wq5f-xc86-pv6w; remove when Miniflare pins sharp >=0.35.5.
+  miniflare>sharp: 0.35.5
   # GHSA-3wwx-pv8p-q78v; remove when Miniflare pins undici >=7.29.1.
   miniflare>undici: 7.29.1
   vite: "catalog:"
