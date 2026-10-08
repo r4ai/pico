@@ -53,6 +53,12 @@ The `miniflare>undici` override pins the patched release for
 Remove it once the pinned Wrangler version brings in Miniflare with
 `undici >=7.29.1` and the dependency audit passes without the override.
 
+The `oxfmt>tinypool` override pins the patched release for
+[GHSA-5gmw-xhrv-c9v3](https://github.com/advisories/GHSA-5gmw-xhrv-c9v3) and
+[GHSA-85c8-ppgw-ccpr](https://github.com/advisories/GHSA-85c8-ppgw-ccpr).
+Remove it once the Vite+ toolchain brings in Oxfmt with `tinypool >=2.1.2` and
+the dependency audit passes without the override.
+
 Update workflow action pins with:
 
 ```sh
