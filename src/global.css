@@ -9,7 +9,7 @@
 
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import "./styles/shadcn-tailwind.css";
 
 /* The design tokens, and light and dark. */
 @import "./styles/theme.css";
