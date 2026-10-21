@@ -31,3 +31,4 @@ lighthouse-results
 
 # Storybook
 storybook-static
+.vitest/
