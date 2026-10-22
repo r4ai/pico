@@ -10,5 +10,5 @@ it("shows a fallback when the notification UI cannot load", async () => {
   );
   await render(<OfflineToaster position="top-center" theme="dark" />);
 
-  await expect.element(page.getByRole("alert")).toHaveTextContent("could not be shown");
+  await expect.element(page.getByRole("alert")).toMatchTextContent("could not be shown");
 });
