@@ -31,6 +31,8 @@ saveExact: true
 strictDepBuilds: true
 trustPolicy: no-downgrade
 trustPolicyExclude:
+  # Lighthouse's patched Puppeteer chain requires Chromium BiDi's npm release without publisher provenance.
+  - chromium-bidi@157.0.8090-0
   # Legacy transitive release without the trust evidence of an older release.
   - semver@6.3.1
 update:

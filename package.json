@@ -62,7 +62,7 @@
     "chrome-devtools-mcp": "1.7.0",
     "chrome-launcher": "1.2.1",
     "eslint-plugin-react-hooks": "7.1.1",
-    "lighthouse": "13.4.1",
+    "lighthouse": "13.5.0",
     "oxc-transform-react": "0.152.0",
     "playwright": "1.62.1",
     "react-doctor": "0.9.13",
