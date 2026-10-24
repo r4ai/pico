@@ -49,9 +49,18 @@ Remove it once the pinned Wrangler version brings in Miniflare with
 `sharp >=0.35.5` and the dependency audit passes without the override.
 
 The `miniflare>undici` override pins the patched release for
-[GHSA-3wwx-pv8p-q78v](https://github.com/advisories/GHSA-3wwx-pv8p-q78v).
+[GHSA-3wwx-pv8p-q78v](https://github.com/advisories/GHSA-3wwx-pv8p-q78v),
+[GHSA-xjj6-f33q-929c](https://github.com/advisories/GHSA-xjj6-f33q-929c),
+[GHSA-4qv8-2p9j-2685](https://github.com/advisories/GHSA-4qv8-2p9j-2685), and
+[GHSA-f72v-6w45-q472](https://github.com/advisories/GHSA-f72v-6w45-q472).
 Remove it once the pinned Wrangler version brings in Miniflare with
-`undici >=7.29.1` and the dependency audit passes without the override.
+`undici >=7.30.1` and the dependency audit passes without the override.
+
+Wrangler 4.125.0 also embeds Undici 7.29.0 in its published CLI bundle, which
+pnpm overrides and `pnpm audit` cannot replace or detect. As of Wrangler
+4.152.0, the upstream bundle still contains Undici 7.29.1. Track the upstream
+Wrangler release and update once its bundle contains `undici >=7.30.1`; until
+then, treat the bundled copy as a residual development-tooling risk.
 
 The `oxfmt>tinypool` override pins the patched release for
 [GHSA-5gmw-xhrv-c9v3](https://github.com/advisories/GHSA-5gmw-xhrv-c9v3) and
